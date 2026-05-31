@@ -1,2 +1,2 @@
 # GovTradeTracker
-Tracking politician's stock trades and replicating them.
+Tracking politicians' stock trades and replicating them.
