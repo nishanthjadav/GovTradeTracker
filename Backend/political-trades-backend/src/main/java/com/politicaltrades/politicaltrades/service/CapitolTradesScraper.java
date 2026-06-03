@@ -1,0 +1,264 @@
+package com.politicaltrades.politicaltrades.service;
+
+import com.politicaltrades.politicaltrades.entity.Politician;
+import com.politicaltrades.politicaltrades.entity.Trade;
+import com.politicaltrades.politicaltrades.repository.PoliticianRepository;
+import com.politicaltrades.politicaltrades.repository.TradeRepository;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+@Service
+public class CapitolTradesScraper {
+
+    private static final Logger log = LoggerFactory.getLogger(CapitolTradesScraper.class);
+    private static final String BASE_URL = "https://www.capitoltrades.com/trades?page=";
+    private static final int REQUEST_DELAY_MS = 1500; // be polite — 1.5s between requests
+
+    private static final Pattern SIZE_PATTERN = Pattern.compile("([\\d.]+)(K|M)?[–-]([\\d.]+)(K|M)?|([\\d.]+)(K|M)?\\+");
+
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("d MMM yyyy", Locale.ENGLISH);
+
+    private final PoliticianRepository politicianRepository;
+    private final TradeRepository tradeRepository;
+
+    public CapitolTradesScraper(PoliticianRepository politicianRepository, TradeRepository tradeRepository) {
+        this.politicianRepository = politicianRepository;
+        this.tradeRepository = tradeRepository;
+    }
+
+
+    public void scrapePages(int startPage, int endPage) {
+        int newTrades = 0;
+        int skipped = 0;
+
+        for (int page = startPage; page <= endPage; page++) {
+            String url = BASE_URL + page;
+            log.info("Scraping page {}/{}: {}", page, endPage, url);
+
+            try {
+                Document doc = Jsoup.connect(url)
+                        .userAgent("Mozilla/5.0 (compatible; PoliticianTracker/1.0)")
+                        .timeout(10_000)
+                        .get();
+
+                Elements rows = doc.select("table tbody tr");
+
+                if (rows.isEmpty()) {
+                    log.warn("No rows found on page {} — may have hit the end.", page);
+                    break;
+                }
+
+                for (Element row : rows) {
+                    try {
+                        int result = processRow(row);
+                        if (result == 1) newTrades++;
+                        else skipped++;
+                    } catch (Exception e) {
+                        log.warn("Failed to parse row on page {}: {}", page, e.getMessage());
+                    }
+                }
+
+                Thread.sleep(REQUEST_DELAY_MS);
+
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                log.error("Scraping interrupted at page {}", page);
+                break;
+            } catch (Exception e) {
+                log.error("Error fetching page {}: {}", page, e.getMessage());
+            }
+        }
+
+        log.info("Scrape complete. New trades saved: {}, Already existed (skipped): {}", newTrades, skipped);
+    }
+
+    public void scrapeLatest() {
+        scrapePages(1, 1);
+    }
+
+
+
+    private int processRow(Element row) {
+        Elements cells = row.select("td");
+        if (cells.size() < 8) return 0;
+
+        String tradeDetailUrl = row.select("a[href*='/trades/']").last() != null
+                ? row.select("a[href*='/trades/']").last().attr("href")
+                : null;
+        String capitolTradesId = extractTradeId(tradeDetailUrl);
+        if (capitolTradesId == null) return 0;
+
+        if (tradeRepository.existsByCapitolTradesId(capitolTradesId)) return 0;
+
+        Element politicianCell = cells.get(0);
+        String politicianName = politicianCell.select("a").first() != null
+                ? politicianCell.select("a").first().text().trim()
+                : null;
+        String politicianUrl = politicianCell.select("a[href*='/politicians/']").attr("href");
+        String politicianId = extractPoliticianId(politicianUrl);
+        String[] partyAndRest = parsePoliticianMeta(politicianCell);
+
+        Politician politician = getOrCreatePolitician(politicianId, politicianName,
+                partyAndRest[0], partyAndRest[1], partyAndRest[2]);
+
+        Element issuerCell = cells.get(1);
+        String issuerName = issuerCell.select("a").first() != null
+                ? issuerCell.select("a").first().text().trim()
+                : issuerCell.text().trim();
+        String ticker = extractTicker(issuerCell.text());
+
+        LocalDate publishedDate = parseDate(cells.get(2).text());
+
+        LocalDate tradeDate = parseDate(cells.get(3).text());
+
+        Integer filedAfterDays = parseFiledDays(cells.get(4).text());
+
+        String owner = cells.get(5).text().trim();
+
+        String tradeType = cells.get(6).text().trim().toLowerCase();
+
+        long[] sizeRange = parseSize(cells.get(7).text());
+
+        BigDecimal price = cells.size() > 8 ? parsePrice(cells.get(8).text()) : null;
+
+        Trade trade = new Trade();
+        trade.setCapitolTradesId(capitolTradesId);
+        trade.setPolitician(politician);
+        trade.setIssuerName(issuerName);
+        trade.setTicker(ticker);
+        trade.setPublishedDate(publishedDate);
+        trade.setTradeDate(tradeDate);
+        trade.setFiledAfterDays(filedAfterDays);
+        trade.setOwner(owner);
+        trade.setTradeType(tradeType);
+        trade.setSizeMin(sizeRange[0]);
+        trade.setSizeMax(sizeRange[1]);
+        trade.setPrice(price);
+
+        tradeRepository.save(trade);
+        return 1;
+    }
+
+
+
+    private String extractTradeId(String url) {
+        if (url == null) return null;
+        Pattern p = Pattern.compile("/trades/(\\d+)");
+        Matcher m = p.matcher(url);
+        return m.find() ? m.group(1) : null;
+    }
+
+    private String extractPoliticianId(String url) {
+        if (url == null || url.isBlank()) return "UNKNOWN";
+        Pattern p = Pattern.compile("/politicians/([A-Z0-9]+)", Pattern.CASE_INSENSITIVE);
+        Matcher m = p.matcher(url);
+        return m.find() ? m.group(1).toUpperCase() : "UNKNOWN";
+    }
+
+
+private String[] parsePoliticianMeta(Element politicianCell) {
+    String party = null, chamber = null, state = null;
+
+    Element partyEl = politicianCell.selectFirst(".party");
+    if (partyEl != null) party = partyEl.text().trim();
+
+    Element chamberEl = politicianCell.selectFirst(".chamber");
+    if (chamberEl != null) chamber = chamberEl.text().trim();
+
+    Element stateEl = politicianCell.selectFirst("[class*=us-state-compact--]");
+    if (stateEl != null) state = stateEl.text().trim();
+
+    return new String[]{party, chamber, state};
+}
+
+  
+    private String extractTicker(String text) {
+        Pattern p = Pattern.compile("([A-Z]{1,5}):[A-Z]{2}");
+        Matcher m = p.matcher(text);
+        return m.find() ? m.group(1) : null;
+    }
+
+ 
+    private LocalDate parseDate(String text) {
+        if (text == null || text.isBlank()) return null;
+        text = text.trim();
+
+        text = text.replaceAll("^\\d{1,2}:\\d{2}\\s*", "").trim();
+
+        if (text.equalsIgnoreCase("Yesterday")) return LocalDate.now().minusDays(1);
+        if (text.equalsIgnoreCase("Today")) return LocalDate.now();
+
+
+        try {
+            return LocalDate.parse(text, DATE_FORMATTER);
+        } catch (DateTimeParseException ignored) {}
+
+        try {
+            return LocalDate.parse("1 " + text, DATE_FORMATTER);
+        } catch (DateTimeParseException ignored) {}
+
+        log.debug("Could not parse date: '{}'", text);
+        return null;
+    }
+
+  
+    private Integer parseFiledDays(String text) {
+        if (text == null) return null;
+        Pattern p = Pattern.compile("(\\d+)");
+        Matcher m = p.matcher(text);
+        return m.find() ? Integer.parseInt(m.group(1)) : null;
+    }
+
+ 
+    private long[] parseSize(String text) {
+        if (text == null || text.isBlank()) return new long[]{0, 0};
+        Matcher m = SIZE_PATTERN.matcher(text.trim());
+        if (!m.find()) return new long[]{0, 0};
+
+        if (m.group(5) != null) {
+            long min = parseAmount(m.group(5), m.group(6));
+            return new long[]{min, Long.MAX_VALUE};
+        } else {
+            long min = parseAmount(m.group(1), m.group(2));
+            long max = parseAmount(m.group(3), m.group(4));
+            return new long[]{min, max};
+        }
+    }
+
+    private long parseAmount(String num, String unit) {
+        double val = Double.parseDouble(num);
+        if ("K".equals(unit)) val *= 1_000;
+        else if ("M".equals(unit)) val *= 1_000_000;
+        return (long) val;
+    }
+
+
+    private BigDecimal parsePrice(String text) {
+        if (text == null || text.isBlank() || text.equalsIgnoreCase("N/A")) return null;
+        try {
+            return new BigDecimal(text.replace("$", "").replace(",", "").trim());
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    private Politician getOrCreatePolitician(String id, String name, String party, String chamber, String state) {
+        return politicianRepository.findById(id).orElseGet(() -> {
+            Politician p = new Politician(id, name != null ? name : "Unknown", party, chamber, state);
+            return politicianRepository.save(p);
+        });
+    }
+}
