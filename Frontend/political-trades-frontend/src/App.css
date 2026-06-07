@@ -74,6 +74,9 @@
   --color-success-bg: #052e16;
   --color-danger: #ef4444;
   --color-danger-bg: #2d0a0a;
+  --color-surface-hover: #1f2937;
+  --color-bg-overlay: rgba(0, 0, 0, 0.35);
+  --color-border-strong: #2b3648;
 }
 
 /* === GLOBAL === */
@@ -171,6 +174,66 @@ body {
 
 .theme-toggle:active {
   transform: scale(0.95);
+}
+
+.top-action {
+  background: var(--color-surface);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--border-radius);
+  padding: 6px 12px;
+
+  cursor: pointer;
+
+  font-size: var(--font-size-sm);
+  font-family: var(--font-family-ui);
+
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  color: var(--color-text-primary);
+
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.top-action:hover {
+  background: var(--color-bg-secondary);
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.app.dark .top-action {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+  color: var(--color-text-primary);
+}
+
+.app.dark .top-action:hover {
+  background: var(--color-bg-tertiary);
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+/* Pol row checkbox styling (compact and consistent) */
+.pol-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pol-checkbox input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  cursor: pointer;
+  border-radius: 4px;
+  accent-color: var(--color-accent);
+}
+
+.pol-checkbox input[type="checkbox"]:focus {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
 }
 
 .status-dot {
@@ -846,3 +909,150 @@ body {
 }
 .buy-text { color: var(--color-success); }
 .sell-text { color: var(--color-danger); }
+
+
+/* === ADD THESE TO THE BOTTOM OF App.css === */
+
+/* Sidebar done bar — fixed at bottom of sidebar, appears when copying > 0 */
+.sidebar-done-bar {
+  position: sticky;
+  bottom: 0;
+  padding: var(--spacing-3) var(--spacing-4);
+  background: var(--color-surface);
+  border-top: var(--border-width) solid var(--color-border);
+  flex-shrink: 0;
+}
+
+.sidebar-done-btn {
+  width: 100%;
+  padding: 9px 0;
+  background: var(--color-accent);
+  border: none;
+  border-radius: var(--border-radius);
+  color: #fff;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  font-family: var(--font-family-ui);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.sidebar-done-btn:hover {
+  background: var(--color-accent-hover);
+}
+
+
+.copy-popup,
+.sidebar-done-bar div {
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+}
+
+.copy-popup {
+  border: var(--border-width) solid var(--color-border);
+  box-shadow: var(--shadow-sm);
+}
+
+.copy-popup-item {
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.app.dark .copy-popup-item:hover {
+  background: var(--color-bg-tertiary);
+}
+
+.copy-popup button {
+  color: var(--color-text-muted);
+}
+
+.app.dark .copy-popup button:hover {
+  color: var(--color-text-primary);
+}
+
+.app.dark .sidebar-done-bar {
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-border-strong);
+}
+
+.copy-popup {
+  backdrop-filter: blur(8px);
+}
+/* === FIX: Popup remove (X) button theme support === */
+
+.copy-popup button {
+  color: var(--color-text-muted);
+  transition: color 0.15s ease;
+}
+
+/* hover state (light + dark shared base behavior) */
+.copy-popup button:hover {
+  color: var(--color-danger);
+}
+
+/* DARK MODE OVERRIDE */
+.app.dark .copy-popup button {
+  color: var(--color-text-secondary); /* light gray instead of black */
+}
+
+.app.dark .copy-popup button:hover {
+  color: #ffffff; /* makes X clearly visible in dark mode */
+}
+
+/* === POLISHED X ICON BUTTON === */
+
+.copy-remove-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: var(--color-text-muted);
+
+  transition: color 0.15s ease, transform 0.1s ease;
+}
+
+.copy-remove-btn:hover {
+  color: var(--color-danger);
+  transform: scale(1.1);
+}
+
+.app.dark .copy-remove-btn {
+  color: var(--color-text-secondary);
+}
+
+.app.dark .copy-remove-btn:hover {
+  color: #ffffff;
+}
+
+/* === CSS X ICON (theme-aware) === */
+
+.x-icon {
+  position: relative;
+  width: 12px;
+  height: 12px;
+  display: inline-block;
+}
+
+.x-icon::before,
+.x-icon::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 12px;
+  height: 1.5px;
+  background: currentColor;
+  transform-origin: center;
+}
+
+.x-icon::before {
+  transform: rotate(45deg);
+}
+
+.x-icon::after {
+  transform: rotate(-45deg);
+}

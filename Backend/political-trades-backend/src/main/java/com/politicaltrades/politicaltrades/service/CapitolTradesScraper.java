@@ -4,6 +4,12 @@ import com.politicaltrades.politicaltrades.entity.Politician;
 import com.politicaltrades.politicaltrades.entity.Trade;
 import com.politicaltrades.politicaltrades.repository.PoliticianRepository;
 import com.politicaltrades.politicaltrades.repository.TradeRepository;
+import com.politicaltrades.politicaltrades.repository.CopyConfigRepository;
+import com.politicaltrades.politicaltrades.repository.ExecutedTradeRepository;
+import com.politicaltrades.politicaltrades.entity.CopyConfig;
+import com.politicaltrades.politicaltrades.entity.ExecutedTrade;
+import java.time.LocalDateTime;
+import com.politicaltrades.politicaltrades.service.AlpacaService;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -33,10 +39,20 @@ public class CapitolTradesScraper {
 
     private final PoliticianRepository politicianRepository;
     private final TradeRepository tradeRepository;
+    private final CopyConfigRepository copyConfigRepository;
+    private final AlpacaService alpacaService;
+    private final ExecutedTradeRepository executedTradeRepository;
 
-    public CapitolTradesScraper(PoliticianRepository politicianRepository, TradeRepository tradeRepository) {
+    public CapitolTradesScraper(PoliticianRepository politicianRepository,
+                               TradeRepository tradeRepository,
+                               CopyConfigRepository copyConfigRepository,
+                               AlpacaService alpacaService,
+                               ExecutedTradeRepository executedTradeRepository) {
         this.politicianRepository = politicianRepository;
         this.tradeRepository = tradeRepository;
+        this.copyConfigRepository = copyConfigRepository;
+        this.alpacaService = alpacaService;
+        this.executedTradeRepository = executedTradeRepository;
     }
 
 
@@ -149,6 +165,37 @@ public class CapitolTradesScraper {
         trade.setPrice(price);
 
         tradeRepository.save(trade);
+        // After saving a new trade, check for active copy configs and fire copy orders
+        try {
+            String polId = politician.getId();
+            java.util.List<CopyConfig> configs = copyConfigRepository.findByPoliticianIdAndActiveTrue(polId);
+            if (configs != null && !configs.isEmpty() && trade.getTicker() != null) {
+                for (CopyConfig cfg : configs) {
+                    try {
+                        String side = trade.getTradeType();
+                        java.math.BigDecimal notional = cfg.getAmountPerTrade();
+                        String orderId = alpacaService.placeMarketOrder(trade.getTicker(), side, notional);
+
+                        ExecutedTrade et = new ExecutedTrade();
+                        et.setSessionId(cfg.getSessionId());
+                        et.setPoliticianId(polId);
+                        et.setPoliticianName(politician.getName());
+                        et.setTicker(trade.getTicker());
+                        et.setSide(side);
+                        et.setAmountInvested(notional);
+                        et.setFillPrice(null);
+                        et.setExecutedAt(LocalDateTime.now());
+                        et.setAlpacaOrderId(orderId);
+                        et.setStatus("pending");
+                        executedTradeRepository.save(et);
+                    } catch (Exception e) {
+                        log.warn("Failed to execute copy for politician {}: {}", polId, e.getMessage());
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.warn("Error processing copy configs: {}", e.getMessage());
+        }
         return 1;
     }
 
