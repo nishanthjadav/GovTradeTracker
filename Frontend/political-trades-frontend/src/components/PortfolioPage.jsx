@@ -17,18 +17,17 @@ function avatarBg(party) {
   return { bg: "var(--color-bg-tertiary)", color: "var(--color-text-muted)" };
 }
 
-export default function PortfolioPage({ sessionId, setCurrentView, politicians = [] }) {  const [summary, setSummary] = useState(null);
+// copyConfigs is passed from App so sidebar checkbox changes reflect instantly
+export default function PortfolioPage({ sessionId, onBack, politicians = [], copyConfigs: externalCopyConfigs, onRemoveCopyConfig, onUpdateCopyConfig }) {
+  const [summary, setSummary] = useState(null);
   const [trades, setTrades] = useState([]);
-  const [copying, setCopying] = useState([]);
   const [editingId, setEditingId] = useState(null);
   const [editingAmount, setEditingAmount] = useState("");
 
-  useEffect(() => {
-    fetch(`${API}/copy-configs?sessionId=${sessionId}`)
-      .then(r => r.json())
-      .then(setCopying)
-      .catch(() => setCopying([]));
+  // No localConfigs — read directly from externalCopyConfigs so sidebar stays in sync
+  const copying = externalCopyConfigs ?? [];
 
+  useEffect(() => {
     fetch(`${API}/portfolio?sessionId=${sessionId}`)
       .then(r => r.json())
       .then((data) => {
@@ -38,45 +37,42 @@ export default function PortfolioPage({ sessionId, setCurrentView, politicians =
       .catch(() => {});
   }, [sessionId]);
 
-  // Enrich copy configs with full politician info from the sidebar list
-  const enrichedCopying = copying.map(c => {
-    const pol = politicians.find(p => p.id === c.politicianId);
-    return { ...c, politician: pol };
-  });
+const enrichedCopying = copying.map(c => {
+  const pol = politicians.find(p => p.id === c.politicianId);
+  return { ...c, politician: pol };
+});
 
   const handleToggleActive = async (config) => {
-    const updated = { ...config, active: !config.active };
-    await fetch(`${API}/copy-configs/${config.id}`, {
-      method: 'PATCH',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ active: updated.active })
-    }).catch(() => {});
-    setCopying(prev => prev.map(c => c.id === config.id ? { ...c, active: updated.active } : c));
-  };
+  await fetch(`${API}/copy-configs/${config.id}`, {
+    method: 'PATCH',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ active: !config.active })
+  }).catch(() => {});
+  onUpdateCopyConfig?.({ ...config, active: !config.active });
+};
 
-  const handleSaveAmount = async (config) => {
-    const val = parseFloat(editingAmount);
-    if (!val || val <= 0) return;
-    await fetch(`${API}/copy-configs/${config.id}`, {
-      method: 'PATCH',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ amountPerTrade: val })
-    }).catch(() => {});
-    setCopying(prev => prev.map(c => c.id === config.id ? { ...c, amountPerTrade: val } : c));
-    setEditingId(null);
-  };
+const handleSaveAmount = async (config) => {
+  const val = parseFloat(editingAmount);
+  if (!val || val <= 0) return;
+  await fetch(`${API}/copy-configs/${config.id}`, {
+    method: 'PATCH',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ amountPerTrade: val })
+  }).catch(() => {});
+  onUpdateCopyConfig?.({ ...config, amountPerTrade: val });
+  setEditingId(null);
+};
 
-  const handleRemove = async (config) => {
-    await fetch(`${API}/copy-configs/${config.id}`, { method: 'DELETE' }).catch(() => {});
-    setCopying(prev => prev.filter(c => c.id !== config.id));
-  };
+const handleRemove = async (config) => {
+  await fetch(`${API}/copy-configs/${config.id}`, { method: 'DELETE' }).catch(() => {});
+  onRemoveCopyConfig?.(config.id);
+};
 
   const returnColor = (val) =>
     val == null ? "var(--color-text-muted)" : val >= 0 ? "var(--color-success)" : "var(--color-danger)";
 
   return (
     <div className="portfolio-page">
-      {/* Header */}
       <div className="content-header">
         <div className="portfolio-header-row">
           <div>
@@ -122,10 +118,10 @@ export default function PortfolioPage({ sessionId, setCurrentView, politicians =
 
       {/* Copying section */}
       <div className="portfolio-section">
-        <div className="portfolio-section-title">Copying</div>
+
         {enrichedCopying.length === 0 ? (
           <div className="empty">
-            You're not copying anyone yet. Check politicians in the sidebar to start.
+            You're not copying anyone yet.
           </div>
         ) : (
           <div className="copying-grid">
@@ -139,9 +135,7 @@ export default function PortfolioPage({ sessionId, setCurrentView, politicians =
                       {initials(c.politician?.name || c.politicianId)}
                     </div>
                     <div className="copy-card-info">
-                      <div className="copy-card-name">
-                        {c.politician?.name || c.politicianId}
-                      </div>
+                      <div className="copy-card-name">{c.politician?.name || c.politicianId}</div>
                       <div className="copy-card-meta">
                         {c.politician?.party?.replace("Republican", "R").replace("Democrat", "D")}
                         {c.politician?.chamber ? ` · ${c.politician.chamber}` : ""}
@@ -219,18 +213,14 @@ export default function PortfolioPage({ sessionId, setCurrentView, politicians =
             </div>
             {trades.map(t => (
               <div key={t.id} className="portfolio-table-row">
-                <div className="portfolio-pol-cell">
+                <div>
                   <div style={{ fontSize: "var(--font-size-sm)", fontWeight: 500, color: "var(--color-text-primary)" }}>
                     {t.politicianName || t.politicianId}
                   </div>
                 </div>
+                <div><span className="ticker-badge">{t.ticker || "—"}</span></div>
                 <div>
-                  <span className="ticker-badge">{t.ticker || "—"}</span>
-                </div>
-                <div>
-                  <span className={`type-badge ${t.side === "buy" ? "buy-badge" : "sell-badge"}`}>
-                    {t.side}
-                  </span>
+                  <span className={`type-badge ${t.side === "buy" ? "buy-badge" : "sell-badge"}`}>{t.side}</span>
                 </div>
                 <div className="size-cell">
                   {t.amountInvested != null ? `$${Number(t.amountInvested).toLocaleString()}` : "—"}
@@ -257,9 +247,7 @@ export default function PortfolioPage({ sessionId, setCurrentView, politicians =
                   {t.executedAt ? new Date(t.executedAt).toLocaleDateString() : "—"}
                 </div>
                 <div>
-                  <span className={`portfolio-status-badge status-${t.status}`}>
-                    {t.status}
-                  </span>
+                  <span className={`portfolio-status-badge status-${t.status}`}>{t.status}</span>
                 </div>
               </div>
             ))}
