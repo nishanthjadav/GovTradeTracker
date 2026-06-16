@@ -5,11 +5,11 @@ import TradeTable from "./components/TradeTable";
 import Pagination from "./components/Pagination";
 import ProfilePage from "./components/ProfilePage";
 import PortfolioPage from "./components/PortfolioPage";
+import AccountMenu from "./components/AccountMenu";
+import AccountPage from "./components/AccountPage";
 import { defaultFilters } from "./utils/filterHelpers";
 import { applyFilters } from "./utils/tradeHelpers";
-import { getSessionId } from "./utils/session";
-
-const API = "http://localhost:8080/api";
+import { apiFetch } from "./api";
 
 function initials(name) {
   if (!name) return "??";
@@ -41,15 +41,14 @@ export default function App() {
     const saved = localStorage.getItem("theme");
     return saved ? saved === "dark" : false;
   });
-  const sessionId = getSessionId();
   const [copyConfigs, setCopyConfigs] = useState([]);
   const [copyPanelOpen, setCopyPanelOpen] = useState(false);
   const [sidebarVisible, setSidebarVisible] = useState(true);
 
   useEffect(() => {
     Promise.all([
-      fetch(`${API}/politicians`).then((r) => r.json()),
-      fetch(`${API}/trades/recent?limit=500`).then((r) => r.json()),
+      apiFetch(`/politicians`).then((r) => r.json()),
+      apiFetch(`/trades/recent?limit=500`).then((r) => r.json()),
     ])
       .then(([pols, trades]) => {
         setPoliticians(pols);
@@ -60,11 +59,11 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    fetch(`${API}/copy-configs?sessionId=${sessionId}`)
-      .then(r => r.json())
+    apiFetch(`/copy-configs`)
+      .then(r => r.ok ? r.json() : [])
       .then(setCopyConfigs)
       .catch(() => {});
-  }, [sessionId]);
+  }, []);
 
   useEffect(() => {
     localStorage.setItem("theme", isDark ? "dark" : "light");
@@ -75,7 +74,7 @@ export default function App() {
   }, [currentView, selectedPol]);
 
   useEffect(() => {
-    if (currentView === "portfolio") {
+    if (currentView === "portfolio" || currentView === "account") {
       setSidebarVisible(false);
     } else {
       setSidebarVisible(true);
@@ -86,7 +85,7 @@ export default function App() {
     setSelectedPol(pol);
     setCurrentView("politician");
     setTradesLoading(true);
-    fetch(`${API}/politicians/${pol.id}/trades`)
+    apiFetch(`/politicians/${pol.id}/trades`)
       .then((r) => r.json())
       .then((trades) => { setPolTrades(trades); setTradesLoading(false); })
       .catch(() => setTradesLoading(false));
@@ -150,14 +149,13 @@ export default function App() {
 
   const handleCopyToggle = (pol, existing) => {
     if (existing) {
-      fetch(`${API}/copy-configs/${existing.id}`, { method: 'DELETE' })
+      apiFetch(`/copy-configs/${existing.id}`, { method: 'DELETE' })
         .then(() => setCopyConfigs(prev => prev.filter(c => c.id !== existing.id)))
         .catch(() => {});
     } else {
-      fetch(`${API}/copy-configs`, {
+      apiFetch(`/copy-configs`, {
         method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ sessionId, politicianId: pol.id, amountPerTrade: 50 })
+        body: JSON.stringify({ politicianId: pol.id, amountPerTrade: 50 })
       })
         .then(r => r.json())
         .then(saved => setCopyConfigs(prev => [...prev, saved]))
@@ -186,6 +184,7 @@ export default function App() {
           <button className="top-action" onClick={() => setCurrentView("portfolio")}>
             My Portfolio
           </button>
+          <AccountMenu onOpenAccount={() => setCurrentView("account")} />
         </div>
       </div>
 
@@ -214,7 +213,7 @@ export default function App() {
                     key={pol.id}
                     className={`pol-row${selectedPol?.id === pol.id ? " active" : ""}`}
                     onClick={() => {
-                      if (currentView === "portfolio") return;
+                      if (currentView === "portfolio" || currentView === "account") return;
                       selectPolitician(pol);
                     }}
                   >
@@ -243,8 +242,7 @@ export default function App() {
               })
             )}
 
-            {/* Only show portfolio panel when NOT already in portfolio view */}
-            {currentView !== "portfolio" && copyConfigs.length > 0 && (
+            {currentView !== "portfolio" && currentView !== "account" && copyConfigs.length > 0 && (
               <div className="sidebar-done-bar">
                 <button
                   className="sidebar-done-btn"
@@ -276,7 +274,7 @@ export default function App() {
                           <button
                             className="copy-card-remove"
                             onClick={() => {
-                              fetch(`${API}/copy-configs/${c.id}`, { method: "DELETE" })
+                              apiFetch(`/copy-configs/${c.id}`, { method: "DELETE" })
                                 .then(() => setCopyConfigs(prev => prev.filter(x => x.id !== c.id)))
                                 .catch(() => {});
                             }}
@@ -298,7 +296,6 @@ export default function App() {
           </div>
         )}
 
-        {/* Collapse/expand tab — always centered on the left edge */}
         <button
           className="sidebar-toggle-tab"
           onClick={() => setSidebarVisible(v => !v)}
@@ -345,15 +342,16 @@ export default function App() {
               setCurrentPage={setCurrentPage}
               onBack={() => { setSelectedPol(null); setCurrentView("feed"); }}
             />
+          ) : currentView === "account" ? (
+            <AccountPage onBack={() => setCurrentView("feed")} />
           ) : (
-<PortfolioPage
-  sessionId={sessionId}
-  onBack={() => setCurrentView("feed")}
-  politicians={politicians}
-  copyConfigs={copyConfigs}
-  onRemoveCopyConfig={(id) => setCopyConfigs(prev => prev.filter(c => c.id !== id))}
-  onUpdateCopyConfig={(updated) => setCopyConfigs(prev => prev.map(c => c.id === updated.id ? updated : c))}
-/>
+            <PortfolioPage
+              onBack={() => setCurrentView("feed")}
+              politicians={politicians}
+              copyConfigs={copyConfigs}
+              onRemoveCopyConfig={(id) => setCopyConfigs(prev => prev.filter(c => c.id !== id))}
+              onUpdateCopyConfig={(updated) => setCopyConfigs(prev => prev.map(c => c.id === updated.id ? updated : c))}
+            />
           )}
         </div>
       </div>

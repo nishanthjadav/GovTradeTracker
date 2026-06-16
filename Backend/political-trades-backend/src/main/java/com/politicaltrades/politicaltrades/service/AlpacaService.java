@@ -1,5 +1,6 @@
 package com.politicaltrades.politicaltrades.service;
 
+import com.politicaltrades.politicaltrades.entity.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,24 +18,48 @@ public class AlpacaService {
     private static final Logger log = LoggerFactory.getLogger(AlpacaService.class);
 
     private final RestTemplate restTemplate = new RestTemplate();
+    private final CryptoService cryptoService;
 
     @Value("${alpaca.api.key:}")
-    private String apiKey;
+    private String globalApiKey;
 
     @Value("${alpaca.api.secret:}")
-    private String apiSecret;
+    private String globalApiSecret;
 
     @Value("${alpaca.base.url:https://paper-api.alpaca.markets/v2}")
     private String baseUrl;
 
-    public String placeMarketOrder(String ticker, String side, BigDecimal notional) {
+    public AlpacaService(CryptoService cryptoService) {
+        this.cryptoService = cryptoService;
+    }
+
+    private String[] resolveCreds(User user) {
+        if (user != null && user.isAlpacaLinked()) {
+            try {
+                return new String[] {
+                    cryptoService.decrypt(user.getAlpacaKeyEncrypted()),
+                    cryptoService.decrypt(user.getAlpacaSecretEncrypted())
+                };
+            } catch (Exception e) {
+                log.warn("Failed to decrypt user Alpaca creds, falling back to global: {}", e.getMessage());
+            }
+        }
+        return new String[] { globalApiKey, globalApiSecret };
+    }
+
+    public String placeMarketOrder(User user, String ticker, String side, BigDecimal notional) {
+        String[] creds = resolveCreds(user);
+        if (creds[0] == null || creds[0].isBlank()) {
+            log.warn("No Alpaca credentials available; skipping order for {}", ticker);
+            return null;
+        }
         try {
             String url = baseUrl + "/orders";
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.set("APCA-API-KEY-ID", apiKey);
-            headers.set("APCA-API-SECRET-KEY", apiSecret);
+            headers.set("APCA-API-KEY-ID", creds[0]);
+            headers.set("APCA-API-SECRET-KEY", creds[1]);
 
             Map<String, Object> body = new HashMap<>();
             body.put("symbol", ticker);
@@ -59,22 +84,23 @@ public class AlpacaService {
         }
     }
 
-    public BigDecimal fetchLatestPrice(String ticker) {
+    public BigDecimal fetchLatestPrice(User user, String ticker) {
+        String[] creds = resolveCreds(user);
+        if (creds[0] == null || creds[0].isBlank()) return null;
         try {
             String url = "https://data.alpaca.markets/v2/stocks/" + ticker + "/quotes/latest";
             HttpHeaders headers = new HttpHeaders();
-            headers.set("APCA-API-KEY-ID", apiKey);
-            headers.set("APCA-API-SECRET-KEY", apiSecret);
+            headers.set("APCA-API-KEY-ID", creds[0]);
+            headers.set("APCA-API-SECRET-KEY", creds[1]);
             HttpEntity<Void> req = new HttpEntity<>(headers);
             ResponseEntity<Map> resp = restTemplate.exchange(url, HttpMethod.GET, req, Map.class);
             if (resp.getStatusCode().is2xxSuccessful() && resp.getBody() != null) {
                 Map<String, Object> data = (Map<String, Object>) resp.getBody().get("quote");
                 if (data == null) data = (Map) resp.getBody().get("data");
                 if (data != null) {
-                    Object ap = data.get("ap"); // ask price
-                    Object bp = data.get("bp"); // bid price
+                    Object ap = data.get("ap");
+                    Object bp = data.get("bp");
                     Object p = data.get("p");
-                    // prefer p, fallback to ap
                     Object priceObj = p != null ? p : ap != null ? ap : bp;
                     if (priceObj != null) {
                         return new BigDecimal(priceObj.toString());

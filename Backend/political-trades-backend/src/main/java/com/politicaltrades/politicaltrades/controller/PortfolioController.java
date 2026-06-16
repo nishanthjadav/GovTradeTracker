@@ -1,9 +1,13 @@
 package com.politicaltrades.politicaltrades.controller;
 
 import com.politicaltrades.politicaltrades.entity.ExecutedTrade;
+import com.politicaltrades.politicaltrades.entity.User;
 import com.politicaltrades.politicaltrades.repository.ExecutedTradeRepository;
 import com.politicaltrades.politicaltrades.service.AlpacaService;
+import com.politicaltrades.politicaltrades.service.UserService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -12,21 +16,25 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @RestController
-@CrossOrigin(origins = "*")
 @RequestMapping("/api/portfolio")
 public class PortfolioController {
 
     private final ExecutedTradeRepository executedTradeRepository;
     private final AlpacaService alpacaService;
+    private final UserService userService;
 
-    public PortfolioController(ExecutedTradeRepository executedTradeRepository, AlpacaService alpacaService) {
+    public PortfolioController(ExecutedTradeRepository executedTradeRepository,
+                               AlpacaService alpacaService,
+                               UserService userService) {
         this.executedTradeRepository = executedTradeRepository;
         this.alpacaService = alpacaService;
+        this.userService = userService;
     }
 
     @GetMapping
-    public ResponseEntity<Map<String, Object>> summary(@RequestParam String sessionId) {
-        List<ExecutedTrade> trades = executedTradeRepository.findBySessionId(sessionId);
+    public ResponseEntity<Map<String, Object>> summary(@AuthenticationPrincipal OidcUser oidc) {
+        User user = userService.requireByGoogleSub(oidc.getSubject());
+        List<ExecutedTrade> trades = executedTradeRepository.findByUserId(user.getId());
 
         List<Map<String, Object>> enriched = new ArrayList<>();
 
@@ -53,7 +61,7 @@ public class PortfolioController {
             Double pnlPercent = null;
 
             try {
-                currentPrice = alpacaService.fetchLatestPrice(t.getTicker());
+                currentPrice = alpacaService.fetchLatestPrice(user, t.getTicker());
             } catch (Exception ignored) {}
 
             if (currentPrice != null && t.getFillPrice() != null && t.getFillPrice().compareTo(BigDecimal.ZERO) > 0) {
@@ -82,7 +90,6 @@ public class PortfolioController {
             overallReturnPercent = diff.divide(totalInvestedCounted, 8, BigDecimal.ROUND_HALF_UP).multiply(new BigDecimal(100)).doubleValue();
         }
 
-        // best performing politician
         Map<String, BigDecimal> politicianPnl = new HashMap<>();
         Map<String, BigDecimal> politicianInvested = new HashMap<>();
         for (Map<String, Object> r : tradePnls) {
@@ -105,7 +112,6 @@ public class PortfolioController {
             }
         }
 
-        // best single trade
         String bestTradeTicker = null;
         double bestTradeReturn = Double.NEGATIVE_INFINITY;
         for (Map<String, Object> r : tradePnls) {
@@ -138,8 +144,9 @@ public class PortfolioController {
     }
 
     @GetMapping("/executed-trades")
-    public ResponseEntity<List<ExecutedTrade>> executedTrades(@RequestParam String sessionId) {
-        List<ExecutedTrade> list = executedTradeRepository.findBySessionId(sessionId);
+    public ResponseEntity<List<ExecutedTrade>> executedTrades(@AuthenticationPrincipal OidcUser oidc) {
+        User user = userService.requireByGoogleSub(oidc.getSubject());
+        List<ExecutedTrade> list = executedTradeRepository.findByUserId(user.getId());
         list.sort(Comparator.comparing(ExecutedTrade::getExecutedAt, Comparator.nullsLast(Comparator.reverseOrder())));
         return ResponseEntity.ok(list);
     }

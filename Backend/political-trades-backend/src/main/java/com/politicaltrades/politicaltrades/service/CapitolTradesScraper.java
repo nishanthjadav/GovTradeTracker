@@ -2,10 +2,12 @@ package com.politicaltrades.politicaltrades.service;
 
 import com.politicaltrades.politicaltrades.entity.Politician;
 import com.politicaltrades.politicaltrades.entity.Trade;
+import com.politicaltrades.politicaltrades.entity.User;
 import com.politicaltrades.politicaltrades.repository.PoliticianRepository;
 import com.politicaltrades.politicaltrades.repository.TradeRepository;
 import com.politicaltrades.politicaltrades.repository.CopyConfigRepository;
 import com.politicaltrades.politicaltrades.repository.ExecutedTradeRepository;
+import com.politicaltrades.politicaltrades.repository.UserRepository;
 import com.politicaltrades.politicaltrades.entity.CopyConfig;
 import com.politicaltrades.politicaltrades.entity.ExecutedTrade;
 import java.time.LocalDateTime;
@@ -42,17 +44,20 @@ public class CapitolTradesScraper {
     private final CopyConfigRepository copyConfigRepository;
     private final AlpacaService alpacaService;
     private final ExecutedTradeRepository executedTradeRepository;
+    private final UserRepository userRepository;
 
     public CapitolTradesScraper(PoliticianRepository politicianRepository,
                                TradeRepository tradeRepository,
                                CopyConfigRepository copyConfigRepository,
                                AlpacaService alpacaService,
-                               ExecutedTradeRepository executedTradeRepository) {
+                               ExecutedTradeRepository executedTradeRepository,
+                               UserRepository userRepository) {
         this.politicianRepository = politicianRepository;
         this.tradeRepository = tradeRepository;
         this.copyConfigRepository = copyConfigRepository;
         this.alpacaService = alpacaService;
         this.executedTradeRepository = executedTradeRepository;
+        this.userRepository = userRepository;
     }
 
 
@@ -174,10 +179,11 @@ public class CapitolTradesScraper {
                     try {
                         String side = trade.getTradeType();
                         java.math.BigDecimal notional = cfg.getAmountPerTrade();
-                        String orderId = alpacaService.placeMarketOrder(trade.getTicker(), side, notional);
+                        User cfgUser = userRepository.findById(cfg.getUserId()).orElse(null);
+                        String orderId = alpacaService.placeMarketOrder(cfgUser, trade.getTicker(), side, notional);
 
                         ExecutedTrade et = new ExecutedTrade();
-                        et.setSessionId(cfg.getSessionId());
+                        et.setUserId(cfg.getUserId());
                         et.setPoliticianId(polId);
                         et.setPoliticianName(politician.getName());
                         et.setTicker(trade.getTicker());

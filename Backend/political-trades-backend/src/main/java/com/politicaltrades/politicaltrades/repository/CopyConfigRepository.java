@@ -8,7 +8,7 @@ import java.util.List;
 
 @Repository
 public interface CopyConfigRepository extends JpaRepository<CopyConfig, Long> {
-    List<CopyConfig> findBySessionId(String sessionId);
-    CopyConfig findBySessionIdAndPoliticianId(String sessionId, String politicianId);
+    List<CopyConfig> findByUserId(Long userId);
+    CopyConfig findByUserIdAndPoliticianId(Long userId, String politicianId);
     List<CopyConfig> findByPoliticianIdAndActiveTrue(String politicianId);
 }

@@ -8,6 +8,6 @@ import java.util.List;
 
 @Repository
 public interface ExecutedTradeRepository extends JpaRepository<ExecutedTrade, Long> {
-    List<ExecutedTrade> findBySessionId(String sessionId);
-    List<ExecutedTrade> findBySessionIdAndTicker(String sessionId, String ticker);
+    List<ExecutedTrade> findByUserId(Long userId);
+    List<ExecutedTrade> findByUserIdAndTicker(Long userId, String ticker);
 }

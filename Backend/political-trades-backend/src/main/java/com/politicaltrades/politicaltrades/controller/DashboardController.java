@@ -11,7 +11,6 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api")
-@CrossOrigin(origins = "*") // allows your React dev server to call this
 public class DashboardController {
 
     private final TradeRepository tradeRepository;

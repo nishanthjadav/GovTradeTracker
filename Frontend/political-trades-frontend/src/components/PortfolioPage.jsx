@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import "../App.css";
 import "./PortfolioPage.css";
-
-const API = "http://localhost:8080/api";
+import { apiFetch } from "../api";
 
 function initials(name) {
   if (!name) return "??";
@@ -18,7 +17,7 @@ function avatarBg(party) {
 }
 
 // copyConfigs is passed from App so sidebar checkbox changes reflect instantly
-export default function PortfolioPage({ sessionId, onBack, politicians = [], copyConfigs: externalCopyConfigs, onRemoveCopyConfig, onUpdateCopyConfig }) {
+export default function PortfolioPage({ onBack, politicians = [], copyConfigs: externalCopyConfigs, onRemoveCopyConfig, onUpdateCopyConfig }) {
   const [summary, setSummary] = useState(null);
   const [trades, setTrades] = useState([]);
   const [editingId, setEditingId] = useState(null);
@@ -28,14 +27,14 @@ export default function PortfolioPage({ sessionId, onBack, politicians = [], cop
   const copying = externalCopyConfigs ?? [];
 
   useEffect(() => {
-    fetch(`${API}/portfolio?sessionId=${sessionId}`)
+    apiFetch(`/portfolio`)
       .then(r => r.json())
       .then((data) => {
         setSummary(data.summary || null);
         setTrades(data.trades || []);
       })
       .catch(() => {});
-  }, [sessionId]);
+  }, []);
 
 const enrichedCopying = copying.map(c => {
   const pol = politicians.find(p => p.id === c.politicianId);
@@ -43,9 +42,8 @@ const enrichedCopying = copying.map(c => {
 });
 
   const handleToggleActive = async (config) => {
-  await fetch(`${API}/copy-configs/${config.id}`, {
+  await apiFetch(`/copy-configs/${config.id}`, {
     method: 'PATCH',
-    headers: { 'content-type': 'application/json' },
     body: JSON.stringify({ active: !config.active })
   }).catch(() => {});
   onUpdateCopyConfig?.({ ...config, active: !config.active });
@@ -54,9 +52,8 @@ const enrichedCopying = copying.map(c => {
 const handleSaveAmount = async (config) => {
   const val = parseFloat(editingAmount);
   if (!val || val <= 0) return;
-  await fetch(`${API}/copy-configs/${config.id}`, {
+  await apiFetch(`/copy-configs/${config.id}`, {
     method: 'PATCH',
-    headers: { 'content-type': 'application/json' },
     body: JSON.stringify({ amountPerTrade: val })
   }).catch(() => {});
   onUpdateCopyConfig?.({ ...config, amountPerTrade: val });
@@ -64,7 +61,7 @@ const handleSaveAmount = async (config) => {
 };
 
 const handleRemove = async (config) => {
-  await fetch(`${API}/copy-configs/${config.id}`, { method: 'DELETE' }).catch(() => {});
+  await apiFetch(`/copy-configs/${config.id}`, { method: 'DELETE' }).catch(() => {});
   onRemoveCopyConfig?.(config.id);
 };
 
