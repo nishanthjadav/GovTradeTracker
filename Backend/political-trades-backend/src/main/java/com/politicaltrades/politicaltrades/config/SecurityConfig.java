@@ -37,7 +37,7 @@ public class SecurityConfig {
             if (authentication.getPrincipal() instanceof OidcUser oidc) {
                 userService.findOrCreateFromOidc(oidc);
             }
-            response.sendRedirect(frontendUrl);
+            response.sendRedirect(frontendUrl + "/auth/callback");
         };
 
         http
