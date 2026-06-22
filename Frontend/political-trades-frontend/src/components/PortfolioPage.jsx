@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import "../App.css";
 import "./PortfolioPage.css";
 import { apiFetch } from "../api";
@@ -16,12 +16,18 @@ function avatarBg(party) {
   return { bg: "var(--color-bg-tertiary)", color: "var(--color-text-muted)" };
 }
 
-// copyConfigs is passed from App — each entry already has politicianName attached
+function useDebouncedCallback(fn, delay) {
+  const timer = useRef(null);
+  return useCallback((...args) => {
+    clearTimeout(timer.current);
+    timer.current = setTimeout(() => fn(...args), delay);
+  }, [fn, delay]);
+}
+
 export default function PortfolioPage({ refreshKey, onBack, politicians = [], copyConfigs: externalCopyConfigs, onRemoveCopyConfig, onUpdateCopyConfig }) {
   const [summary, setSummary] = useState(null);
   const [trades, setTrades] = useState([]);
-  const [editingId, setEditingId] = useState(null);
-  const [editingAmount, setEditingAmount] = useState("");
+  const [sliderValues, setSliderValues] = useState({});
 
   const copying = externalCopyConfigs ?? [];
 
@@ -35,11 +41,17 @@ export default function PortfolioPage({ refreshKey, onBack, politicians = [], co
       .catch(() => {});
   }, [refreshKey]);
 
-  // Enrich with politician details — politicianName is already on each config,
-  // but look up party/chamber/state from the politicians prop for the card display.
-  // Defensively dedupe by politicianId so a stray duplicate from old data never
-  // renders two cards for the same politician. Prefer the entry with a real
-  // (numeric) id over an optimistic (string id) one.
+  // Sync slider values when configs arrive or change
+  useEffect(() => {
+    setSliderValues(prev => {
+      const next = { ...prev };
+      for (const c of copying) {
+        if (next[c.id] == null) next[c.id] = Number(c.portfolioPercent ?? 5);
+      }
+      return next;
+    });
+  }, [copying]);
+
   const enrichedCopying = (() => {
     const isReal = (c) => typeof c.id === "number";
     const seen = new Map();
@@ -59,6 +71,32 @@ export default function PortfolioPage({ refreshKey, onBack, politicians = [], co
     });
   })();
 
+  const totalAllocated = enrichedCopying.reduce(
+    (sum, c) => sum + (sliderValues[c.id] ?? Number(c.portfolioPercent ?? 5)), 0
+  );
+  const remaining = Math.max(0, 100 - totalAllocated);
+  const isOverBudget = totalAllocated > 100;
+
+  const onUpdateRef = useRef(onUpdateCopyConfig);
+  useEffect(() => { onUpdateRef.current = onUpdateCopyConfig; }, [onUpdateCopyConfig]);
+
+  const patchPercent = useDebouncedCallback(async (configId, val) => {
+    await apiFetch(`/copy-configs/${configId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ portfolioPercent: val })
+    }).catch(() => {});
+    onUpdateRef.current?.({ id: configId, portfolioPercent: val });
+  }, 400);
+
+  const handleSliderChange = (config, rawVal) => {
+    const val = Number(rawVal);
+    const currentVal = sliderValues[config.id] ?? Number(config.portfolioPercent ?? 5);
+    const maxAllowed = Math.min(100, currentVal + remaining);
+    const clamped = Math.min(val, maxAllowed);
+    setSliderValues(prev => ({ ...prev, [config.id]: clamped }));
+    patchPercent(config.id, clamped);
+  };
+
   const handleToggleActive = async (config) => {
     const newActive = !config.active;
     await apiFetch(`/copy-configs/${config.id}`, {
@@ -66,18 +104,6 @@ export default function PortfolioPage({ refreshKey, onBack, politicians = [], co
       body: JSON.stringify({ active: newActive })
     }).catch(() => {});
     onUpdateCopyConfig?.({ id: config.id, active: newActive });
-  };
-
-  const handleSaveAmount = async (config) => {
-    const val = parseFloat(editingAmount);
-    if (!val || val <= 0) return;
-    await apiFetch(`/copy-configs/${config.id}`, {
-      method: 'PATCH',
-      body: JSON.stringify({ amountPerTrade: val })
-    }).catch(() => {});
-    onUpdateCopyConfig?.({ id: config.id, amountPerTrade: val });
-    setEditingId(null);
-    setEditingAmount("");
   };
 
   const handleRemove = async (config) => {
@@ -136,6 +162,51 @@ export default function PortfolioPage({ refreshKey, onBack, politicians = [], co
       {/* Copying section */}
       <div className="portfolio-section">
 
+        {enrichedCopying.length > 0 && (
+          <div className="allocation-budget">
+            <div className="allocation-budget-header">
+              <span className="allocation-budget-label">Portfolio Allocation</span>
+              <span className={`allocation-budget-total${isOverBudget ? " over" : totalAllocated >= 95 ? " near" : ""}`}>
+                {totalAllocated.toFixed(1)}% <span className="allocation-budget-of">of 100%</span>
+              </span>
+            </div>
+            <div className="allocation-bar-track">
+              {enrichedCopying.map((c) => {
+                const pct = sliderValues[c.id] ?? Number(c.portfolioPercent ?? 5);
+                const av = avatarBg(c.politician?.party ?? c.party);
+                return (
+                  <div
+                    key={c.politicianId}
+                    className={`allocation-bar-segment${!c.active ? " paused" : ""}`}
+                    style={{ width: `${pct}%`, background: av.color }}
+                    title={`${c.politicianName}: ${pct.toFixed(1)}%`}
+                  />
+                );
+              })}
+            </div>
+            <div className="allocation-budget-legend">
+              {enrichedCopying.map((c) => {
+                const pct = sliderValues[c.id] ?? Number(c.portfolioPercent ?? 5);
+                const av = avatarBg(c.politician?.party ?? c.party);
+                return (
+                  <div key={c.politicianId} className="allocation-legend-item">
+                    <span className="allocation-legend-dot" style={{ background: av.color }} />
+                    <span className="allocation-legend-name">{c.politicianName?.split(" ").pop()}</span>
+                    <span className="allocation-legend-pct">{pct.toFixed(1)}%</span>
+                  </div>
+                );
+              })}
+              {!isOverBudget && remaining > 0.05 && (
+                <div className="allocation-legend-item muted">
+                  <span className="allocation-legend-dot" style={{ background: "var(--color-border)" }} />
+                  <span className="allocation-legend-name">Unallocated</span>
+                  <span className="allocation-legend-pct">{remaining.toFixed(1)}%</span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {enrichedCopying.length === 0 ? (
           <div className="empty">
             You're not copying anyone yet.
@@ -144,7 +215,8 @@ export default function PortfolioPage({ refreshKey, onBack, politicians = [], co
           <div className="copying-grid">
             {enrichedCopying.map(c => {
               const av = avatarBg(c.politician?.party ?? c.party);
-              const isEditing = editingId === c.id;
+              const sliderVal = sliderValues[c.id] ?? Number(c.portfolioPercent ?? 5);
+              const maxAllowed = Math.min(100, sliderVal + remaining);
               return (
                 <div key={c.politicianId} className={`copy-card${c.active ? "" : " copy-card--paused"}`}>
                   <div className="copy-card-top">
@@ -162,32 +234,29 @@ export default function PortfolioPage({ refreshKey, onBack, politicians = [], co
                     <button className="copy-card-remove" onClick={() => handleRemove(c)} title="Remove">✕</button>
                   </div>
 
-                  <div className="copy-card-amount">
-                    {isEditing ? (
-                      <div className="copy-amount-edit">
-                        <span className="copy-amount-prefix">$</span>
-                        <input
-                          className="filter-input"
-                          style={{ width: 80 }}
-                          value={editingAmount}
-                          onChange={e => setEditingAmount(e.target.value)}
-                          onKeyDown={e => e.key === 'Enter' && handleSaveAmount(c)}
-                          autoFocus
-                        />
-                        <button className="copy-amount-save" onClick={() => handleSaveAmount(c)}>Save</button>
-                        <button className="copy-amount-cancel" onClick={() => setEditingId(null)}>Cancel</button>
-                      </div>
-                    ) : (
-                      <div className="copy-amount-display">
-                        <span className="copy-amount-value">${Number(c.amountPerTrade ?? 0).toFixed(0)} per trade</span>
-                        <button
-                          className="copy-amount-edit-btn"
-                          onClick={() => { setEditingId(c.id); setEditingAmount(c.amountPerTrade); }}
-                        >
-                          Edit
-                        </button>
-                      </div>
-                    )}
+                  <div className="copy-card-slider-section">
+                    <div className="copy-slider-header">
+                      <span className="copy-slider-label">Allocation</span>
+                      <span className="copy-slider-value">{sliderVal.toFixed(1)}%</span>
+                    </div>
+                    <input
+                      type="range"
+                      className="copy-slider"
+                      min={1}
+                      max={maxAllowed}
+                      step={0.5}
+                      value={sliderVal}
+                      onChange={e => handleSliderChange(c, e.target.value)}
+                      style={{
+                        "--slider-pct": `${((sliderVal - 1) / (maxAllowed - 1)) * 100}%`,
+                        "--slider-color": av.color
+                      }}
+                    />
+                    <div className="copy-slider-ticks">
+                      <span>1%</span>
+                      <span>{Math.round(maxAllowed / 2)}%</span>
+                      <span>{Math.round(maxAllowed)}%</span>
+                    </div>
                   </div>
 
                   <div className="copy-card-footer">

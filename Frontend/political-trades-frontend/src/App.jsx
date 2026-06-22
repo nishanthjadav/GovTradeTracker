@@ -194,7 +194,7 @@ export default function App() {
         id: optimisticId,
         politicianId,
         politicianName: pol?.name ?? politicianId,
-        amountPerTrade: 50,
+        portfolioPercent: 5,
         active: true,
       };
       setCopyConfigs((prev) =>
@@ -202,7 +202,7 @@ export default function App() {
       );
       apiFetch(`/copy-configs`, {
         method: "POST",
-        body: JSON.stringify({ politicianId, amountPerTrade: 50 }),
+        body: JSON.stringify({ politicianId, portfolioPercent: 5 }),
       })
         .then(async (r) => {
           if (!r.ok) {
