@@ -10,10 +10,12 @@ import AccountPage from "./components/AccountPage";
 import { defaultFilters } from "./utils/filterHelpers";
 import { applyFilters } from "./utils/tradeHelpers";
 import { apiFetch } from "./api";
+import { useAuth } from "./contexts/AuthContext";
 
 const PAGE_SIZE = 25;
 
 export default function App() {
+  const { isGuest, signIn } = useAuth();
   const [politicians, setPoliticians] = useState([]);
   const [recentTrades, setRecentTrades] = useState([]);
   const [selectedPol, setSelectedPol] = useState(null);
@@ -30,6 +32,7 @@ export default function App() {
   const [copyConfigs, setCopyConfigs] = useState([]);
   const [copyPanelOpen, setCopyPanelOpen] = useState(false);
   const [portfolioRefreshKey, setPortfolioRefreshKey] = useState(0);
+  const [showSignInPrompt, setShowSignInPrompt] = useState(false);
   const copyPanelRef = useRef(null);
 
   useEffect(() => {
@@ -164,6 +167,10 @@ export default function App() {
   }, [copyConfigs]);
 
   const handleCopyToggleById = (politicianId) => {
+    if (isGuest) {
+      setShowSignInPrompt(true);
+      return;
+    }
     const pol = politicians.find((p) => p.id === politicianId);
     const existing = copyConfigs.find((c) => c.politicianId === politicianId);
 
@@ -367,6 +374,42 @@ export default function App() {
               </div>
             </div>
           )}
+        </div>
+      )}
+      {/* Sign-in prompt modal for guests */}
+      {showSignInPrompt && (
+        <div
+          onClick={() => setShowSignInPrompt(false)}
+          style={{
+            position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)",
+            display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000,
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: "#fff", borderRadius: 16, padding: "32px 28px",
+              maxWidth: 380, width: "90%", textAlign: "center",
+              boxShadow: "0 20px 40px rgba(0,0,0,0.15)",
+            }}
+          >
+            <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 8 }}>Sign in to copy trades</div>
+            <div style={{ fontSize: 13, color: "#64748b", marginBottom: 20 }}>
+              Create an account to copy politician trades and track your portfolio.
+            </div>
+            <button onClick={signIn} style={{
+              width: "100%", padding: "10px 0", background: "#3b82f6", color: "#fff",
+              border: "none", borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: "pointer", marginBottom: 10,
+            }}>
+              Sign in with Google
+            </button>
+            <button onClick={() => setShowSignInPrompt(false)} style={{
+              width: "100%", padding: "8px 0", background: "transparent", color: "#64748b",
+              border: "none", fontSize: 13, cursor: "pointer",
+            }}>
+              Maybe later
+            </button>
+          </div>
         </div>
       )}
     </div>

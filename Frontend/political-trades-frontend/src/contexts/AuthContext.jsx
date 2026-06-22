@@ -6,12 +6,14 @@ const AuthContext = createContext(null);
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isGuest, setIsGuest] = useState(false);
 
   const refresh = useCallback(async () => {
     try {
       const res = await apiFetch("/auth/me");
       if (res.ok) {
         setUser(await res.json());
+        setIsGuest(false);
       } else {
         setUser(null);
       }
@@ -28,14 +30,19 @@ export function AuthProvider({ children }) {
     window.location.href = `${API_BASE}/oauth2/authorization/google`;
   };
 
+  const continueAsGuest = () => {
+    setIsGuest(true);
+  };
+
   const signOut = async () => {
     await apiFetch("/auth/logout", { method: "POST" }).catch(() => {});
     setUser(null);
+    setIsGuest(false);
     await refresh();
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, signIn, signOut, refresh }}>
+    <AuthContext.Provider value={{ user, loading, isGuest, signIn, continueAsGuest, signOut, refresh }}>
       {children}
     </AuthContext.Provider>
   );

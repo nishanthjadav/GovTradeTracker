@@ -1,7 +1,7 @@
 import { useAuth } from "../contexts/AuthContext";
 
 export default function SignInGate({ children }) {
-  const { user, loading, signIn } = useAuth();
+  const { user, loading, isGuest, signIn, continueAsGuest } = useAuth();
 
   if (loading) {
     return (
@@ -14,7 +14,7 @@ export default function SignInGate({ children }) {
     );
   }
 
-  if (!user) {
+  if (!user && !isGuest) {
     return (
       <div style={{
         minHeight: "100vh",
@@ -55,6 +55,8 @@ export default function SignInGate({ children }) {
               fontWeight: 500,
               cursor: "pointer",
               boxShadow: "0 1px 2px rgba(60,64,67,0.08)",
+              width: "100%",
+              justifyContent: "center",
             }}
           >
             <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
@@ -64,6 +66,21 @@ export default function SignInGate({ children }) {
               <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/>
             </svg>
             Sign in with Google
+          </button>
+          <button
+            onClick={continueAsGuest}
+            style={{
+              marginTop: 12,
+              width: "100%",
+              background: "transparent",
+              border: "none",
+              color: "#64748b",
+              fontSize: 13,
+              cursor: "pointer",
+              padding: "8px 0",
+            }}
+          >
+            Continue as guest
           </button>
         </div>
       </div>
