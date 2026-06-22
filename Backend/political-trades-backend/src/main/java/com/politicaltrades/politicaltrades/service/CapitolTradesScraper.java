@@ -68,13 +68,14 @@ public class CapitolTradesScraper {
 
         try (Playwright playwright = Playwright.create()) {
             BrowserType.LaunchOptions opts = new BrowserType.LaunchOptions()
-                    .setHeadless(false)
-                    .setChannel("msedge") // use real installed Chrome instead of Playwright's Chromium
+                    .setHeadless(true)
                     .setArgs(java.util.List.of(
                             "--disable-blink-features=AutomationControlled",
                             "--no-sandbox",
                             "--disable-infobars",
-                            "--disable-dev-shm-usage"
+                            "--disable-dev-shm-usage",
+                            "--disable-gpu",
+                            "--single-process"
                     ));
             try (Browser browser = playwright.chromium().launch(opts)) {
                 BrowserContext context = browser.newContext(new Browser.NewContextOptions()
