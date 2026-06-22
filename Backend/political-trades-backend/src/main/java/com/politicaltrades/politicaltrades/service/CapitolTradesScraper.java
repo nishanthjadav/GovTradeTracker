@@ -125,8 +125,9 @@ public class CapitolTradesScraper {
                     }
                 }
 
-                // If every row on this page was already in the DB, we've caught up — stop.
-                if (newTrades == 0 && skipped > 0) {
+                // Only stop early during daily scrapes (starting from page 1).
+                // During backfills we must continue past already-known pages.
+                if (startPage == 1 && newTrades == 0 && skipped > 0) {
                     log.info("Page {} had no new trades — caught up to existing data, stopping.", pageNum);
                     break;
                 }
