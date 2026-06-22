@@ -1,5 +1,7 @@
 package com.politicaltrades.politicaltrades.service;
 
+import com.microsoft.playwright.*;
+import com.microsoft.playwright.options.WaitUntilState;
 import com.politicaltrades.politicaltrades.entity.Politician;
 import com.politicaltrades.politicaltrades.entity.Trade;
 import com.politicaltrades.politicaltrades.entity.User;
@@ -11,7 +13,6 @@ import com.politicaltrades.politicaltrades.repository.UserRepository;
 import com.politicaltrades.politicaltrades.entity.CopyConfig;
 import com.politicaltrades.politicaltrades.entity.ExecutedTrade;
 import java.time.LocalDateTime;
-import com.politicaltrades.politicaltrades.service.AlpacaService;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -33,7 +34,7 @@ public class CapitolTradesScraper {
 
     private static final Logger log = LoggerFactory.getLogger(CapitolTradesScraper.class);
     private static final String BASE_URL = "https://www.capitoltrades.com/trades?page=";
-    private static final int REQUEST_DELAY_MS = 1500; // be polite — 1.5s between requests
+    private static final int REQUEST_DELAY_MS = 2000;
 
     private static final Pattern SIZE_PATTERN = Pattern.compile("([\\d.]+)(K|M)?[–-]([\\d.]+)(K|M)?|([\\d.]+)(K|M)?\\+");
 
@@ -65,41 +66,85 @@ public class CapitolTradesScraper {
         int newTrades = 0;
         int skipped = 0;
 
-        for (int page = startPage; page <= endPage; page++) {
-            String url = BASE_URL + page;
-            log.info("Scraping page {}/{}: {}", page, endPage, url);
+        try (Playwright playwright = Playwright.create()) {
+            BrowserType.LaunchOptions opts = new BrowserType.LaunchOptions()
+                    .setHeadless(false)
+                    .setChannel("msedge") // use real installed Chrome instead of Playwright's Chromium
+                    .setArgs(java.util.List.of(
+                            "--disable-blink-features=AutomationControlled",
+                            "--no-sandbox",
+                            "--disable-infobars",
+                            "--disable-dev-shm-usage"
+                    ));
+            try (Browser browser = playwright.chromium().launch(opts)) {
+                BrowserContext context = browser.newContext(new Browser.NewContextOptions()
+                        .setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36")
+                        .setExtraHTTPHeaders(java.util.Map.of("Accept-Language", "en-US,en;q=0.9"))
+                        .setJavaScriptEnabled(true));
+                Page page = context.newPage();
+                // Remove the webdriver property that Cloudflare checks
+                page.addInitScript("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})");
 
-            try {
-                Document doc = Jsoup.connect(url)
-                        .userAgent("Mozilla/5.0 (compatible; PoliticianTracker/1.0)")
-                        .timeout(10_000)
-                        .get();
-
-                Elements rows = doc.select("table tbody tr");
-
-                if (rows.isEmpty()) {
-                    log.warn("No rows found on page {} — may have hit the end.", page);
-                    break;
+                // Seed the Vercel security cookie from a real browser session
+                String vcrcsCookie = System.getenv("CAPITOLTRADES_VCRCS_COOKIE");
+                if (vcrcsCookie != null && !vcrcsCookie.isBlank()) {
+                    context.addCookies(java.util.List.of(
+                        new com.microsoft.playwright.options.Cookie("_vcrcs", vcrcsCookie)
+                            .setDomain("www.capitoltrades.com")
+                            .setPath("/")
+                            .setSecure(true)
+                    ));
+                    log.info("Injected _vcrcs session cookie.");
+                } else {
+                    log.warn("CAPITOLTRADES_VCRCS_COOKIE env var not set — Cloudflare may block requests.");
                 }
 
-                for (Element row : rows) {
+                for (int pageNum = startPage; pageNum <= endPage; pageNum++) {
+                    String url = BASE_URL + pageNum;
+                    log.info("Scraping page {}/{}: {}", pageNum, endPage, url);
+
                     try {
-                        int result = processRow(row);
-                        if (result == 1) newTrades++;
-                        else skipped++;
+                        page.navigate(url, new Page.NavigateOptions().setWaitUntil(WaitUntilState.NETWORKIDLE));
+
+                        String html = page.content();
+                        String title = page.title();
+                        log.info("Page {} title: '{}'", pageNum, title);
+
+                        if (html.contains("Just a moment") || html.contains("cf-browser-verification") || html.contains("Checking your browser")) {
+                            log.error("Cloudflare challenge on page {} — stopping.", pageNum);
+                            break;
+                        }
+
+                        // Wait for the trades table rows to be present in the DOM
+                        page.waitForSelector("table tbody tr", new Page.WaitForSelectorOptions().setTimeout(30000));
+                        Thread.sleep(REQUEST_DELAY_MS);
+
+                        Document doc = Jsoup.parse(page.content());
+                        Elements rows = doc.select("table tbody tr");
+
+                        if (rows.isEmpty()) {
+                            log.warn("No rows found on page {} after waiting — skipping.", pageNum);
+                            continue;
+                        }
+
+                        for (Element row : rows) {
+                            try {
+                                int result = processRow(row);
+                                if (result == 1) newTrades++;
+                                else skipped++;
+                            } catch (Exception e) {
+                                log.warn("Failed to parse row on page {}: {}", pageNum, e.getMessage());
+                            }
+                        }
+
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        log.error("Scraping interrupted at page {}", pageNum);
+                        break;
                     } catch (Exception e) {
-                        log.warn("Failed to parse row on page {}: {}", page, e.getMessage());
+                        log.error("Error fetching page {}: {}", pageNum, e.getMessage());
                     }
                 }
-
-                Thread.sleep(REQUEST_DELAY_MS);
-
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                log.error("Scraping interrupted at page {}", page);
-                break;
-            } catch (Exception e) {
-                log.error("Error fetching page {}: {}", page, e.getMessage());
             }
         }
 
@@ -141,17 +186,23 @@ public class CapitolTradesScraper {
                 : issuerCell.text().trim();
         String ticker = extractTicker(issuerCell.text());
 
-        LocalDate publishedDate = parseDate(cells.get(2).text());
+        LocalDate publishedDate = parseSplitDate(cells.get(2));
 
-        LocalDate tradeDate = parseDate(cells.get(3).text());
+        LocalDate tradeDate = parseSplitDate(cells.get(3));
 
-        Integer filedAfterDays = parseFiledDays(cells.get(4).text());
+        Integer filedAfterDays = parseFiledDaysCell(cells.get(4));
 
-        String owner = cells.get(5).text().trim();
+        Element ownerCell = cells.get(5);
+        Element ownerLabel = ownerCell.selectFirst(".q-label");
+        String owner = ownerLabel != null ? ownerLabel.text().trim() : ownerCell.text().trim();
 
-        String tradeType = cells.get(6).text().trim().toLowerCase();
+        String tradeType = cells.get(6).selectFirst(".tx-type") != null
+                ? cells.get(6).selectFirst(".tx-type").text().trim().toLowerCase()
+                : cells.get(6).text().trim().toLowerCase();
 
-        long[] sizeRange = parseSize(cells.get(7).text());
+        Element sizeCell = cells.get(7);
+        Element sizeText = sizeCell.selectFirst(".mt-1");
+        long[] sizeRange = parseSize(sizeText != null ? sizeText.text() : sizeCell.text());
 
         BigDecimal price = cells.size() > 8 ? parsePrice(cells.get(8).text()) : null;
 
@@ -267,7 +318,30 @@ private String[] parsePoliticianMeta(Element politicianCell) {
         return null;
     }
 
-  
+    // Date cells now render as two stacked divs: e.g. "26 May" + "2026", or "11:15" + "Today"
+    private LocalDate parseSplitDate(Element cell) {
+        Elements divs = cell.select("div > div");
+        if (divs.size() >= 2) {
+            String part1 = divs.get(0).text().trim(); // e.g. "11:15" or "26 May"
+            String part2 = divs.get(1).text().trim(); // e.g. "Today" or "2026"
+            // published date: part1=time, part2=relative label ("Today"/"Yesterday") or month+year
+            if (part2.equalsIgnoreCase("Today")) return LocalDate.now();
+            if (part2.equalsIgnoreCase("Yesterday")) return LocalDate.now().minusDays(1);
+            // trade date: part1="26 May", part2="2026"
+            LocalDate d = parseDate(part1 + " " + part2);
+            if (d != null) return d;
+        }
+        return parseDate(cell.text());
+    }
+
+    // Filed-days cell: .q-value holds the number, .q-label holds "days"
+    private Integer parseFiledDaysCell(Element cell) {
+        Element valueEl = cell.selectFirst(".q-value");
+        if (valueEl != null) return parseFiledDays(valueEl.text());
+        return parseFiledDays(cell.text());
+    }
+
+
     private Integer parseFiledDays(String text) {
         if (text == null) return null;
         Pattern p = Pattern.compile("(\\d+)");
