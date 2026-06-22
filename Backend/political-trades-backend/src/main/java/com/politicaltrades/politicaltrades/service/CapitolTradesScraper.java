@@ -111,8 +111,8 @@ public class CapitolTradesScraper {
                 Elements rows = doc.select("table tbody tr");
 
                 if (rows.isEmpty()) {
-                    log.warn("No rows found on page {} — skipping.", pageNum);
-                    continue;
+                    log.info("No rows found on page {} — assuming end of data, stopping.", pageNum);
+                    break;
                 }
 
                 for (Element row : rows) {
