@@ -5,19 +5,26 @@ import App from './App.jsx'
 import { AuthProvider } from './contexts/AuthContext.jsx'
 import SignInGate from './components/SignInGate.jsx'
 import AuthCallback from './components/AuthCallback.jsx'
+import NotFound from './components/NotFound.jsx'
 
-const isAuthCallback = window.location.pathname === '/auth/callback';
+const path = window.location.pathname;
+const isAuthCallback = path === '/auth/callback';
+const isKnownPath = path === '/' || path === '/auth/callback';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <AuthProvider>
-      {isAuthCallback ? (
-        <AuthCallback />
-      ) : (
-        <SignInGate>
-          <App />
-        </SignInGate>
-      )}
-    </AuthProvider>
+    {!isKnownPath && !isAuthCallback ? (
+      <NotFound />
+    ) : (
+      <AuthProvider>
+        {isAuthCallback ? (
+          <AuthCallback />
+        ) : (
+          <SignInGate>
+            <App />
+          </SignInGate>
+        )}
+      </AuthProvider>
+    )}
   </StrictMode>,
 )
