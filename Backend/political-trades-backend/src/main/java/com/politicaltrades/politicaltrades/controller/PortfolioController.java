@@ -3,6 +3,7 @@ package com.politicaltrades.politicaltrades.controller;
 import com.politicaltrades.politicaltrades.entity.ExecutedTrade;
 import com.politicaltrades.politicaltrades.entity.User;
 import com.politicaltrades.politicaltrades.repository.ExecutedTradeRepository;
+import com.politicaltrades.politicaltrades.repository.PoliticianRepository;
 import com.politicaltrades.politicaltrades.service.AlpacaService;
 import com.politicaltrades.politicaltrades.service.UserService;
 import org.springframework.http.ResponseEntity;
@@ -22,13 +23,16 @@ public class PortfolioController {
     private final ExecutedTradeRepository executedTradeRepository;
     private final AlpacaService alpacaService;
     private final UserService userService;
+    private final PoliticianRepository politicianRepository;
 
     public PortfolioController(ExecutedTradeRepository executedTradeRepository,
                                AlpacaService alpacaService,
-                               UserService userService) {
+                               UserService userService,
+                               PoliticianRepository politicianRepository) {
         this.executedTradeRepository = executedTradeRepository;
         this.alpacaService = alpacaService;
         this.userService = userService;
+        this.politicianRepository = politicianRepository;
     }
 
     @GetMapping
@@ -37,6 +41,10 @@ public class PortfolioController {
         List<ExecutedTrade> trades = executedTradeRepository.findByUserId(user.getId());
 
         List<Map<String, Object>> enriched = new ArrayList<>();
+
+        // Pre-fetch all politician names to avoid N+1 and fix stale IDs stored in politician_name
+        Map<String, String> politicianNameCache = new HashMap<>();
+        politicianRepository.findAll().forEach(p -> politicianNameCache.put(p.getId(), p.getName()));
 
         BigDecimal totalInvested = BigDecimal.ZERO;
         BigDecimal totalCurrentValue = BigDecimal.ZERO;
@@ -48,7 +56,8 @@ public class PortfolioController {
             Map<String, Object> row = new HashMap<>();
             row.put("id", t.getId());
             row.put("politicianId", t.getPoliticianId());
-            row.put("politicianName", t.getPoliticianName());
+            String resolvedName = politicianNameCache.getOrDefault(t.getPoliticianId(), t.getPoliticianName());
+            row.put("politicianName", resolvedName);
             row.put("ticker", t.getTicker());
             row.put("side", t.getSide());
             row.put("amountInvested", t.getAmountInvested());
