@@ -32,6 +32,14 @@ public class CopyConfigController {
         Object amtObj = body.get("amountPerTrade");
         java.math.BigDecimal amount = amtObj != null ? new java.math.BigDecimal(amtObj.toString()) : null;
 
+        // Upsert: if a config already exists for (user, politician), return it
+        // instead of creating a duplicate row. Prevents StrictMode/double-submit
+        // from creating ghost rows.
+        CopyConfig existing = copyConfigRepository.findByUserIdAndPoliticianId(user.getId(), politicianId);
+        if (existing != null) {
+            return ResponseEntity.ok(existing);
+        }
+
         CopyConfig cfg = new CopyConfig();
         cfg.setUserId(user.getId());
         cfg.setPoliticianId(politicianId);
@@ -45,7 +53,28 @@ public class CopyConfigController {
     @GetMapping
     public ResponseEntity<List<CopyConfig>> list(@AuthenticationPrincipal OidcUser oidc) {
         User user = userService.requireByGoogleSub(oidc.getSubject());
-        return ResponseEntity.ok(copyConfigRepository.findByUserId(user.getId()));
+        List<CopyConfig> configs = copyConfigRepository.findByUserId(user.getId());
+
+        // Defensive cleanup: if multiple configs exist for the same politician
+        // (legacy data from before the upsert fix), keep the one with the highest
+        // id and delete the rest.
+        java.util.Map<String, CopyConfig> winners = new java.util.LinkedHashMap<>();
+        java.util.List<CopyConfig> losers = new java.util.ArrayList<>();
+        for (CopyConfig c : configs) {
+            CopyConfig prev = winners.get(c.getPoliticianId());
+            if (prev == null) {
+                winners.put(c.getPoliticianId(), c);
+            } else if (c.getId() > prev.getId()) {
+                losers.add(prev);
+                winners.put(c.getPoliticianId(), c);
+            } else {
+                losers.add(c);
+            }
+        }
+        if (!losers.isEmpty()) {
+            copyConfigRepository.deleteAll(losers);
+        }
+        return ResponseEntity.ok(new java.util.ArrayList<>(winners.values()));
     }
 
     @PatchMapping("/{id}")
