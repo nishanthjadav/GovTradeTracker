@@ -41,7 +41,7 @@ public class ScrapeScheduler {
     void runAndReschedule() {
         log.info("Starting daily scrape...");
         try {
-            scraper.scrapePages(1, Integer.MAX_VALUE);
+            scraper.scrapePagesUntilDuplicate(1);
         } catch (Exception e) {
             log.error("Daily scrape failed: {}", e.getMessage(), e);
         } finally {

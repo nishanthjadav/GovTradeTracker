@@ -71,6 +71,14 @@ public class CapitolTradesScraper {
     }
 
     public void scrapePages(int startPage, int endPage) {
+        scrapePages(startPage, endPage, false);
+    }
+
+    public void scrapePagesUntilDuplicate(int startPage) {
+        scrapePages(startPage, Integer.MAX_VALUE, true);
+    }
+
+    private void scrapePages(int startPage, int endPage, boolean stopOnDuplicatePage) {
         int newTrades = 0;
         int skipped = 0;
 
@@ -125,9 +133,8 @@ public class CapitolTradesScraper {
                     }
                 }
 
-                // Only stop early during daily scrapes (starting from page 1).
-                // During backfills we must continue past already-known pages.
-                if (startPage == 1 && newTrades == 0 && skipped > 0) {
+                // Only stop early during daily scrapes, not backfills.
+                if (stopOnDuplicatePage && newTrades == 0 && skipped > 0) {
                     log.info("Page {} had no new trades — caught up to existing data, stopping.", pageNum);
                     break;
                 }
