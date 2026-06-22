@@ -16,14 +16,13 @@ function avatarBg(party) {
   return { bg: "var(--color-bg-tertiary)", color: "var(--color-text-muted)" };
 }
 
-// copyConfigs is passed from App so sidebar checkbox changes reflect instantly
-export default function PortfolioPage({ onBack, politicians = [], copyConfigs: externalCopyConfigs, onRemoveCopyConfig, onUpdateCopyConfig }) {
+// copyConfigs is passed from App — each entry already has politicianName attached
+export default function PortfolioPage({ refreshKey, onBack, politicians = [], copyConfigs: externalCopyConfigs, onRemoveCopyConfig, onUpdateCopyConfig }) {
   const [summary, setSummary] = useState(null);
   const [trades, setTrades] = useState([]);
   const [editingId, setEditingId] = useState(null);
   const [editingAmount, setEditingAmount] = useState("");
 
-  // No localConfigs — read directly from externalCopyConfigs so sidebar stays in sync
   const copying = externalCopyConfigs ?? [];
 
   useEffect(() => {
@@ -34,36 +33,57 @@ export default function PortfolioPage({ onBack, politicians = [], copyConfigs: e
         setTrades(data.trades || []);
       })
       .catch(() => {});
-  }, []);
+  }, [refreshKey]);
 
-const enrichedCopying = copying.map(c => {
-  const pol = politicians.find(p => p.id === c.politicianId);
-  return { ...c, politician: pol };
-});
+  // Enrich with politician details — politicianName is already on each config,
+  // but look up party/chamber/state from the politicians prop for the card display.
+  // Defensively dedupe by politicianId so a stray duplicate from old data never
+  // renders two cards for the same politician. Prefer the entry with a real
+  // (numeric) id over an optimistic (string id) one.
+  const enrichedCopying = (() => {
+    const isReal = (c) => typeof c.id === "number";
+    const seen = new Map();
+    for (const c of copying) {
+      const prev = seen.get(c.politicianId);
+      if (!prev) {
+        seen.set(c.politicianId, c);
+      } else if (isReal(c) && !isReal(prev)) {
+        seen.set(c.politicianId, c);
+      } else if (isReal(c) && isReal(prev) && c.id > prev.id) {
+        seen.set(c.politicianId, c);
+      }
+    }
+    return Array.from(seen.values()).map((c) => {
+      const pol = politicians.find((p) => p.id === c.politicianId);
+      return { ...c, politician: pol };
+    });
+  })();
 
   const handleToggleActive = async (config) => {
-  await apiFetch(`/copy-configs/${config.id}`, {
-    method: 'PATCH',
-    body: JSON.stringify({ active: !config.active })
-  }).catch(() => {});
-  onUpdateCopyConfig?.({ ...config, active: !config.active });
-};
+    const newActive = !config.active;
+    await apiFetch(`/copy-configs/${config.id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ active: newActive })
+    }).catch(() => {});
+    onUpdateCopyConfig?.({ id: config.id, active: newActive });
+  };
 
-const handleSaveAmount = async (config) => {
-  const val = parseFloat(editingAmount);
-  if (!val || val <= 0) return;
-  await apiFetch(`/copy-configs/${config.id}`, {
-    method: 'PATCH',
-    body: JSON.stringify({ amountPerTrade: val })
-  }).catch(() => {});
-  onUpdateCopyConfig?.({ ...config, amountPerTrade: val });
-  setEditingId(null);
-};
+  const handleSaveAmount = async (config) => {
+    const val = parseFloat(editingAmount);
+    if (!val || val <= 0) return;
+    await apiFetch(`/copy-configs/${config.id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ amountPerTrade: val })
+    }).catch(() => {});
+    onUpdateCopyConfig?.({ id: config.id, amountPerTrade: val });
+    setEditingId(null);
+    setEditingAmount("");
+  };
 
-const handleRemove = async (config) => {
-  await apiFetch(`/copy-configs/${config.id}`, { method: 'DELETE' }).catch(() => {});
-  onRemoveCopyConfig?.(config.id);
-};
+  const handleRemove = async (config) => {
+    await apiFetch(`/copy-configs/${config.id}`, { method: 'DELETE' }).catch(() => {});
+    onRemoveCopyConfig?.(config.id);
+  };
 
   const returnColor = (val) =>
     val == null ? "var(--color-text-muted)" : val >= 0 ? "var(--color-success)" : "var(--color-danger)";
@@ -123,16 +143,16 @@ const handleRemove = async (config) => {
         ) : (
           <div className="copying-grid">
             {enrichedCopying.map(c => {
-              const av = avatarBg(c.politician?.party);
+              const av = avatarBg(c.politician?.party ?? c.party);
               const isEditing = editingId === c.id;
               return (
-                <div key={c.id} className={`copy-card${c.active ? "" : " copy-card--paused"}`}>
+                <div key={c.politicianId} className={`copy-card${c.active ? "" : " copy-card--paused"}`}>
                   <div className="copy-card-top">
                     <div className="copy-card-avatar" style={{ background: av.bg, color: av.color }}>
-                      {initials(c.politician?.name || c.politicianId)}
+                      {initials(c.politicianName || c.politician?.name || c.politicianId)}
                     </div>
                     <div className="copy-card-info">
-                      <div className="copy-card-name">{c.politician?.name || c.politicianId}</div>
+                      <div className="copy-card-name">{c.politicianName || c.politician?.name || c.politicianId}</div>
                       <div className="copy-card-meta">
                         {c.politician?.party?.replace("Republican", "R").replace("Democrat", "D")}
                         {c.politician?.chamber ? ` · ${c.politician.chamber}` : ""}
@@ -159,7 +179,7 @@ const handleRemove = async (config) => {
                       </div>
                     ) : (
                       <div className="copy-amount-display">
-                        <span className="copy-amount-value">${Number(c.amountPerTrade).toFixed(0)} per trade</span>
+                        <span className="copy-amount-value">${Number(c.amountPerTrade ?? 0).toFixed(0)} per trade</span>
                         <button
                           className="copy-amount-edit-btn"
                           onClick={() => { setEditingId(c.id); setEditingAmount(c.amountPerTrade); }}

@@ -12,6 +12,7 @@ export function defaultFilters() {
     sort: "date_desc",
     tradeType: "all",
     ticker: "",
+    company: "",
     politicianId: "",
     party: "all",
     chamber: "all",

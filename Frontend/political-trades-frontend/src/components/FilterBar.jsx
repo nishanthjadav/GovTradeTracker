@@ -1,10 +1,18 @@
 import { useMemo } from "react";
 import { SORT_OPTIONS, defaultFilters, hasActiveFilters } from "../utils/filterHelpers";
+import SearchableSelect from "./SearchableSelect";
 
 export default function FilterBar({ trades, filters, setFilters, profileMode = false }) {
-  const tickers = useMemo(() => {
+  const tickerOptions = useMemo(() => {
     const s = new Set(trades.map((t) => t.ticker).filter(Boolean));
-    return [...s].sort();
+    return [...s].sort().map((t) => ({ value: t, label: t }));
+  }, [trades]);
+
+  const companyOptions = useMemo(() => {
+    const s = new Set(trades.map((t) => t.issuerName).filter(Boolean));
+    return [...s]
+      .sort((a, b) => a.localeCompare(b))
+      .map((c) => ({ value: c, label: c }));
   }, [trades]);
 
   const politicianOptions = useMemo(() => {
@@ -13,7 +21,9 @@ export default function FilterBar({ trades, filters, setFilters, profileMode = f
       if (t.politicianName && !seen.has(t.politicianId))
         seen.set(t.politicianId, t.politicianName);
     });
-    return [...seen.entries()].sort((a, b) => a[1].localeCompare(b[1]));
+    return [...seen.entries()]
+      .sort((a, b) => a[1].localeCompare(b[1]))
+      .map(([id, name]) => ({ value: id, label: name }));
   }, [trades]);
 
   return (
@@ -52,35 +62,37 @@ export default function FilterBar({ trades, filters, setFilters, profileMode = f
 
       <div className="filter-group">
         <label className="filter-label">Ticker</label>
-        <input
-          className="filter-input"
-          placeholder="e.g. NVDA"
+        <SearchableSelect
+          options={tickerOptions}
           value={filters.ticker}
-          onChange={(e) => setFilters((f) => ({ ...f, ticker: e.target.value.toUpperCase() }))}
-          list="ticker-list"
+          onChange={(v) => setFilters((f) => ({ ...f, ticker: v }))}
+          placeholder="e.g. NVDA"
+          width={120}
+          uppercase
         />
-        <datalist id="ticker-list">
-          {tickers.map((ticker) => (
-            <option key={ticker} value={ticker} />
-          ))}
-        </datalist>
+      </div>
+
+      <div className="filter-group">
+        <label className="filter-label">Company</label>
+        <SearchableSelect
+          options={companyOptions}
+          value={filters.company}
+          onChange={(v) => setFilters((f) => ({ ...f, company: v }))}
+          placeholder="Search company..."
+          width={200}
+        />
       </div>
 
       {!profileMode && politicianOptions.length > 1 && (
         <div className="filter-group">
           <label className="filter-label">Politician</label>
-          <select
-            className="filter-select"
+          <SearchableSelect
+            options={politicianOptions}
             value={filters.politicianId}
-            onChange={(e) => setFilters((f) => ({ ...f, politicianId: e.target.value }))}
-          >
-            <option value="">All</option>
-            {politicianOptions.map(([id, name]) => (
-              <option key={id} value={id}>
-                {name}
-              </option>
-            ))}
-          </select>
+            onChange={(v) => setFilters((f) => ({ ...f, politicianId: v }))}
+            placeholder="Search politician..."
+            width={200}
+          />
         </div>
       )}
 

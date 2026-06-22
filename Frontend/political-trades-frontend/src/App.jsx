@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import "./App.css";
 import FilterBar from "./components/FilterBar";
 import TradeTable from "./components/TradeTable";
@@ -11,19 +11,6 @@ import { defaultFilters } from "./utils/filterHelpers";
 import { applyFilters } from "./utils/tradeHelpers";
 import { apiFetch } from "./api";
 
-function initials(name) {
-  if (!name) return "??";
-  const parts = name.trim().split(" ");
-  return (parts[0][0] + (parts[parts.length - 1][0] || "")).toUpperCase();
-}
-
-function avatarBg(party) {
-  if (!party) return { bg: "#f1f5f9", color: "#94a3b8" };
-  if (party.toLowerCase().includes("republican")) return { bg: "#fee2e2", color: "#dc2626" };
-  if (party.toLowerCase().includes("democrat")) return { bg: "#dbeafe", color: "#3b82f6" };
-  return { bg: "#f1f5f9", color: "#94a3b8" };
-}
-
 const PAGE_SIZE = 25;
 
 export default function App() {
@@ -32,7 +19,6 @@ export default function App() {
   const [selectedPol, setSelectedPol] = useState(null);
   const [polTrades, setPolTrades] = useState([]);
   const [currentView, setCurrentView] = useState("feed");
-  const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [tradesLoading, setTradesLoading] = useState(false);
   const [filters, setFilters] = useState(defaultFilters());
@@ -43,26 +29,27 @@ export default function App() {
   });
   const [copyConfigs, setCopyConfigs] = useState([]);
   const [copyPanelOpen, setCopyPanelOpen] = useState(false);
-  const [sidebarVisible, setSidebarVisible] = useState(true);
+  const [portfolioRefreshKey, setPortfolioRefreshKey] = useState(0);
+  const copyPanelRef = useRef(null);
 
   useEffect(() => {
     Promise.all([
       apiFetch(`/politicians`).then((r) => r.json()),
       apiFetch(`/trades/recent?limit=500`).then((r) => r.json()),
+      apiFetch(`/copy-configs`).then((r) => (r.ok ? r.json() : [])),
     ])
-      .then(([pols, trades]) => {
+      .then(([pols, trades, configs]) => {
         setPoliticians(pols);
         setRecentTrades(trades);
+        const polMap = new Map(pols.map((p) => [p.id, p.name]));
+        const enriched = configs.map((c) => ({
+          ...c,
+          politicianName: polMap.get(c.politicianId) ?? c.politicianId,
+        }));
+        setCopyConfigs(enriched);
         setLoading(false);
       })
       .catch(() => setLoading(false));
-  }, []);
-
-  useEffect(() => {
-    apiFetch(`/copy-configs`)
-      .then(r => r.ok ? r.json() : [])
-      .then(setCopyConfigs)
-      .catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -73,13 +60,26 @@ export default function App() {
     setFilters(defaultFilters());
   }, [currentView, selectedPol]);
 
+  // Close copy panel when clicking outside
   useEffect(() => {
-    if (currentView === "portfolio" || currentView === "account") {
-      setSidebarVisible(false);
-    } else {
-      setSidebarVisible(true);
+    if (!copyPanelOpen) return;
+    const handler = (e) => {
+      if (copyPanelRef.current && !copyPanelRef.current.contains(e.target)) {
+        setCopyPanelOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [copyPanelOpen]);
+
+  // Auto-open panel when first politician is added
+  const prevCountRef = useRef(0);
+  useEffect(() => {
+    if (copyConfigs.length > prevCountRef.current && prevCountRef.current === 0) {
+      setCopyPanelOpen(true);
     }
-  }, [currentView]);
+    prevCountRef.current = copyConfigs.length;
+  }, [copyConfigs.length]);
 
   const selectPolitician = (pol) => {
     setSelectedPol(pol);
@@ -87,7 +87,10 @@ export default function App() {
     setTradesLoading(true);
     apiFetch(`/politicians/${pol.id}/trades`)
       .then((r) => r.json())
-      .then((trades) => { setPolTrades(trades); setTradesLoading(false); })
+      .then((trades) => {
+        setPolTrades(trades);
+        setTradesLoading(false);
+      })
       .catch(() => setTradesLoading(false));
   };
 
@@ -95,12 +98,6 @@ export default function App() {
     const pol = politicians.find((p) => p.id === id);
     if (pol) selectPolitician(pol);
   };
-
-  const filteredPols = politicians.filter((p) =>
-    p.name?.toLowerCase().includes(search.toLowerCase()) ||
-    p.state?.toLowerCase().includes(search.toLowerCase()) ||
-    p.party?.toLowerCase().includes(search.toLowerCase())
-  );
 
   const activePol = politicians.find((p) => p.id === selectedPol?.id);
 
@@ -147,18 +144,74 @@ export default function App() {
   const totalBuys = filteredTrades.filter((t) => t.tradeType?.toLowerCase() === "buy").length;
   const totalSells = filteredTrades.filter((t) => t.tradeType?.toLowerCase() === "sell").length;
 
-  const handleCopyToggle = (pol, existing) => {
+  // Dedupe copyConfigs by politicianId for display (defensive — earlier StrictMode
+  // bugs may have left duplicate rows in the DB). Prefer numeric-id entries over
+  // optimistic-id ones; among numerics, prefer the highest id.
+  const displayedCopyConfigs = useMemo(() => {
+    const isReal = (c) => typeof c.id === "number";
+    const seen = new Map();
+    for (const c of copyConfigs) {
+      const prev = seen.get(c.politicianId);
+      if (!prev) {
+        seen.set(c.politicianId, c);
+      } else if (isReal(c) && !isReal(prev)) {
+        seen.set(c.politicianId, c);
+      } else if (isReal(c) && isReal(prev) && c.id > prev.id) {
+        seen.set(c.politicianId, c);
+      }
+    }
+    return Array.from(seen.values());
+  }, [copyConfigs]);
+
+  const handleCopyToggleById = (politicianId) => {
+    const pol = politicians.find((p) => p.id === politicianId);
+    const existing = copyConfigs.find((c) => c.politicianId === politicianId);
+
     if (existing) {
-      apiFetch(`/copy-configs/${existing.id}`, { method: 'DELETE' })
-        .then(() => setCopyConfigs(prev => prev.filter(c => c.id !== existing.id)))
-        .catch(() => {});
+      // Optimistic remove
+      setCopyConfigs((prev) => prev.filter((c) => c.politicianId !== politicianId));
+      if (typeof existing.id === "number") {
+        apiFetch(`/copy-configs/${existing.id}`, { method: "DELETE" })
+          .then((r) => {
+            if (!r.ok && r.status !== 404) {
+              setCopyConfigs((s) =>
+                s.find((c) => c.politicianId === politicianId) ? s : [...s, existing]
+              );
+            }
+          })
+          .catch(() => {});
+      }
     } else {
+      const optimisticId = `optimistic-${politicianId}`;
+      const optimistic = {
+        id: optimisticId,
+        politicianId,
+        politicianName: pol?.name ?? politicianId,
+        amountPerTrade: 50,
+        active: true,
+      };
+      setCopyConfigs((prev) =>
+        prev.find((c) => c.politicianId === politicianId) ? prev : [...prev, optimistic]
+      );
       apiFetch(`/copy-configs`, {
-        method: 'POST',
-        body: JSON.stringify({ politicianId: pol.id, amountPerTrade: 50 })
+        method: "POST",
+        body: JSON.stringify({ politicianId, amountPerTrade: 50 }),
       })
-        .then(r => r.json())
-        .then(saved => setCopyConfigs(prev => [...prev, saved]))
+        .then(async (r) => {
+          if (!r.ok) {
+            setCopyConfigs((s) => s.filter((c) => c.id !== optimisticId));
+            return;
+          }
+          const saved = await r.json().catch(() => null);
+          if (!saved || saved.id == null) return;
+          setCopyConfigs((s) =>
+            s.map((c) =>
+              c.id === optimisticId
+                ? { ...saved, politicianName: pol?.name ?? politicianId }
+                : c
+            )
+          );
+        })
         .catch(() => {});
     }
   };
@@ -173,7 +226,7 @@ export default function App() {
         >
           Gov<span>Trade</span> Tracker
         </div>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
           <button
             className="theme-toggle"
             onClick={() => setIsDark(!isDark)}
@@ -181,129 +234,23 @@ export default function App() {
           >
             {isDark ? "☀️" : "🌙"}
           </button>
-          <button className="top-action" onClick={() => setCurrentView("portfolio")}>
+          <button
+            className="top-action"
+            onClick={() => {
+              if (currentView === "portfolio") {
+                setPortfolioRefreshKey((k) => k + 1);
+              } else {
+                setCurrentView("portfolio");
+              }
+            }}
+          >
             My Portfolio
           </button>
           <AccountMenu onOpenAccount={() => setCurrentView("account")} />
         </div>
       </div>
 
-      <div className={`main${sidebarVisible ? "" : " sidebar-hidden"}`}>
-
-        {/* Sidebar */}
-        {sidebarVisible && (
-          <div className="sidebar">
-            <div className="search-wrap">
-              <input
-                className="search-input"
-                placeholder="Search name, state, party..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </div>
-
-            {loading ? (
-              <div className="loading">Loading...</div>
-            ) : (
-              filteredPols.map((pol) => {
-                const av = avatarBg(pol.party);
-                const existing = copyConfigs.find(c => c.politicianId === pol.id);
-                return (
-                  <div
-                    key={pol.id}
-                    className={`pol-row${selectedPol?.id === pol.id ? " active" : ""}`}
-                    onClick={() => {
-                      if (currentView === "portfolio" || currentView === "account") return;
-                      selectPolitician(pol);
-                    }}
-                  >
-                    <div className="pol-avatar" style={{ background: av.bg, color: av.color }}>
-                      {initials(pol.name)}
-                    </div>
-                    <div style={{ minWidth: 0 }}>
-                      <div className="pol-name">{pol.name}</div>
-                      <div className="pol-meta">
-                        {pol.party?.replace("Republican", "R").replace("Democrat", "D").replace("Independent", "I")}
-                        {pol.chamber ? ` | ${pol.chamber}` : ""}
-                        {pol.state ? ` | ${pol.state}` : ""}
-                      </div>
-                    </div>
-                    <div style={{ marginLeft: 'auto' }} onClick={(e) => e.stopPropagation()}>
-                      <div className="pol-checkbox">
-                        <input
-                          type="checkbox"
-                          checked={!!existing}
-                          onChange={() => handleCopyToggle(pol, existing)}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                );
-              })
-            )}
-
-            {currentView !== "portfolio" && currentView !== "account" && copyConfigs.length > 0 && (
-              <div className="sidebar-done-bar">
-                <button
-                  className="sidebar-done-btn"
-                  onClick={() => setCopyPanelOpen(!copyPanelOpen)}
-                >
-                  Portfolio ({copyConfigs.length}){copyPanelOpen ? " ▲" : " ▼"}
-                </button>
-                {copyPanelOpen && (
-                  <div style={{
-                    marginTop: 8,
-                    background: "var(--color-surface)",
-                    border: "1px solid var(--color-border)",
-                    borderRadius: 8,
-                    overflow: "hidden",
-                  }}>
-                    {copyConfigs.map((c) => {
-                      const pol = politicians.find(p => p.id === c.politicianId);
-                      return (
-                        <div key={c.id} style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                          padding: "10px 12px",
-                          borderBottom: "1px solid var(--color-border-subtle)",
-                        }}>
-                          <span style={{ fontSize: "var(--font-size-sm)", color: "var(--color-text-primary)" }}>
-                            {pol?.name || c.politicianId}
-                          </span>
-                          <button
-                            className="copy-card-remove"
-                            onClick={() => {
-                              apiFetch(`/copy-configs/${c.id}`, { method: "DELETE" })
-                                .then(() => setCopyConfigs(prev => prev.filter(x => x.id !== c.id)))
-                                .catch(() => {});
-                            }}
-                          >✕</button>
-                        </div>
-                      );
-                    })}
-                    <button
-                      className="sidebar-done-btn"
-                      style={{ width: "100%", borderRadius: 0 }}
-                      onClick={() => { setCopyPanelOpen(false); setCurrentView("portfolio"); }}
-                    >
-                      Open Portfolio →
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        )}
-
-        <button
-          className="sidebar-toggle-tab"
-          onClick={() => setSidebarVisible(v => !v)}
-          title={sidebarVisible ? "Hide sidebar" : "Show politicians"}
-        >
-          {sidebarVisible ? "‹" : "›"}
-        </button>
-
+      <div className="main">
         <div className="content">
           {currentView === "feed" ? (
             <>
@@ -317,6 +264,8 @@ export default function App() {
                 showPolitician={true}
                 loading={loading}
                 onSelectPolitician={selectPoliticianById}
+                copyConfigs={displayedCopyConfigs}
+                onCopyToggle={handleCopyToggleById}
               />
               <Pagination
                 currentPage={currentPage}
@@ -340,21 +289,86 @@ export default function App() {
               currentPage={currentPage}
               pageCount={pageCount}
               setCurrentPage={setCurrentPage}
-              onBack={() => { setSelectedPol(null); setCurrentView("feed"); }}
+              onBack={() => {
+                setSelectedPol(null);
+                setCurrentView("feed");
+              }}
             />
           ) : currentView === "account" ? (
             <AccountPage onBack={() => setCurrentView("feed")} />
           ) : (
             <PortfolioPage
+              refreshKey={portfolioRefreshKey}
               onBack={() => setCurrentView("feed")}
               politicians={politicians}
-              copyConfigs={copyConfigs}
-              onRemoveCopyConfig={(id) => setCopyConfigs(prev => prev.filter(c => c.id !== id))}
-              onUpdateCopyConfig={(updated) => setCopyConfigs(prev => prev.map(c => c.id === updated.id ? updated : c))}
+              copyConfigs={displayedCopyConfigs}
+              onRemoveCopyConfig={(id) =>
+                setCopyConfigs((prev) => prev.filter((c) => c.id !== id))
+              }
+              onUpdateCopyConfig={(updated) =>
+                setCopyConfigs((prev) =>
+                  prev.map((c) => (c.id === updated.id ? { ...c, ...updated } : c))
+                )
+              }
             />
           )}
         </div>
       </div>
+
+      {/* Bottom-left copy panel — shown whenever there are active copy configs */}
+      {displayedCopyConfigs.length > 0 && (
+        <div className="copy-tray" ref={copyPanelRef}>
+          <button
+            className="copy-tray-toggle"
+            onClick={() => setCopyPanelOpen((o) => !o)}
+          >
+            <span className="copy-tray-label">
+              Copying
+              <span className="copy-tray-badge">{displayedCopyConfigs.length}</span>
+            </span>
+            <span className={`copy-tray-chevron${copyPanelOpen ? " open" : ""}`}>▲</span>
+          </button>
+
+          {copyPanelOpen && (
+            <div className="copy-tray-drawer">
+              <div className="copy-tray-list">
+                {displayedCopyConfigs.map((c) => {
+                  const name = c.politicianName || politicians.find((p) => p.id === c.politicianId)?.name || c.politicianId;
+                  return (
+                    <div key={c.politicianId} className="copy-tray-item">
+                      <span className="copy-tray-name">{name}</span>
+                      <button
+                        className="copy-tray-remove"
+                        onClick={() => {
+                          apiFetch(`/copy-configs/${c.id}`, { method: "DELETE" })
+                            .then(() =>
+                              setCopyConfigs((prev) => prev.filter((x) => x.id !== c.id))
+                            )
+                            .catch(() => {});
+                        }}
+                        title="Remove"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="copy-tray-footer">
+                <button
+                  className="copy-tray-portfolio-btn"
+                  onClick={() => {
+                    setCopyPanelOpen(false);
+                    setCurrentView("portfolio");
+                  }}
+                >
+                  Open Portfolio →
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

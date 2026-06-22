@@ -13,9 +13,9 @@ const parseDateValue = (value) => {
 };
 
 const getSortDateValue = (trade) => {
-  const tradeDateVal = parseDateValue(trade.tradeDate);
   const publishedDateVal = parseDateValue(trade.publishedDate);
-  return tradeDateVal || publishedDateVal || 0;
+  const tradeDateVal = parseDateValue(trade.tradeDate);
+  return publishedDateVal || tradeDateVal || 0;
 };
 
 const normalizeChamber = (value) => value?.toString().trim().toLowerCase() ?? "";
@@ -28,6 +28,11 @@ export const applyFilters = (trades, filters) => {
 
   if (filters.ticker)
     result = result.filter((t) => t.ticker?.toUpperCase().includes(filters.ticker));
+
+  if (filters.company)
+    result = result.filter((t) =>
+      t.issuerName?.toLowerCase().includes(filters.company.toLowerCase())
+    );
 
   if (filters.politicianId)
     result = result.filter((t) => t.politicianId === filters.politicianId);
