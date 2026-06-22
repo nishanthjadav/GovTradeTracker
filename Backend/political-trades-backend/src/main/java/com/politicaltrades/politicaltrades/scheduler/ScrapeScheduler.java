@@ -39,9 +39,9 @@ public class ScrapeScheduler {
     }
 
     void runAndReschedule() {
-        log.info("Starting daily scrape (latest trades)...");
+        log.info("Starting daily scrape...");
         try {
-            scraper.scrapePages(1, 2);
+            scraper.scrapePages(1, Integer.MAX_VALUE);
         } catch (Exception e) {
             log.error("Daily scrape failed: {}", e.getMessage(), e);
         } finally {
