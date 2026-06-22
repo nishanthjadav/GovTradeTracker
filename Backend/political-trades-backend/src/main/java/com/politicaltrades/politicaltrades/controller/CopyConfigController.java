@@ -29,8 +29,8 @@ public class CopyConfigController {
                                              @RequestBody Map<String, Object> body) {
         User user = userService.requireByGoogleSub(oidc.getSubject());
         String politicianId = (String) body.get("politicianId");
-        Object amtObj = body.get("amountPerTrade");
-        java.math.BigDecimal amount = amtObj != null ? new java.math.BigDecimal(amtObj.toString()) : null;
+        Object amtObj = body.get("portfolioPercent");
+        java.math.BigDecimal percent = amtObj != null ? new java.math.BigDecimal(amtObj.toString()) : new java.math.BigDecimal("5");
 
         // Upsert: if a config already exists for (user, politician), return it
         // instead of creating a duplicate row. Prevents StrictMode/double-submit
@@ -43,7 +43,7 @@ public class CopyConfigController {
         CopyConfig cfg = new CopyConfig();
         cfg.setUserId(user.getId());
         cfg.setPoliticianId(politicianId);
-        cfg.setAmountPerTrade(amount);
+        cfg.setPortfolioPercent(percent);
         cfg.setActive(true);
 
         CopyConfig saved = copyConfigRepository.save(cfg);
@@ -86,8 +86,8 @@ public class CopyConfigController {
             if (!cfg.getUserId().equals(user.getId())) {
                 return ResponseEntity.status(403).<CopyConfig>build();
             }
-            if (body.containsKey("amountPerTrade") && body.get("amountPerTrade") != null) {
-                cfg.setAmountPerTrade(new java.math.BigDecimal(body.get("amountPerTrade").toString()));
+            if (body.containsKey("portfolioPercent") && body.get("portfolioPercent") != null) {
+                cfg.setPortfolioPercent(new java.math.BigDecimal(body.get("portfolioPercent").toString()));
             }
             if (body.containsKey("active") && body.get("active") != null) {
                 cfg.setActive(Boolean.valueOf(body.get("active").toString()));

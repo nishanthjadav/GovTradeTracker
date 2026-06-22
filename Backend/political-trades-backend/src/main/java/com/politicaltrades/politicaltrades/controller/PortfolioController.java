@@ -92,12 +92,14 @@ public class PortfolioController {
 
         Map<String, BigDecimal> politicianPnl = new HashMap<>();
         Map<String, BigDecimal> politicianInvested = new HashMap<>();
+        Map<String, String> politicianNames = new HashMap<>();
         for (Map<String, Object> r : tradePnls) {
             String pid = (String) r.get("politicianId");
             BigDecimal invested = r.get("amountInvested") != null ? new BigDecimal(r.get("amountInvested").toString()) : BigDecimal.ZERO;
             BigDecimal pnl = r.get("pnl") != null ? new BigDecimal(r.get("pnl").toString()) : BigDecimal.ZERO;
             politicianPnl.put(pid, politicianPnl.getOrDefault(pid, BigDecimal.ZERO).add(pnl));
             politicianInvested.put(pid, politicianInvested.getOrDefault(pid, BigDecimal.ZERO).add(invested));
+            politicianNames.putIfAbsent(pid, (String) r.get("politicianName"));
         }
 
         String bestPolitician = null;
@@ -107,7 +109,7 @@ public class PortfolioController {
             if (invested.compareTo(BigDecimal.ZERO) <= 0) continue;
             double pct = politicianPnl.get(pid).divide(invested, 8, BigDecimal.ROUND_HALF_UP).multiply(new BigDecimal(100)).doubleValue();
             if (bestPolitician == null || pct > bestPoliticianReturn) {
-                bestPolitician = pid;
+                bestPolitician = politicianNames.get(pid);
                 bestPoliticianReturn = pct;
             }
         }

@@ -84,6 +84,89 @@ public class AlpacaService {
         }
     }
 
+    /** Sell by share quantity (required for sells — Alpaca rejects notional sells for fractional shares). */
+    public String placeMarketOrderByQty(User user, String ticker, String side, BigDecimal qty) {
+        String[] creds = resolveCreds(user);
+        if (creds[0] == null || creds[0].isBlank()) {
+            log.warn("No Alpaca credentials available; skipping order for {}", ticker);
+            return null;
+        }
+        try {
+            String url = baseUrl + "/orders";
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.set("APCA-API-KEY-ID", creds[0]);
+            headers.set("APCA-API-SECRET-KEY", creds[1]);
+
+            Map<String, Object> body = new HashMap<>();
+            body.put("symbol", ticker);
+            body.put("side", side);
+            body.put("type", "market");
+            body.put("time_in_force", "day");
+            body.put("qty", qty.toPlainString());
+
+            HttpEntity<Map<String, Object>> req = new HttpEntity<>(body, headers);
+            ResponseEntity<Map> resp = restTemplate.postForEntity(url, req, Map.class);
+
+            if (resp.getStatusCode().is2xxSuccessful() && resp.getBody() != null) {
+                Object id = resp.getBody().get("id");
+                return id != null ? id.toString() : null;
+            }
+
+            log.warn("Alpaca order failed: status {}", resp.getStatusCode().value());
+            return null;
+        } catch (Exception e) {
+            log.error("Error placing alpaca order: {}", e.getMessage());
+            return null;
+        }
+    }
+
+    public BigDecimal getAccountEquity(User user) {
+        String[] creds = resolveCreds(user);
+        if (creds[0] == null || creds[0].isBlank()) return null;
+        try {
+            String url = baseUrl + "/account";
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("APCA-API-KEY-ID", creds[0]);
+            headers.set("APCA-API-SECRET-KEY", creds[1]);
+            HttpEntity<Void> req = new HttpEntity<>(headers);
+            ResponseEntity<Map> resp = restTemplate.exchange(url, HttpMethod.GET, req, Map.class);
+            if (resp.getStatusCode().is2xxSuccessful() && resp.getBody() != null) {
+                Object equity = resp.getBody().get("equity");
+                if (equity != null) return new BigDecimal(equity.toString());
+            }
+        } catch (Exception e) {
+            log.warn("Failed to fetch account equity: {}", e.getMessage());
+        }
+        return null;
+    }
+
+    /**
+     * Returns the quantity of shares held for ticker, or null if no position exists.
+     */
+    public BigDecimal getPositionQty(User user, String ticker) {
+        String[] creds = resolveCreds(user);
+        if (creds[0] == null || creds[0].isBlank()) return null;
+        try {
+            String url = baseUrl + "/positions/" + ticker;
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("APCA-API-KEY-ID", creds[0]);
+            headers.set("APCA-API-SECRET-KEY", creds[1]);
+            HttpEntity<Void> req = new HttpEntity<>(headers);
+            ResponseEntity<Map> resp = restTemplate.exchange(url, HttpMethod.GET, req, Map.class);
+            if (resp.getStatusCode().is2xxSuccessful() && resp.getBody() != null) {
+                Object qty = resp.getBody().get("qty");
+                if (qty != null) return new BigDecimal(qty.toString());
+            }
+        } catch (org.springframework.web.client.HttpClientErrorException.NotFound e) {
+            // no position — expected
+        } catch (Exception e) {
+            log.warn("Failed to fetch position for {}: {}", ticker, e.getMessage());
+        }
+        return null;
+    }
+
     public BigDecimal fetchLatestPrice(User user, String ticker) {
         String[] creds = resolveCreds(user);
         if (creds[0] == null || creds[0].isBlank()) return null;

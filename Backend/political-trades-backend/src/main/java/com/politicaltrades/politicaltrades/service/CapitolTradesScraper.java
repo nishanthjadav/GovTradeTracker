@@ -228,24 +228,50 @@ public class CapitolTradesScraper {
             String polId = politician.getId();
             java.util.List<CopyConfig> configs = copyConfigRepository.findByPoliticianIdAndActiveTrue(polId);
             if (configs != null && !configs.isEmpty() && trade.getTicker() != null) {
+                boolean isSell = "sell".equalsIgnoreCase(trade.getTradeType());
+                boolean isBuy  = "buy".equalsIgnoreCase(trade.getTradeType());
                 for (CopyConfig cfg : configs) {
                     try {
-                        String side = trade.getTradeType();
-                        java.math.BigDecimal notional = cfg.getAmountPerTrade();
                         User cfgUser = userRepository.findById(cfg.getUserId()).orElse(null);
-                        String orderId = alpacaService.placeMarketOrder(cfgUser, trade.getTicker(), side, notional);
+                        String orderId = null;
+                        BigDecimal orderAmount = null;
+
+                        if (isBuy) {
+                            BigDecimal equity = alpacaService.getAccountEquity(cfgUser);
+                            if (equity == null || equity.compareTo(BigDecimal.ZERO) <= 0) {
+                                log.warn("Could not fetch account equity for user {} — skipping buy.", cfg.getUserId());
+                                continue;
+                            }
+                            BigDecimal pct = cfg.getPortfolioPercent() != null ? cfg.getPortfolioPercent() : new BigDecimal("5");
+                            orderAmount = equity.multiply(pct).divide(new BigDecimal("100"), 2, BigDecimal.ROUND_HALF_UP);
+                            orderId = alpacaService.placeMarketOrder(cfgUser, trade.getTicker(), "buy", orderAmount);
+                        } else if (isSell) {
+                            BigDecimal positionQty = alpacaService.getPositionQty(cfgUser, trade.getTicker());
+                            if (positionQty == null || positionQty.compareTo(BigDecimal.ZERO) <= 0) {
+                                log.info("No position in {} for user {} — skipping sell copy.", trade.getTicker(), cfg.getUserId());
+                                continue;
+                            }
+
+                            // Estimate sell proportion from politician's trade size vs their total buys of this ticker
+                            BigDecimal sellQty = computeSellQty(positionQty, polId, trade);
+                            orderId = alpacaService.placeMarketOrderByQty(cfgUser, trade.getTicker(), "sell", sellQty);
+                            orderAmount = sellQty; // store qty in amountInvested for sells
+                        } else {
+                            log.info("Unknown trade type '{}' — skipping copy.", trade.getTradeType());
+                            continue;
+                        }
 
                         ExecutedTrade et = new ExecutedTrade();
                         et.setUserId(cfg.getUserId());
                         et.setPoliticianId(polId);
                         et.setPoliticianName(politician.getName());
                         et.setTicker(trade.getTicker());
-                        et.setSide(side);
-                        et.setAmountInvested(notional);
+                        et.setSide(trade.getTradeType());
+                        et.setAmountInvested(orderAmount);
                         et.setFillPrice(null);
                         et.setExecutedAt(LocalDateTime.now());
                         et.setAlpacaOrderId(orderId);
-                        et.setStatus("pending");
+                        et.setStatus(orderId != null ? "pending" : "failed");
                         executedTradeRepository.save(et);
                     } catch (Exception e) {
                         log.warn("Failed to execute copy for politician {}: {}", polId, e.getMessage());
@@ -258,7 +284,43 @@ public class CapitolTradesScraper {
         return 1;
     }
 
+    /**
+     * Computes how many shares to sell proportionally.
+     * Uses the midpoint of the politician's sell size vs their total known buy size for this ticker.
+     * Falls back to selling the full position if proportion can't be determined.
+     */
+    private BigDecimal computeSellQty(BigDecimal positionQty, String politicianId, Trade sellTrade) {
+        // Sum the politician's total known buys for this ticker (use sizeMin+sizeMax midpoint)
+        java.util.List<Trade> politicianTrades = tradeRepository.findByPoliticianId(politicianId);
+        long totalBuyMidpoint = politicianTrades.stream()
+            .filter(t -> "buy".equalsIgnoreCase(t.getTradeType())
+                      && sellTrade.getTicker().equalsIgnoreCase(t.getTicker()))
+            .mapToLong(t -> {
+                long max = t.getSizeMax() == Long.MAX_VALUE ? t.getSizeMin() * 2 : t.getSizeMax();
+                return (t.getSizeMin() + max) / 2;
+            })
+            .sum();
 
+        if (totalBuyMidpoint <= 0) {
+            // Can't determine proportion — sell everything we have
+            log.info("No buy history for {}/{} — selling full position ({} shares).", politicianId, sellTrade.getTicker(), positionQty);
+            return positionQty;
+        }
+
+        long sellMax = sellTrade.getSizeMax() == Long.MAX_VALUE ? sellTrade.getSizeMin() * 2 : sellTrade.getSizeMax();
+        long sellMidpoint = (sellTrade.getSizeMin() + sellMax) / 2;
+
+        BigDecimal proportion = new BigDecimal(sellMidpoint)
+            .divide(new BigDecimal(totalBuyMidpoint), 8, BigDecimal.ROUND_HALF_UP)
+            .min(BigDecimal.ONE);
+
+        BigDecimal sellQty = positionQty.multiply(proportion).setScale(8, BigDecimal.ROUND_HALF_DOWN);
+        // Alpaca requires qty > 0
+        if (sellQty.compareTo(BigDecimal.ZERO) <= 0) sellQty = positionQty;
+
+        log.info("Sell copy {}: proportion={}, positionQty={}, sellQty={}", sellTrade.getTicker(), proportion, positionQty, sellQty);
+        return sellQty;
+    }
 
     private String extractTradeId(String url) {
         if (url == null) return null;

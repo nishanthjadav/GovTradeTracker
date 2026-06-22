@@ -18,8 +18,8 @@ public class CopyConfig {
     @Column(name = "politician_id", nullable = false)
     private String politicianId;
 
-    @Column(name = "amount_per_trade", precision = 14, scale = 2)
-    private BigDecimal amountPerTrade;
+    @Column(name = "portfolio_percent", precision = 7, scale = 4)
+    private BigDecimal portfolioPercent;
 
     @Column(name = "active")
     private Boolean active = true;
@@ -44,8 +44,8 @@ public class CopyConfig {
     public String getPoliticianId() { return politicianId; }
     public void setPoliticianId(String politicianId) { this.politicianId = politicianId; }
 
-    public BigDecimal getAmountPerTrade() { return amountPerTrade; }
-    public void setAmountPerTrade(BigDecimal amountPerTrade) { this.amountPerTrade = amountPerTrade; }
+    public BigDecimal getPortfolioPercent() { return portfolioPercent; }
+    public void setPortfolioPercent(BigDecimal portfolioPercent) { this.portfolioPercent = portfolioPercent; }
 
     public Boolean getActive() { return active; }
     public void setActive(Boolean active) { this.active = active; }
