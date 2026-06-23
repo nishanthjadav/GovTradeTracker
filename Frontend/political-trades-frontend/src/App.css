@@ -448,6 +448,13 @@ body {
   border-bottom: var(--border-width) solid var(--color-border);
   background: var(--color-surface);
   flex-shrink: 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.tab-row::-webkit-scrollbar {
+  display: none;
 }
 
 .tab {
@@ -476,7 +483,7 @@ body {
   width: 100%;
   border-collapse: collapse;
   font-size: var(--font-size-sm);
-  min-width: 520px;
+  min-width: 580px;
 }
 
 .trades-table-scroll {
@@ -1031,6 +1038,20 @@ body {
   overflow: hidden;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
   border: var(--border-width) solid var(--color-border);
+}
+
+@media (max-width: 639px) {
+  .copy-tray {
+    left: auto;
+    right: 12px;
+    bottom: 12px;
+    width: auto;
+    max-width: 220px;
+  }
+
+  .pagination {
+    padding-bottom: 64px;
+  }
 }
 
 .copy-tray-toggle {

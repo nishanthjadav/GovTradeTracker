@@ -261,10 +261,6 @@ export default function App() {
         <div className="content">
           {currentView === "feed" ? (
             <>
-              <div className="content-header">
-                <div className="content-title">Recent Trades</div>
-                <div className="content-sub">Latest disclosures across all politicians</div>
-              </div>
               <FilterBar trades={recentTrades} filters={filters} setFilters={setFilters} />
               <div className="trades-table-scroll">
                 <TradeTable
