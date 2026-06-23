@@ -7,6 +7,9 @@ import ProfilePage from "./components/ProfilePage";
 import PortfolioPage from "./components/PortfolioPage";
 import AccountMenu from "./components/AccountMenu";
 import AccountPage from "./components/AccountPage";
+import LeaderboardPage from "./components/LeaderboardPage";
+import AboutPage from "./components/AboutPage";
+import FaqPage from "./components/FaqPage";
 import { defaultFilters } from "./utils/filterHelpers";
 import { applyFilters } from "./utils/tradeHelpers";
 import { apiFetch } from "./api";
@@ -253,6 +256,15 @@ export default function App() {
           >
             My Portfolio
           </button>
+          <button className="top-action" onClick={() => setCurrentView("leaderboard")}>
+            Leaderboard
+          </button>
+          <button className="top-action" onClick={() => setCurrentView("about")}>
+            About
+          </button>
+          <button className="top-action" onClick={() => setCurrentView("faq")}>
+            FAQ
+          </button>
           <AccountMenu onOpenAccount={() => setCurrentView("account")} />
         </div>
       </div>
@@ -301,6 +313,18 @@ export default function App() {
             />
           ) : currentView === "account" ? (
             <AccountPage onBack={() => setCurrentView("feed")} />
+          ) : currentView === "leaderboard" ? (
+            <LeaderboardPage
+              politicians={politicians}
+              trades={enrichedRecentTrades}
+              copyConfigs={displayedCopyConfigs}
+              onSelectPolitician={selectPoliticianById}
+              onBack={() => setCurrentView("feed")}
+            />
+          ) : currentView === "about" ? (
+            <AboutPage onBack={() => setCurrentView("feed")} />
+          ) : currentView === "faq" ? (
+            <FaqPage onBack={() => setCurrentView("feed")} />
           ) : (
             <PortfolioPage
               refreshKey={portfolioRefreshKey}
