@@ -232,6 +232,17 @@ public class CapitolTradesScraper {
                 boolean isBuy  = "buy".equalsIgnoreCase(trade.getTradeType());
                 for (CopyConfig cfg : configs) {
                     try {
+                        // Enforce maxFiledDays cap: if the user only wants to copy
+                        // trades filed within N days, skip stale disclosures.
+                        Integer mfd = cfg.getMaxFiledDays();
+                        if (mfd != null && mfd > 0 && trade.getFiledAfterDays() != null
+                                && trade.getFiledAfterDays() > mfd) {
+                            log.info("Skipping copy for user {} on {} {} — filed after {} days exceeds cap of {}.",
+                                    cfg.getUserId(), trade.getTicker(), trade.getTradeType(),
+                                    trade.getFiledAfterDays(), mfd);
+                            continue;
+                        }
+
                         User cfgUser = userRepository.findById(cfg.getUserId()).orElse(null);
                         String orderId = null;
                         BigDecimal orderAmount = null;

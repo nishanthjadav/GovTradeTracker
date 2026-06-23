@@ -161,4 +161,22 @@ public class PortfolioController {
         list.sort(Comparator.comparing(ExecutedTrade::getExecutedAt, Comparator.nullsLast(Comparator.reverseOrder())));
         return ResponseEntity.ok(list);
     }
+
+    /**
+     * Clears all executed trade rows for the authenticated user. Useful for
+     * resetting the portfolio history (e.g. after a paper-trading reset).
+     * Does NOT affect Alpaca positions, copy configs, or anything else.
+     */
+    @DeleteMapping("/executed-trades")
+    public ResponseEntity<Map<String, Object>> clearExecutedTrades(@AuthenticationPrincipal OidcUser oidc) {
+        User user = userService.requireByGoogleSub(oidc.getSubject());
+        List<ExecutedTrade> trades = executedTradeRepository.findByUserId(user.getId());
+        int count = trades.size();
+        if (!trades.isEmpty()) {
+            executedTradeRepository.deleteAll(trades);
+        }
+        Map<String, Object> resp = new HashMap<>();
+        resp.put("deleted", count);
+        return ResponseEntity.ok(resp);
+    }
 }

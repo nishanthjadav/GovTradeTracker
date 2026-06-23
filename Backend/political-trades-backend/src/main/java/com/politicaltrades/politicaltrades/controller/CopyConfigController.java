@@ -31,6 +31,8 @@ public class CopyConfigController {
         String politicianId = (String) body.get("politicianId");
         Object amtObj = body.get("portfolioPercent");
         java.math.BigDecimal percent = amtObj != null ? new java.math.BigDecimal(amtObj.toString()) : new java.math.BigDecimal("5");
+        Object mfdObj = body.get("maxFiledDays");
+        Integer maxFiledDays = parseMaxFiledDays(mfdObj);
 
         // Upsert: if a config already exists for (user, politician), return it
         // instead of creating a duplicate row. Prevents StrictMode/double-submit
@@ -45,6 +47,7 @@ public class CopyConfigController {
         cfg.setPoliticianId(politicianId);
         cfg.setPortfolioPercent(percent);
         cfg.setActive(true);
+        cfg.setMaxFiledDays(maxFiledDays);
 
         CopyConfig saved = copyConfigRepository.save(cfg);
         return ResponseEntity.ok(saved);
@@ -92,6 +95,10 @@ public class CopyConfigController {
             if (body.containsKey("active") && body.get("active") != null) {
                 cfg.setActive(Boolean.valueOf(body.get("active").toString()));
             }
+            if (body.containsKey("maxFiledDays")) {
+                // Allow explicit null to clear the cap
+                cfg.setMaxFiledDays(parseMaxFiledDays(body.get("maxFiledDays")));
+            }
             CopyConfig saved = copyConfigRepository.save(cfg);
             return ResponseEntity.ok(saved);
         }).orElseGet(() -> ResponseEntity.notFound().build());
@@ -107,5 +114,23 @@ public class CopyConfigController {
             copyConfigRepository.deleteById(id);
             return ResponseEntity.noContent().<Void>build();
         }).orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    /**
+     * Parse a max-filed-days value from the request body. Accepts null/empty/
+     * non-positive as "no cap" (returns null). Caps to 365 max to keep the
+     * value sane.
+     */
+    private static Integer parseMaxFiledDays(Object raw) {
+        if (raw == null) return null;
+        String s = raw.toString().trim();
+        if (s.isEmpty() || s.equalsIgnoreCase("null")) return null;
+        try {
+            int n = Integer.parseInt(s);
+            if (n <= 0) return null;
+            return Math.min(n, 365);
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 }

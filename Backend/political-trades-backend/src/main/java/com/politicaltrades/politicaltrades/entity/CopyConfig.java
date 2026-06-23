@@ -24,6 +24,9 @@ public class CopyConfig {
     @Column(name = "active")
     private Boolean active = true;
 
+    @Column(name = "max_filed_days")
+    private Integer maxFiledDays;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
@@ -49,6 +52,9 @@ public class CopyConfig {
 
     public Boolean getActive() { return active; }
     public void setActive(Boolean active) { this.active = active; }
+
+    public Integer getMaxFiledDays() { return maxFiledDays; }
+    public void setMaxFiledDays(Integer maxFiledDays) { this.maxFiledDays = maxFiledDays; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
 }
