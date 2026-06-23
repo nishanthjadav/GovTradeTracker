@@ -266,14 +266,16 @@ export default function App() {
                 <div className="content-sub">Latest disclosures across all politicians</div>
               </div>
               <FilterBar trades={recentTrades} filters={filters} setFilters={setFilters} />
-              <TradeTable
-                trades={paginatedTrades}
-                showPolitician={true}
-                loading={loading}
-                onSelectPolitician={selectPoliticianById}
-                copyConfigs={displayedCopyConfigs}
-                onCopyToggle={handleCopyToggleById}
-              />
+              <div className="trades-table-scroll">
+                <TradeTable
+                  trades={paginatedTrades}
+                  showPolitician={true}
+                  loading={loading}
+                  onSelectPolitician={selectPoliticianById}
+                  copyConfigs={displayedCopyConfigs}
+                  onCopyToggle={handleCopyToggleById}
+                />
+              </div>
               <Pagination
                 currentPage={currentPage}
                 totalPages={pageCount}

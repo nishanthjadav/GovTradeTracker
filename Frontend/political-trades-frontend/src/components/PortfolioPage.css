@@ -33,8 +33,14 @@
 
 /* Section */
 .portfolio-section {
-  padding: var(--spacing-5) var(--spacing-6);
+  padding: var(--spacing-4);
   border-bottom: var(--border-width) solid var(--color-border);
+}
+
+@media (min-width: 640px) {
+  .portfolio-section {
+    padding: var(--spacing-5) var(--spacing-6);
+  }
 }
 
 .portfolio-section-title {
@@ -47,8 +53,14 @@
 /* Copying grid */
 .copying-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  grid-template-columns: 1fr;
   gap: var(--spacing-3);
+}
+
+@media (min-width: 480px) {
+  .copying-grid {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  }
 }
 
 .copy-card {
@@ -371,8 +383,14 @@
 .portfolio-table-wrap {
   border: var(--border-width) solid var(--color-border);
   border-radius: var(--border-radius);
-  overflow: hidden;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   background: var(--color-surface);
+}
+
+.portfolio-table-header,
+.portfolio-table-row {
+  min-width: 700px;
 }
 
 .portfolio-table-header {

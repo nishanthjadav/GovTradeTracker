@@ -41,7 +41,9 @@ export default function ProfilePage({
           <span className="sell-text">{totalSells} sells</span>
         </span>
       </div>
-      <TradeTable trades={paginatedTrades} showPolitician={false} loading={tradesLoading} />
+      <div className="trades-table-scroll">
+        <TradeTable trades={paginatedTrades} showPolitician={false} loading={tradesLoading} />
+      </div>
       <Pagination
         currentPage={currentPage}
         totalPages={pageCount}
