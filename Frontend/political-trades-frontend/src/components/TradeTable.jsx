@@ -33,9 +33,9 @@ export default function TradeTable({
 
   const cols = showPolitician
     ? showCopy
-      ? "36px minmax(130px,1fr) minmax(130px,1fr) 80px 80px 110px 90px"
-      : "minmax(130px,1fr) minmax(130px,1fr) 80px 80px 110px 90px"
-    : "minmax(160px,2fr) minmax(80px,1fr) 80px 80px 110px 90px";
+      ? "36px minmax(130px,1fr) minmax(130px,1fr) 100px 100px 130px 110px"
+      : "minmax(130px,1fr) minmax(130px,1fr) 100px 100px 130px 110px"
+    : "minmax(160px,2fr) minmax(80px,1fr) 100px 100px 130px 110px";
 
   return (
     <div className="trades-table">
