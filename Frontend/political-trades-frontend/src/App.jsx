@@ -245,7 +245,7 @@ export default function App() {
             {isDark ? "☀️" : "🌙"}
           </button>
           <button
-            className="top-action"
+            className={`top-action${currentView === "portfolio" ? " active" : ""}`}
             onClick={() => {
               if (currentView === "portfolio") {
                 setPortfolioRefreshKey((k) => k + 1);
@@ -256,13 +256,22 @@ export default function App() {
           >
             My Portfolio
           </button>
-          <button className="top-action" onClick={() => setCurrentView("leaderboard")}>
+          <button
+            className={`top-action${currentView === "leaderboard" ? " active" : ""}`}
+            onClick={() => setCurrentView("leaderboard")}
+          >
             Leaderboard
           </button>
-          <button className="top-action" onClick={() => setCurrentView("about")}>
+          <button
+            className={`top-action${currentView === "about" ? " active" : ""}`}
+            onClick={() => setCurrentView("about")}
+          >
             About
           </button>
-          <button className="top-action" onClick={() => setCurrentView("faq")}>
+          <button
+            className={`top-action${currentView === "faq" ? " active" : ""}`}
+            onClick={() => setCurrentView("faq")}
+          >
             FAQ
           </button>
           <AccountMenu onOpenAccount={() => setCurrentView("account")} />

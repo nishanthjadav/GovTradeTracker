@@ -118,9 +118,7 @@ export default function LeaderboardPage({
         <div className="content-title">Leaderboard</div>
         <div className="content-sub">{METRIC_SUBTITLES[metric]}</div>
       </div>
-      <div className="tab-row">
-        <div className="tab" onClick={onBack}>← Back to Feed</div>
-      </div>
+
 
       <div className="filter-bar">
         <div className="filter-group">

@@ -218,6 +218,30 @@ body {
   color: var(--color-accent);
 }
 
+.top-action.active {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: #fff;
+}
+
+.top-action.active:hover {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: #fff;
+}
+
+.app.dark .top-action.active {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: #fff;
+}
+
+.app.dark .top-action.active:hover {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: #fff;
+}
+
 /* Inline copy checkbox in trade table rows */
 .row-copy-cell {
   display: flex;
