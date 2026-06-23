@@ -309,6 +309,7 @@ export default function App() {
               onBack={() => setCurrentView("feed")}
               politicians={politicians}
               copyConfigs={displayedCopyConfigs}
+              onSelectPolitician={selectPoliticianById}
               onRemoveCopyConfig={(id) =>
                 setCopyConfigs((prev) => prev.filter((c) => c.id !== id))
               }
