@@ -27,6 +27,9 @@ public class SecurityConfig {
     @Value("${app.frontend.url:http://localhost:5173}")
     private String frontendUrl;
 
+    @Value("${app.admin.email}")
+    private String adminEmail;
+
     public SecurityConfig(UserService userService) {
         this.userService = userService;
     }
@@ -50,7 +53,13 @@ public class SecurityConfig {
                 .requestMatchers("/oauth2/**", "/login/**").permitAll()
                 .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                 .requestMatchers("/error").permitAll()
-                .requestMatchers("/api/copy-configs/**", "/api/portfolio/**", "/api/scrape/**", "/api/me/**").authenticated()
+                .requestMatchers("/api/scrape/**").access((authentication, context) -> {
+                    var auth = authentication.get();
+                    if (!auth.isAuthenticated()) return new org.springframework.security.authorization.AuthorizationDecision(false);
+                    if (!(auth.getPrincipal() instanceof OidcUser oidc)) return new org.springframework.security.authorization.AuthorizationDecision(false);
+                    return new org.springframework.security.authorization.AuthorizationDecision(adminEmail.equals(oidc.getEmail()));
+                })
+                .requestMatchers("/api/copy-configs/**", "/api/portfolio/**", "/api/me/**").authenticated()
                 .anyRequest().permitAll()
             )
             .oauth2Login(o -> o.successHandler(successHandler))
