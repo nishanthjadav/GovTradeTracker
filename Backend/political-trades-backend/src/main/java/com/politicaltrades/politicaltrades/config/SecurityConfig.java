@@ -53,10 +53,10 @@ public class SecurityConfig {
                 .requestMatchers("/oauth2/**", "/login/**").permitAll()
                 .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                 .requestMatchers("/error").permitAll()
-                .requestMatchers("/api/scrape/**").access((authentication, context) -> {
-                    var auth = authentication.get();
-                    if (!auth.isAuthenticated()) return new org.springframework.security.authorization.AuthorizationDecision(false);
-                    if (!(auth.getPrincipal() instanceof OidcUser oidc)) return new org.springframework.security.authorization.AuthorizationDecision(false);
+                .requestMatchers("/api/scrape/**").access((authSupplier, context) -> {
+                    var principal = authSupplier.get();
+                    if (!principal.isAuthenticated()) return new org.springframework.security.authorization.AuthorizationDecision(false);
+                    if (!(principal.getPrincipal() instanceof OidcUser oidc)) return new org.springframework.security.authorization.AuthorizationDecision(false);
                     return new org.springframework.security.authorization.AuthorizationDecision(adminEmail.equals(oidc.getEmail()));
                 })
                 .requestMatchers("/api/copy-configs/**", "/api/portfolio/**", "/api/me/**").authenticated()
