@@ -7,7 +7,7 @@ export default function SignInGate({ children }) {
     return (
       <div style={{
         minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center",
-        background: "var(--color-bg, #fafafa)", color: "var(--color-text-primary, #111)"
+        background: "#0f172a", color: "#f1f5f9"
       }}>
         Loading...
       </div>
@@ -21,22 +21,23 @@ export default function SignInGate({ children }) {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        background: "linear-gradient(135deg, #f8fafc 0%, #e0e7ef 100%)",
+        background: "linear-gradient(135deg, #0f172a 0%, #1a1f2e 100%)",
         padding: 24,
       }}>
         <div style={{
-          background: "#fff",
+          background: "#131620",
+          border: "1px solid #1f2937",
           borderRadius: 16,
-          boxShadow: "0 10px 30px rgba(0,0,0,0.08)",
+          boxShadow: "0 10px 30px rgba(0,0,0,0.4)",
           padding: "40px 36px",
           maxWidth: 420,
           width: "100%",
           textAlign: "center",
         }}>
-          <div style={{ fontSize: 28, fontWeight: 700, marginBottom: 8 }}>
-            Gov<span style={{ color: "#3b82f6" }}>Trade</span> Tracker
+          <div style={{ fontSize: 28, fontWeight: 700, marginBottom: 8, color: "#f1f5f9" }}>
+            Gov Trade Tracker
           </div>
-          <div style={{ color: "#475569", fontSize: 14, marginBottom: 28 }}>
+          <div style={{ color: "#cbd5e1", fontSize: 14, marginBottom: 28 }}>
             Track and copy political stock trades.
             Sign in to manage your portfolio and link a paper-trading account.
           </div>
@@ -54,7 +55,7 @@ export default function SignInGate({ children }) {
               fontSize: 14,
               fontWeight: 500,
               cursor: "pointer",
-              boxShadow: "0 1px 2px rgba(60,64,67,0.08)",
+              boxShadow: "0 1px 2px rgba(0,0,0,0.3)",
               width: "100%",
               justifyContent: "center",
             }}
@@ -74,7 +75,7 @@ export default function SignInGate({ children }) {
               width: "100%",
               background: "transparent",
               border: "none",
-              color: "#64748b",
+              color: "#94a3b8",
               fontSize: 13,
               cursor: "pointer",
               padding: "8px 0",
