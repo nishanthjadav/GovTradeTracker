@@ -28,10 +28,6 @@ export default function App() {
   const [tradesLoading, setTradesLoading] = useState(false);
   const [filters, setFilters] = useState(defaultFilters());
   const [currentPage, setCurrentPage] = useState(1);
-  const [isDark, setIsDark] = useState(() => {
-    const saved = localStorage.getItem("theme");
-    return saved ? saved === "dark" : false;
-  });
   const [copyConfigs, setCopyConfigs] = useState([]);
   const [copyPanelOpen, setCopyPanelOpen] = useState(false);
   const [portfolioRefreshKey, setPortfolioRefreshKey] = useState(0);
@@ -57,10 +53,6 @@ export default function App() {
       })
       .catch(() => setLoading(false));
   }, []);
-
-  useEffect(() => {
-    localStorage.setItem("theme", isDark ? "dark" : "light");
-  }, [isDark]);
 
   useEffect(() => {
     setFilters(defaultFilters());
@@ -227,23 +219,16 @@ export default function App() {
   };
 
   return (
-    <div className={`app${isDark ? " dark" : ""}`}>
+    <div className="app dark">
       <div className="topbar">
         <div
           className="logo"
           onClick={() => setCurrentView("feed")}
           style={{ cursor: "pointer" }}
         >
-          Gov<span>Trade</span> Tracker
+          Gov Trade Tracker
         </div>
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          <button
-            className="theme-toggle"
-            onClick={() => setIsDark(!isDark)}
-            title={isDark ? "Switch to light mode" : "Switch to dark mode"}
-          >
-            {isDark ? "☀️" : "🌙"}
-          </button>
           <button
             className={`top-action${currentView === "portfolio" ? " active" : ""}`}
             onClick={() => {
