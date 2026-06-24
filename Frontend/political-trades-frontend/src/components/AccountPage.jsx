@@ -93,9 +93,8 @@ export default function AccountPage({ onBack }) {
           <div className="content-sub">Profile and linked trading accounts</div>
         </div>
       </div>
-      <div className="tab-row">
-        <div className="tab" onClick={onBack}>← Back to Feed</div>
-      </div>
+      <div style={{ height: 16 }} />
+
 
       {/* Profile */}
       <section style={cardStyle}>
