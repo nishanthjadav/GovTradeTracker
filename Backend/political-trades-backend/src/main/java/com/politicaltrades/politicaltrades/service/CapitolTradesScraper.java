@@ -1,5 +1,9 @@
 package com.politicaltrades.politicaltrades.service;
 
+import com.microsoft.playwright.Browser;
+import com.microsoft.playwright.BrowserType;
+import com.microsoft.playwright.Page;
+import com.microsoft.playwright.Playwright;
 import com.politicaltrades.politicaltrades.entity.Politician;
 import com.politicaltrades.politicaltrades.entity.Trade;
 import com.politicaltrades.politicaltrades.entity.User;
@@ -17,17 +21,9 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.math.BigDecimal;
-import java.net.URI;
-import java.net.URLEncoder;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -45,16 +41,12 @@ public class CapitolTradesScraper {
     private static final Pattern SIZE_PATTERN = Pattern.compile("([\\d.]+)(K|M)?[–-]([\\d.]+)(K|M)?|([\\d.]+)(K|M)?\\+");
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("d MMM yyyy", Locale.ENGLISH);
 
-    @Value("${scraperapi.key:}")
-    private String scraperApiKey;
-
     private final PoliticianRepository politicianRepository;
     private final TradeRepository tradeRepository;
     private final CopyConfigRepository copyConfigRepository;
     private final AlpacaService alpacaService;
     private final ExecutedTradeRepository executedTradeRepository;
     private final UserRepository userRepository;
-    private final HttpClient httpClient = HttpClient.newHttpClient();
 
     public CapitolTradesScraper(PoliticianRepository politicianRepository,
                                TradeRepository tradeRepository,
@@ -82,72 +74,61 @@ public class CapitolTradesScraper {
         int newTrades = 0;
         int skipped = 0;
 
-        if (scraperApiKey == null || scraperApiKey.isBlank()) {
-            log.error("SCRAPERAPI_KEY env var not set — aborting scrape.");
-            return;
-        }
+        try (Playwright playwright = Playwright.create()) {
+            Browser browser = playwright.chromium().launch(new BrowserType.LaunchOptions().setHeadless(true));
+            Page page = browser.newPage();
 
-        for (int pageNum = startPage; pageNum <= endPage; pageNum++) {
-            String targetUrl = BASE_URL + pageNum;
-            String scraperUrl = "https://api.scraperapi.com/?api_key=" + scraperApiKey
-                    + "&url=" + URLEncoder.encode(targetUrl, StandardCharsets.UTF_8)
-                    + "&render=true";
+            for (int pageNum = startPage; pageNum <= endPage; pageNum++) {
+                String targetUrl = BASE_URL + pageNum;
+                log.info("Scraping page {}/{}: {}", pageNum, endPage, targetUrl);
 
-            log.info("Scraping page {}/{}: {}", pageNum, endPage, targetUrl);
+                try {
+                    page.navigate(targetUrl);
+                    // Wait for the trades table to appear, up to 15 seconds
+                    page.waitForSelector("table tbody tr", new Page.WaitForSelectorOptions().setTimeout(15000));
 
-            try {
-                HttpRequest request = HttpRequest.newBuilder()
-                        .uri(URI.create(scraperUrl))
-                        .GET()
-                        .build();
+                    String html = page.content();
 
-                HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-
-                if (response.statusCode() != 200) {
-                    log.error("ScraperAPI returned {} for page {} — skipping.", response.statusCode(), pageNum);
-                    continue;
-                }
-
-                String html = response.body();
-
-                if (html.contains("Just a moment") || html.contains("cf-browser-verification")) {
-                    log.error("Cloudflare challenge still present on page {} — stopping.", pageNum);
-                    break;
-                }
-
-                Document doc = Jsoup.parse(html);
-                Elements rows = doc.select("table tbody tr");
-
-                if (rows.isEmpty()) {
-                    log.info("No rows found on page {} — assuming end of data, stopping.", pageNum);
-                    break;
-                }
-
-                for (Element row : rows) {
-                    try {
-                        int result = processRow(row);
-                        if (result == 1) newTrades++;
-                        else skipped++;
-                    } catch (Exception e) {
-                        log.warn("Failed to parse row on page {}: {}", pageNum, e.getMessage());
+                    if (html.contains("Just a moment") || html.contains("cf-browser-verification")) {
+                        log.error("Cloudflare challenge on page {} — stopping.", pageNum);
+                        break;
                     }
-                }
 
-                // Only stop early during daily scrapes, not backfills.
-                if (stopOnDuplicatePage && newTrades == 0 && skipped > 0) {
-                    log.info("Page {} had no new trades — caught up to existing data, stopping.", pageNum);
+                    Document doc = Jsoup.parse(html);
+                    Elements rows = doc.select("table tbody tr");
+
+                    if (rows.isEmpty()) {
+                        log.info("No rows found on page {} — assuming end of data, stopping.", pageNum);
+                        break;
+                    }
+
+                    for (Element row : rows) {
+                        try {
+                            int result = processRow(row);
+                            if (result == 1) newTrades++;
+                            else skipped++;
+                        } catch (Exception e) {
+                            log.warn("Failed to parse row on page {}: {}", pageNum, e.getMessage());
+                        }
+                    }
+
+                    if (stopOnDuplicatePage && newTrades == 0 && skipped > 0) {
+                        log.info("Page {} had no new trades — caught up to existing data, stopping.", pageNum);
+                        break;
+                    }
+
+                    Thread.sleep(REQUEST_DELAY_MS);
+
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    log.error("Scraping interrupted at page {}", pageNum);
                     break;
+                } catch (Exception e) {
+                    log.error("Error fetching page {}: {}", pageNum, e.getMessage());
                 }
-
-                Thread.sleep(REQUEST_DELAY_MS);
-
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                log.error("Scraping interrupted at page {}", pageNum);
-                break;
-            } catch (IOException e) {
-                log.error("Error fetching page {}: {}", pageNum, e.getMessage());
             }
+
+            browser.close();
         }
 
         log.info("Scrape complete. New trades saved: {}, Already existed (skipped): {}", newTrades, skipped);
