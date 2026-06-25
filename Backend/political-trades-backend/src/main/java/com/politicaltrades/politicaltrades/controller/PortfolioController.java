@@ -46,6 +46,20 @@ public class PortfolioController {
         Map<String, String> politicianNameCache = new HashMap<>();
         politicianRepository.findAll().forEach(p -> politicianNameCache.put(p.getId(), p.getName()));
 
+        // Batch all the live prices in a single Alpaca call instead of per-trade.
+        // Without this, a portfolio of N trades fires N requests and hits the 200
+        // req/min data API limit on every page load.
+        Set<String> tickers = trades.stream()
+            .map(ExecutedTrade::getTicker)
+            .filter(Objects::nonNull)
+            .collect(Collectors.toSet());
+        Map<String, BigDecimal> priceByTicker;
+        try {
+            priceByTicker = alpacaService.fetchLatestPrices(user, tickers);
+        } catch (Exception e) {
+            priceByTicker = new HashMap<>();
+        }
+
         BigDecimal totalInvested = BigDecimal.ZERO;
         BigDecimal totalCurrentValue = BigDecimal.ZERO;
         BigDecimal totalInvestedCounted = BigDecimal.ZERO;
@@ -65,25 +79,33 @@ public class PortfolioController {
             row.put("status", t.getStatus());
             row.put("executedAt", t.getExecutedAt() != null ? t.getExecutedAt().format(DateTimeFormatter.ISO_DATE_TIME) : null);
 
-            BigDecimal currentPrice = null;
+            BigDecimal currentPrice = priceByTicker.get(t.getTicker());
             BigDecimal pnl = null;
             Double pnlPercent = null;
 
-            try {
-                currentPrice = alpacaService.fetchLatestPrice(user, t.getTicker());
-            } catch (Exception ignored) {}
+            // Only buys contribute to "money invested" and PnL. Sells are
+            // exits and shouldn't count as fresh capital deployed.
+            boolean isBuy = "buy".equalsIgnoreCase(t.getSide());
+            boolean isFailedOrRejected = t.getStatus() != null
+                && ("failed".equalsIgnoreCase(t.getStatus())
+                    || "rejected".equalsIgnoreCase(t.getStatus())
+                    || "canceled".equalsIgnoreCase(t.getStatus())
+                    || "expired".equalsIgnoreCase(t.getStatus()));
 
-            if (currentPrice != null && t.getFillPrice() != null && t.getFillPrice().compareTo(BigDecimal.ZERO) > 0) {
+            if (isBuy && !isFailedOrRejected
+                    && currentPrice != null
+                    && t.getFillPrice() != null && t.getFillPrice().compareTo(BigDecimal.ZERO) > 0
+                    && t.getAmountInvested() != null) {
                 BigDecimal shares = t.getAmountInvested().divide(t.getFillPrice(), 8, BigDecimal.ROUND_HALF_UP);
                 pnl = currentPrice.subtract(t.getFillPrice()).multiply(shares);
-                if (t.getFillPrice().compareTo(BigDecimal.ZERO) != 0) {
-                    pnlPercent = currentPrice.subtract(t.getFillPrice()).divide(t.getFillPrice(), 8, BigDecimal.ROUND_HALF_UP).multiply(new BigDecimal(100)).doubleValue();
-                }
+                pnlPercent = currentPrice.subtract(t.getFillPrice()).divide(t.getFillPrice(), 8, BigDecimal.ROUND_HALF_UP).multiply(new BigDecimal(100)).doubleValue();
                 totalCurrentValue = totalCurrentValue.add(currentPrice.multiply(shares));
                 totalInvestedCounted = totalInvestedCounted.add(t.getAmountInvested());
             }
 
-            totalInvested = totalInvested.add(t.getAmountInvested() != null ? t.getAmountInvested() : BigDecimal.ZERO);
+            if (isBuy && !isFailedOrRejected && t.getAmountInvested() != null) {
+                totalInvested = totalInvested.add(t.getAmountInvested());
+            }
 
             row.put("currentPrice", currentPrice);
             row.put("pnl", pnl);

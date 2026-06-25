@@ -168,31 +168,110 @@ public class AlpacaService {
     }
 
     public BigDecimal fetchLatestPrice(User user, String ticker) {
+        Map<String, BigDecimal> prices = fetchLatestPrices(user, java.util.Collections.singletonList(ticker));
+        return prices.get(ticker);
+    }
+
+    /**
+     * Batched price lookup. Hits Alpaca's bulk quotes endpoint once for the
+     * entire set of tickers instead of one HTTP request per ticker. Saves the
+     * portfolio summary from blowing the 200 req/min rate limit on every page
+     * load.
+     */
+    public Map<String, BigDecimal> fetchLatestPrices(User user, java.util.Collection<String> tickers) {
+        Map<String, BigDecimal> result = new HashMap<>();
+        if (tickers == null || tickers.isEmpty()) return result;
+
+        // De-dupe and drop blanks
+        java.util.Set<String> unique = new java.util.LinkedHashSet<>();
+        for (String t : tickers) {
+            if (t != null && !t.isBlank()) unique.add(t.trim());
+        }
+        if (unique.isEmpty()) return result;
+
         String[] creds = resolveCreds(user);
-        if (creds[0] == null || creds[0].isBlank()) return null;
+        if (creds[0] == null || creds[0].isBlank()) return result;
+
         try {
-            String url = "https://data.alpaca.markets/v2/stocks/" + ticker + "/quotes/latest";
+            String symbols = String.join(",", unique);
+            String url = "https://data.alpaca.markets/v2/stocks/quotes/latest?symbols=" + symbols;
             HttpHeaders headers = new HttpHeaders();
             headers.set("APCA-API-KEY-ID", creds[0]);
             headers.set("APCA-API-SECRET-KEY", creds[1]);
             HttpEntity<Void> req = new HttpEntity<>(headers);
             ResponseEntity<Map> resp = restTemplate.exchange(url, HttpMethod.GET, req, Map.class);
             if (resp.getStatusCode().is2xxSuccessful() && resp.getBody() != null) {
-                Map<String, Object> data = (Map<String, Object>) resp.getBody().get("quote");
-                if (data == null) data = (Map) resp.getBody().get("data");
-                if (data != null) {
-                    Object ap = data.get("ap");
-                    Object bp = data.get("bp");
-                    Object p = data.get("p");
-                    Object priceObj = p != null ? p : ap != null ? ap : bp;
-                    if (priceObj != null) {
-                        return new BigDecimal(priceObj.toString());
+                Map<String, Object> quotes = (Map<String, Object>) resp.getBody().get("quotes");
+                if (quotes != null) {
+                    for (Map.Entry<String, Object> e : quotes.entrySet()) {
+                        Map<String, Object> q = (Map<String, Object>) e.getValue();
+                        if (q == null) continue;
+                        Object ap = q.get("ap");
+                        Object bp = q.get("bp");
+                        Object p = q.get("p");
+                        Object priceObj = p != null ? p : ap != null ? ap : bp;
+                        if (priceObj != null) {
+                            try { result.put(e.getKey(), new BigDecimal(priceObj.toString())); }
+                            catch (NumberFormatException nfe) { /* ignore bad quote */ }
+                        }
                     }
                 }
             }
         } catch (Exception e) {
-            log.warn("Failed to fetch price for {}: {}", ticker, e.getMessage());
+            log.warn("Failed to fetch batch prices for {} tickers: {}", unique.size(), e.getMessage());
+        }
+        return result;
+    }
+
+    /**
+     * Fetches the current state of an order. Returns a map with at least
+     * "status", "filled_avg_price", "filled_qty" when available.
+     */
+    public Map<String, Object> getOrder(User user, String orderId) {
+        String[] creds = resolveCreds(user);
+        if (creds[0] == null || creds[0].isBlank()) return null;
+        try {
+            String url = baseUrl + "/orders/" + orderId;
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("APCA-API-KEY-ID", creds[0]);
+            headers.set("APCA-API-SECRET-KEY", creds[1]);
+            HttpEntity<Void> req = new HttpEntity<>(headers);
+            ResponseEntity<Map> resp = restTemplate.exchange(url, HttpMethod.GET, req, Map.class);
+            if (resp.getStatusCode().is2xxSuccessful() && resp.getBody() != null) {
+                return (Map<String, Object>) resp.getBody();
+            }
+        } catch (Exception e) {
+            log.warn("Failed to fetch order {}: {}", orderId, e.getMessage());
         }
         return null;
+    }
+
+    /**
+     * Polls /orders/{id} for up to ~5 seconds waiting for a terminal state
+     * (filled / partially_filled / canceled / rejected / expired). Market
+     * orders on liquid US equities typically fill within 1-2 seconds during
+     * market hours, so this is enough for the common case without blocking
+     * the scrape pipeline forever.
+     */
+    public Map<String, Object> waitForOrderFill(User user, String orderId) {
+        for (int i = 0; i < 10; i++) {
+            Map<String, Object> order = getOrder(user, orderId);
+            if (order == null) return null;
+            Object status = order.get("status");
+            if (status != null) {
+                String s = status.toString();
+                if ("filled".equals(s) || "partially_filled".equals(s)
+                        || "canceled".equals(s) || "rejected".equals(s)
+                        || "expired".equals(s)) {
+                    return order;
+                }
+            }
+            try { Thread.sleep(500); } catch (InterruptedException ie) {
+                Thread.currentThread().interrupt();
+                return order;
+            }
+        }
+        // Out of patience — return whatever we last saw
+        return getOrder(user, orderId);
     }
 }

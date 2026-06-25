@@ -69,7 +69,7 @@ public class ScrapeScheduler {
      */
     public void fullBackfill() {
         log.info("Starting full historical backfill (runs until no trades found)...");
-        scraper.scrapePages(1, Integer.MAX_VALUE);
+        scraper.scrapePages(1, 500);
         log.info("Full backfill complete.");
     }
 }

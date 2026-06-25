@@ -102,17 +102,19 @@ public class CapitolTradesScraper {
                         break;
                     }
 
+                    int pageNewTrades = 0;
+                    int pageSkipped = 0;
                     for (Element row : rows) {
                         try {
                             int result = processRow(row);
-                            if (result == 1) newTrades++;
-                            else skipped++;
+                            if (result == 1) { newTrades++; pageNewTrades++; }
+                            else { skipped++; pageSkipped++; }
                         } catch (Exception e) {
                             log.warn("Failed to parse row on page {}: {}", pageNum, e.getMessage());
                         }
                     }
 
-                    if (stopOnDuplicatePage && newTrades == 0 && skipped > 0) {
+                    if (stopOnDuplicatePage && pageNewTrades == 0 && pageSkipped > 0) {
                         log.info("Page {} had no new trades — caught up to existing data, stopping.", pageNum);
                         break;
                     }
@@ -211,8 +213,24 @@ public class CapitolTradesScraper {
             if (configs != null && !configs.isEmpty() && trade.getTicker() != null) {
                 boolean isSell = "sell".equalsIgnoreCase(trade.getTradeType());
                 boolean isBuy  = "buy".equalsIgnoreCase(trade.getTradeType());
+                if (!isBuy && !isSell) {
+                    log.info("Unknown trade type '{}' — skipping copy.", trade.getTradeType());
+                    return 1;
+                }
                 for (CopyConfig cfg : configs) {
                     try {
+                        // Only copy trades whose disclosure was published on or
+                        // after the user activated this copy config. Without this
+                        // a backfill of historical trades would retroactively fire
+                        // orders for everything the politician has ever done.
+                        if (cfg.getCreatedAt() != null && trade.getPublishedDate() != null
+                                && trade.getPublishedDate().isBefore(cfg.getCreatedAt().toLocalDate())) {
+                            log.info("Skipping copy for user {} on {} {} — trade published {} predates config createdAt {}.",
+                                    cfg.getUserId(), trade.getTicker(), trade.getTradeType(),
+                                    trade.getPublishedDate(), cfg.getCreatedAt());
+                            continue;
+                        }
+
                         // Enforce maxFiledDays cap: if the user only wants to copy
                         // trades filed within N days, skip stale disclosures.
                         Integer mfd = cfg.getMaxFiledDays();
@@ -226,7 +244,8 @@ public class CapitolTradesScraper {
 
                         User cfgUser = userRepository.findById(cfg.getUserId()).orElse(null);
                         String orderId = null;
-                        BigDecimal orderAmount = null;
+                        BigDecimal dollarAmount = null;  // dollars invested (buy) or proceeds (sell)
+                        BigDecimal sharesQty = null;     // shares bought/sold
 
                         if (isBuy) {
                             BigDecimal equity = alpacaService.getAccountEquity(cfgUser);
@@ -235,9 +254,10 @@ public class CapitolTradesScraper {
                                 continue;
                             }
                             BigDecimal pct = cfg.getPortfolioPercent() != null ? cfg.getPortfolioPercent() : new BigDecimal("5");
-                            orderAmount = equity.multiply(pct).divide(new BigDecimal("100"), 2, BigDecimal.ROUND_HALF_UP);
-                            orderId = alpacaService.placeMarketOrder(cfgUser, trade.getTicker(), "buy", orderAmount);
-                        } else if (isSell) {
+                            BigDecimal notional = equity.multiply(pct).divide(new BigDecimal("100"), 2, BigDecimal.ROUND_HALF_UP);
+                            orderId = alpacaService.placeMarketOrder(cfgUser, trade.getTicker(), "buy", notional);
+                            dollarAmount = notional;
+                        } else {
                             BigDecimal positionQty = alpacaService.getPositionQty(cfgUser, trade.getTicker());
                             if (positionQty == null || positionQty.compareTo(BigDecimal.ZERO) <= 0) {
                                 log.info("No position in {} for user {} — skipping sell copy.", trade.getTicker(), cfg.getUserId());
@@ -245,12 +265,47 @@ public class CapitolTradesScraper {
                             }
 
                             // Estimate sell proportion from politician's trade size vs their total buys of this ticker
-                            BigDecimal sellQty = computeSellQty(positionQty, polId, trade);
-                            orderId = alpacaService.placeMarketOrderByQty(cfgUser, trade.getTicker(), "sell", sellQty);
-                            orderAmount = sellQty; // store qty in amountInvested for sells
-                        } else {
-                            log.info("Unknown trade type '{}' — skipping copy.", trade.getTradeType());
+                            sharesQty = computeSellQty(positionQty, polId, trade);
+                            orderId = alpacaService.placeMarketOrderByQty(cfgUser, trade.getTicker(), "sell", sharesQty);
+                        }
+
+                        if (orderId == null) {
+                            // Alpaca rejected the order — don't persist a row that
+                            // would inflate the user's totalInvested.
+                            log.warn("Alpaca rejected {} order for user {} on {} — not recording executed trade.",
+                                    trade.getTradeType(), cfg.getUserId(), trade.getTicker());
                             continue;
+                        }
+
+                        // Wait briefly for the order to fill so we can record the
+                        // actual fill price and qty, which PnL math depends on.
+                        java.util.Map<String, Object> filled = alpacaService.waitForOrderFill(cfgUser, orderId);
+                        BigDecimal fillPrice = null;
+                        BigDecimal filledQty = null;
+                        String fillStatus = "pending";
+                        if (filled != null) {
+                            Object fap = filled.get("filled_avg_price");
+                            Object fq = filled.get("filled_qty");
+                            Object st = filled.get("status");
+                            if (fap != null) {
+                                try { fillPrice = new BigDecimal(fap.toString()); } catch (NumberFormatException ignored) {}
+                            }
+                            if (fq != null) {
+                                try { filledQty = new BigDecimal(fq.toString()); } catch (NumberFormatException ignored) {}
+                            }
+                            if (st != null) fillStatus = st.toString();
+                        }
+
+                        // Compute amountInvested as actual dollars, in both directions.
+                        // For buys: prefer (filledQty * fillPrice) if available, else the requested notional.
+                        // For sells: (filledQty * fillPrice) if available, else (requestedQty * fillPrice), else null.
+                        BigDecimal amountInvested = null;
+                        if (filledQty != null && fillPrice != null) {
+                            amountInvested = filledQty.multiply(fillPrice).setScale(2, BigDecimal.ROUND_HALF_UP);
+                        } else if (isBuy) {
+                            amountInvested = dollarAmount;
+                        } else if (sharesQty != null && fillPrice != null) {
+                            amountInvested = sharesQty.multiply(fillPrice).setScale(2, BigDecimal.ROUND_HALF_UP);
                         }
 
                         ExecutedTrade et = new ExecutedTrade();
@@ -259,11 +314,11 @@ public class CapitolTradesScraper {
                         et.setPoliticianName(politician.getName());
                         et.setTicker(trade.getTicker());
                         et.setSide(trade.getTradeType());
-                        et.setAmountInvested(orderAmount);
-                        et.setFillPrice(null);
+                        et.setAmountInvested(amountInvested);
+                        et.setFillPrice(fillPrice);
                         et.setExecutedAt(LocalDateTime.now());
                         et.setAlpacaOrderId(orderId);
-                        et.setStatus(orderId != null ? "pending" : "failed");
+                        et.setStatus(fillStatus);
                         executedTradeRepository.save(et);
                     } catch (Exception e) {
                         log.warn("Failed to execute copy for politician {}: {}", polId, e.getMessage());
