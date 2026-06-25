@@ -27,7 +27,7 @@ export default function PnlChart({ trades = [] }) {
   if (allPoints.length === 0) {
     return (
       <div className="pnl-chart-empty">
-        No trade data yet — your P/L chart will appear here once trades are executed.
+        No trade data yet. Your P/L chart will appear here once trades are executed.
       </div>
     );
   }

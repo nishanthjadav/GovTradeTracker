@@ -52,6 +52,7 @@ export default function PortfolioPage({
   const [currentPage, setCurrentPage] = useState(1);
   const [clearing, setClearing] = useState(false);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const [allocTooltip, setAllocTooltip] = useState(null); // { name, pct, party, x }
 
   const copying = externalCopyConfigs ?? [];
 
@@ -189,20 +190,38 @@ export default function PortfolioPage({
   const applyProfile = async (profile) => {
     if (enrichedCopying.length === 0) return;
     const updates = computeProfileAllocations(enrichedCopying, profile);
+    const activeMap = computeProfileActive(enrichedCopying, profile);
+
     setSliderValues((prev) => {
       const next = { ...prev };
       for (const { id, percent } of updates) next[id] = percent;
       return next;
     });
-    // Fire patches in parallel; backend tolerates rapid PATCHes
-    await Promise.all(updates.map(({ id, percent }) =>
+
+    // Build the body for each PATCH: always send portfolioPercent; only send
+    // `active` when it actually differs from the config's current state, so we
+    // don't churn rows that don't need to change.
+    const patches = updates.map(({ id, percent }) => {
+      const cfg = enrichedCopying.find((c) => c.id === id);
+      const desiredActive = activeMap[id];
+      const body = { portfolioPercent: percent };
+      if (cfg && desiredActive !== undefined && cfg.active !== desiredActive) {
+        body.active = desiredActive;
+      }
+      return { id, body, percent, desiredActive };
+    });
+
+    await Promise.all(patches.map(({ id, body }) =>
       apiFetch(`/copy-configs/${id}`, {
         method: 'PATCH',
-        body: JSON.stringify({ portfolioPercent: percent })
+        body: JSON.stringify(body)
       }).catch(() => {})
     ));
-    for (const { id, percent } of updates) {
-      onUpdateRef.current?.({ id, portfolioPercent: percent });
+
+    for (const { id, body, percent, desiredActive } of patches) {
+      const update = { id, portfolioPercent: percent };
+      if (body.active !== undefined) update.active = desiredActive;
+      onUpdateRef.current?.(update);
     }
   };
 
@@ -286,36 +305,59 @@ export default function PortfolioPage({
               </span>
             </div>
             <div className="allocation-bar-track">
-              {enrichedCopying.map((c) => {
-                const pct = sliderValues[c.id] ?? Number(c.portfolioPercent ?? 5);
-                const av = avatarBg(c.politician?.party ?? c.party);
-                return (
-                  <div
-                    key={c.politicianId}
-                    className={`allocation-bar-segment${!c.active ? " paused" : ""}`}
-                    style={{ width: `${pct}%`, background: av.color }}
-                    title={`${c.politicianName}: ${pct.toFixed(1)}%`}
-                  />
-                );
-              })}
-            </div>
-            <div className="allocation-budget-legend">
-              {enrichedCopying.map((c) => {
-                const pct = sliderValues[c.id] ?? Number(c.portfolioPercent ?? 5);
-                const av = avatarBg(c.politician?.party ?? c.party);
-                return (
-                  <div key={c.politicianId} className="allocation-legend-item">
-                    <span className="allocation-legend-dot" style={{ background: av.color }} />
-                    <span className="allocation-legend-name">{c.politicianName?.split(" ").pop()}</span>
-                    <span className="allocation-legend-pct">{pct.toFixed(1)}%</span>
+              {[...enrichedCopying]
+                .sort((a, b) => {
+                  const pa = (a.politician?.party ?? a.party ?? "").toLowerCase();
+                  const pb = (b.politician?.party ?? b.party ?? "").toLowerCase();
+                  // Group reds (Republican) together, then blues (Democrat),
+                  // then anything else. Within a group, preserve original order.
+                  const rank = (p) => (p.startsWith("r") ? 0 : p.startsWith("d") ? 1 : 2);
+                  return rank(pa) - rank(pb);
+                })
+                .map((c) => {
+                  const pct = sliderValues[c.id] ?? Number(c.portfolioPercent ?? 5);
+                  const party = c.politician?.party ?? c.party;
+                  const av = avatarBg(party);
+                  return (
+                    <div
+                      key={c.politicianId}
+                      className="allocation-bar-hitarea"
+                      style={{ width: `${pct}%` }}
+                      onMouseEnter={(e) => {
+                        const rect = e.currentTarget.parentElement.getBoundingClientRect();
+                        const segRect = e.currentTarget.getBoundingClientRect();
+                        const xPct = ((segRect.left + segRect.width / 2 - rect.left) / rect.width) * 100;
+                        setAllocTooltip({
+                          name: c.politicianName,
+                          pct,
+                          party,
+                          xPct,
+                        });
+                      }}
+                      onMouseLeave={() => setAllocTooltip(null)}
+                    >
+                      <div
+                        className={`allocation-bar-segment${!c.active ? " paused" : ""}`}
+                        style={{ background: av.color }}
+                      />
+                    </div>
+                  );
+                })}
+              {allocTooltip && (
+                <div
+                  className="allocation-bar-tooltip"
+                  style={{ left: `${allocTooltip.xPct}%` }}
+                >
+                  <div className="allocation-bar-tooltip-name">
+                    <span
+                      className="allocation-bar-tooltip-dot"
+                      style={{ background: avatarBg(allocTooltip.party).color }}
+                    />
+                    {allocTooltip.name}
                   </div>
-                );
-              })}
-              {!isOverBudget && remaining > 0.05 && (
-                <div className="allocation-legend-item muted">
-                  <span className="allocation-legend-dot" style={{ background: "var(--color-border)" }} />
-                  <span className="allocation-legend-name">Unallocated</span>
-                  <span className="allocation-legend-pct">{remaining.toFixed(1)}%</span>
+                  <div className="allocation-bar-tooltip-pct">
+                    {allocTooltip.pct.toFixed(1)}%
+                  </div>
                 </div>
               )}
             </div>
@@ -570,9 +612,8 @@ export default function PortfolioPage({
 
 /**
  * Compute new percent allocations for the given profile.
- * Returns array of { id, percent } using whole/half percent values that sum to <=100.
- *
- * Profiles:
+ * Returns array of { id, percent } that sum to exactly 100 (using 0.5 steps to
+ * match the slider). Profile rules:
  *  - "even": split evenly across all configs
  *  - "dem75": 75% pooled across Democrats, 25% across Republicans (others get 0 unless no D/R)
  *  - "rep75": mirror of dem75
@@ -583,8 +624,7 @@ function computeProfileAllocations(configs, profile) {
   const total = 100;
 
   if (profile === "even") {
-    const each = total / configs.length;
-    return configs.map((c) => ({ id: c.id, percent: round1(Math.max(1, each)) }));
+    return distribute(configs, total);
   }
 
   const dems = configs.filter((c) => isDemocrat(c.politician?.party));
@@ -592,22 +632,20 @@ function computeProfileAllocations(configs, profile) {
   const others = configs.filter((c) => !isDemocrat(c.politician?.party) && !isRepublican(c.politician?.party));
 
   if (profile === "demOnly") {
-    if (dems.length === 0) return configs.map((c) => ({ id: c.id, percent: round1(total / configs.length) }));
-    const each = total / dems.length;
+    if (dems.length === 0) return distribute(configs, total);
     return [
-      ...dems.map((c) => ({ id: c.id, percent: round1(Math.max(1, each)) })),
-      ...reps.map((c) => ({ id: c.id, percent: 1 })),
-      ...others.map((c) => ({ id: c.id, percent: 1 })),
+      ...distribute(dems, total),
+      ...reps.map((c) => ({ id: c.id, percent: 0 })),
+      ...others.map((c) => ({ id: c.id, percent: 0 })),
     ];
   }
 
   if (profile === "repOnly") {
-    if (reps.length === 0) return configs.map((c) => ({ id: c.id, percent: round1(total / configs.length) }));
-    const each = total / reps.length;
+    if (reps.length === 0) return distribute(configs, total);
     return [
-      ...reps.map((c) => ({ id: c.id, percent: round1(Math.max(1, each)) })),
-      ...dems.map((c) => ({ id: c.id, percent: 1 })),
-      ...others.map((c) => ({ id: c.id, percent: 1 })),
+      ...distribute(reps, total),
+      ...dems.map((c) => ({ id: c.id, percent: 0 })),
+      ...others.map((c) => ({ id: c.id, percent: 0 })),
     ];
   }
 
@@ -615,41 +653,70 @@ function computeProfileAllocations(configs, profile) {
   const heavySide = profile === "dem75" ? dems : reps;
   const lightSide = profile === "dem75" ? reps : dems;
 
-  // Reserve some budget for "others" if they exist so allocation isn't lopsided.
-  const otherShare = others.length > 0 ? Math.min(10, others.length * 2) : 0;
-  const remaining = total - otherShare;
-
-  // If one side empty, give all remaining to the other (and others)
-  let heavyShare, lightShare;
   if (heavySide.length === 0 && lightSide.length === 0) {
-    return others.map((c) => ({ id: c.id, percent: round1(total / Math.max(1, others.length)) }));
-  } else if (heavySide.length === 0) {
-    heavyShare = 0;
-    lightShare = remaining;
-  } else if (lightSide.length === 0) {
-    heavyShare = remaining;
-    lightShare = 0;
-  } else {
-    heavyShare = remaining * 0.75;
-    lightShare = remaining * 0.25;
+    return distribute(others, total);
+  }
+  if (heavySide.length === 0) {
+    return [
+      ...distribute(lightSide, total),
+      ...others.map((c) => ({ id: c.id, percent: 0 })),
+    ];
+  }
+  if (lightSide.length === 0) {
+    return [
+      ...distribute(heavySide, total),
+      ...others.map((c) => ({ id: c.id, percent: 0 })),
+    ];
   }
 
-  const result = [];
-  if (heavySide.length > 0) {
-    const each = heavyShare / heavySide.length;
-    for (const c of heavySide) result.push({ id: c.id, percent: round1(Math.max(1, each)) });
+  return [
+    ...distribute(heavySide, 75),
+    ...distribute(lightSide, 25),
+    ...others.map((c) => ({ id: c.id, percent: 0 })),
+  ];
+}
+
+/**
+ * Split `budget` across `items` as evenly as possible in 0.5% steps, guaranteed
+ * to sum to exactly `budget`. Any rounding remainder is absorbed by the first
+ * item so the total always lands on the target.
+ */
+function distribute(items, budget) {
+  if (items.length === 0) return [];
+  const each = budget / items.length;
+  const rounded = items.map((c) => ({ id: c.id, percent: round1(each) }));
+  const sum = rounded.reduce((s, r) => s + r.percent, 0);
+  const delta = budget - sum;
+  if (delta !== 0 && rounded.length > 0) {
+    rounded[0].percent = round1(rounded[0].percent + delta);
   }
-  if (lightSide.length > 0) {
-    const each = lightShare / lightSide.length;
-    for (const c of lightSide) result.push({ id: c.id, percent: round1(Math.max(1, each)) });
-  }
-  if (others.length > 0) {
-    const each = otherShare / others.length;
-    for (const c of others) result.push({ id: c.id, percent: round1(Math.max(1, each)) });
-  }
-  return result;
+  return rounded;
 }
 
 function round1(n) {
   return Math.round(n * 2) / 2; // round to nearest 0.5 to match slider step
+}
+
+/**
+ * Decide which configs should be active vs paused for a given profile.
+ *  - "even": everyone active (reset state)
+ *  - "demOnly": Dems active, Reps + others paused
+ *  - "repOnly": Reps active, Dems + others paused
+ *  - "dem75" / "rep75": everyone active — both sides get a real allocation
+ * Returns { [configId]: boolean }.
+ */
+function computeProfileActive(configs, profile) {
+  const result = {};
+  for (const c of configs) {
+    const party = c.politician?.party;
+    if (profile === "demOnly") {
+      result[c.id] = isDemocrat(party);
+    } else if (profile === "repOnly") {
+      result[c.id] = isRepublican(party);
+    } else {
+      // "even", "dem75", "rep75" → everyone active
+      result[c.id] = true;
+    }
+  }
+  return result;
 }
