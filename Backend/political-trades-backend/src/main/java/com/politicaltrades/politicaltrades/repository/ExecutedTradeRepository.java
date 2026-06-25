@@ -10,4 +10,5 @@ import java.util.List;
 public interface ExecutedTradeRepository extends JpaRepository<ExecutedTrade, Long> {
     List<ExecutedTrade> findByUserId(Long userId);
     List<ExecutedTrade> findByUserIdAndTicker(Long userId, String ticker);
+    boolean existsByUserIdAndCapitolTradesId(Long userId, String capitolTradesId);
 }

@@ -49,8 +49,17 @@ public class CopyConfigController {
         cfg.setActive(true);
         cfg.setMaxFiledDays(maxFiledDays);
 
-        CopyConfig saved = copyConfigRepository.save(cfg);
-        return ResponseEntity.ok(saved);
+        try {
+            CopyConfig saved = copyConfigRepository.save(cfg);
+            return ResponseEntity.ok(saved);
+        } catch (org.springframework.dao.DataIntegrityViolationException dup) {
+            // Lost the race against a concurrent POST — the unique constraint
+            // on (user_id, politician_id) rejected our insert. Return whichever
+            // row won.
+            CopyConfig winner = copyConfigRepository.findByUserIdAndPoliticianId(user.getId(), politicianId);
+            if (winner != null) return ResponseEntity.ok(winner);
+            throw dup;
+        }
     }
 
     @GetMapping

@@ -243,7 +243,19 @@ public class CapitolTradesScraper {
                         }
 
                         User cfgUser = userRepository.findById(cfg.getUserId()).orElse(null);
-                        String orderId = null;
+
+                        // Idempotency: if we've already processed this exact
+                        // capitol-trades disclosure for this user, skip. Defends
+                        // against re-scrapes, concurrent backfills, and any
+                        // duplicate CopyConfig that may have slipped through.
+                        if (executedTradeRepository.existsByUserIdAndCapitolTradesId(
+                                cfg.getUserId(), capitolTradesId)) {
+                            log.info("Already executed copy for user {} on capitol trade {} — skipping.",
+                                    cfg.getUserId(), capitolTradesId);
+                            continue;
+                        }
+
+                        AlpacaService.OrderResult orderResult = null;
                         BigDecimal dollarAmount = null;  // dollars invested (buy) or proceeds (sell)
                         BigDecimal sharesQty = null;     // shares bought/sold
 
@@ -255,7 +267,7 @@ public class CapitolTradesScraper {
                             }
                             BigDecimal pct = cfg.getPortfolioPercent() != null ? cfg.getPortfolioPercent() : new BigDecimal("5");
                             BigDecimal notional = equity.multiply(pct).divide(new BigDecimal("100"), 2, BigDecimal.ROUND_HALF_UP);
-                            orderId = alpacaService.placeMarketOrder(cfgUser, trade.getTicker(), "buy", notional);
+                            orderResult = alpacaService.placeMarketOrder(cfgUser, trade.getTicker(), "buy", notional);
                             dollarAmount = notional;
                         } else {
                             BigDecimal positionQty = alpacaService.getPositionQty(cfgUser, trade.getTicker());
@@ -264,18 +276,45 @@ public class CapitolTradesScraper {
                                 continue;
                             }
 
-                            // Estimate sell proportion from politician's trade size vs their total buys of this ticker
+                            // Compute proportion from politician's sell vs their
+                            // known buy history. Returns null if we can't
+                            // determine a sensible proportion — in which case
+                            // we skip rather than liquidate the full position.
                             sharesQty = computeSellQty(positionQty, polId, trade);
-                            orderId = alpacaService.placeMarketOrderByQty(cfgUser, trade.getTicker(), "sell", sharesQty);
+                            if (sharesQty == null) {
+                                log.info("Cannot determine sell proportion for {}/{} — skipping (refusing to liquidate full position on weak signal).",
+                                        polId, trade.getTicker());
+                                continue;
+                            }
+                            orderResult = alpacaService.placeMarketOrderByQty(cfgUser, trade.getTicker(), "sell", sharesQty);
                         }
 
-                        if (orderId == null) {
-                            // Alpaca rejected the order — don't persist a row that
-                            // would inflate the user's totalInvested.
-                            log.warn("Alpaca rejected {} order for user {} on {} — not recording executed trade.",
-                                    trade.getTradeType(), cfg.getUserId(), trade.getTicker());
+                        if (orderResult == null || !orderResult.isSuccess()) {
+                            // Persist a rejection row so the user has visibility:
+                            // "we tried to copy this but Alpaca said no, here's why".
+                            // No amountInvested → doesn't pollute portfolio totals.
+                            String errMsg = orderResult != null ? orderResult.errorMessage : "Unknown error";
+                            log.warn("Alpaca rejected {} order for user {} on {}: {}",
+                                    trade.getTradeType(), cfg.getUserId(), trade.getTicker(), errMsg);
+
+                            ExecutedTrade rej = new ExecutedTrade();
+                            rej.setUserId(cfg.getUserId());
+                            rej.setCapitolTradesId(capitolTradesId);
+                            rej.setPoliticianId(polId);
+                            rej.setPoliticianName(politician.getName());
+                            rej.setTicker(trade.getTicker());
+                            rej.setSide(trade.getTradeType());
+                            rej.setExecutedAt(LocalDateTime.now());
+                            rej.setStatus("rejected");
+                            rej.setErrorMessage(errMsg);
+                            try { executedTradeRepository.save(rej); }
+                            catch (org.springframework.dao.DataIntegrityViolationException dup) {
+                                // Lost the race to a concurrent attempt — fine, the other won.
+                            }
                             continue;
                         }
+
+                        String orderId = orderResult.orderId;
 
                         // Wait briefly for the order to fill so we can record the
                         // actual fill price and qty, which PnL math depends on.
@@ -310,6 +349,7 @@ public class CapitolTradesScraper {
 
                         ExecutedTrade et = new ExecutedTrade();
                         et.setUserId(cfg.getUserId());
+                        et.setCapitolTradesId(capitolTradesId);
                         et.setPoliticianId(polId);
                         et.setPoliticianName(politician.getName());
                         et.setTicker(trade.getTicker());
@@ -319,7 +359,12 @@ public class CapitolTradesScraper {
                         et.setExecutedAt(LocalDateTime.now());
                         et.setAlpacaOrderId(orderId);
                         et.setStatus(fillStatus);
-                        executedTradeRepository.save(et);
+                        try { executedTradeRepository.save(et); }
+                        catch (org.springframework.dao.DataIntegrityViolationException dup) {
+                            log.warn("Race detected on ExecutedTrade for user {} capitol {} — another worker beat us. " +
+                                    "Note: this means an Alpaca order was placed but the row was not saved. orderId={}",
+                                    cfg.getUserId(), capitolTradesId, orderId);
+                        }
                     } catch (Exception e) {
                         log.warn("Failed to execute copy for politician {}: {}", polId, e.getMessage());
                     }
@@ -333,8 +378,10 @@ public class CapitolTradesScraper {
 
     /**
      * Computes how many shares to sell proportionally.
-     * Uses the midpoint of the politician's sell size vs their total known buy size for this ticker.
-     * Falls back to selling the full position if proportion can't be determined.
+     * Uses the midpoint of the politician's sell size vs their total known buy
+     * size for this ticker. Returns null if a sensible proportion can't be
+     * determined — caller should skip the order in that case rather than risk
+     * liquidating the entire position on a weak signal.
      */
     private BigDecimal computeSellQty(BigDecimal positionQty, String politicianId, Trade sellTrade) {
         // Sum the politician's total known buys for this ticker (use sizeMin+sizeMax midpoint)
@@ -349,21 +396,30 @@ public class CapitolTradesScraper {
             .sum();
 
         if (totalBuyMidpoint <= 0) {
-            // Can't determine proportion — sell everything we have
-            log.info("No buy history for {}/{} — selling full position ({} shares).", politicianId, sellTrade.getTicker(), positionQty);
-            return positionQty;
+            // No known buy history for this politician+ticker. Could be a buy
+            // before our scrape window, or before the user's copy config. We
+            // can't compute a proportion, so refuse — caller will skip.
+            return null;
         }
 
         long sellMax = sellTrade.getSizeMax() == Long.MAX_VALUE ? sellTrade.getSizeMin() * 2 : sellTrade.getSizeMax();
         long sellMidpoint = (sellTrade.getSizeMin() + sellMax) / 2;
 
+        if (sellMidpoint <= 0) {
+            // The disclosed sell size was unparseable or zero. Refuse.
+            return null;
+        }
+
         BigDecimal proportion = new BigDecimal(sellMidpoint)
-            .divide(new BigDecimal(totalBuyMidpoint), 8, BigDecimal.ROUND_HALF_UP)
+            .divide(new BigDecimal(totalBuyMidpoint), 8, java.math.RoundingMode.HALF_UP)
             .min(BigDecimal.ONE);
 
-        BigDecimal sellQty = positionQty.multiply(proportion).setScale(8, BigDecimal.ROUND_HALF_DOWN);
-        // Alpaca requires qty > 0
-        if (sellQty.compareTo(BigDecimal.ZERO) <= 0) sellQty = positionQty;
+        BigDecimal sellQty = positionQty.multiply(proportion).setScale(8, java.math.RoundingMode.HALF_DOWN);
+        if (sellQty.compareTo(BigDecimal.ZERO) <= 0) {
+            // Proportion rounded down to 0 shares — don't fall back to full
+            // liquidation. Skip.
+            return null;
+        }
 
         log.info("Sell copy {}: proportion={}, positionQty={}, sellQty={}", sellTrade.getTicker(), proportion, positionQty, sellQty);
         return sellQty;

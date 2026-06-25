@@ -5,7 +5,13 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "copy_configs")
+@Table(
+    name = "copy_configs",
+    uniqueConstraints = @UniqueConstraint(
+        name = "uk_copy_configs_user_politician",
+        columnNames = {"user_id", "politician_id"}
+    )
+)
 public class CopyConfig {
 
     @Id

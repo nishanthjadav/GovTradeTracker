@@ -38,7 +38,18 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         AuthenticationSuccessHandler successHandler = (request, response, authentication) -> {
             if (authentication.getPrincipal() instanceof OidcUser oidc) {
-                userService.findOrCreateFromOidc(oidc);
+                try {
+                    userService.findOrCreateFromOidc(oidc);
+                } catch (Exception e) {
+                    // DB failure during user bootstrap. Without a DB row,
+                    // subsequent requireByGoogleSub() will 500 on every API
+                    // call — leaving the user "logged in" but unable to use
+                    // the app. Invalidate the session and redirect to an
+                    // error page so the user can retry.
+                    request.getSession().invalidate();
+                    response.sendRedirect(frontendUrl + "/auth/callback?error=user_init_failed");
+                    return;
+                }
             }
             response.sendRedirect(frontendUrl + "/auth/callback");
         };
@@ -79,7 +90,9 @@ public class SecurityConfig {
         CorsConfiguration cfg = new CorsConfiguration();
         cfg.setAllowedOrigins(List.of(frontendUrl));
         cfg.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        cfg.setAllowedHeaders(List.of("*"));
+        // Explicit allowlist (instead of "*") so the X-Requested-With header
+        // — used by CsrfHeaderFilter for CSRF defense — passes preflight.
+        cfg.setAllowedHeaders(List.of("Content-Type", "Authorization", "X-Requested-With", "Accept"));
         cfg.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", cfg);

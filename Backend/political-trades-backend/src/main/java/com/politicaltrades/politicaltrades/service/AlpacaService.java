@@ -17,6 +17,24 @@ public class AlpacaService {
 
     private static final Logger log = LoggerFactory.getLogger(AlpacaService.class);
 
+    /**
+     * Result of an Alpaca order placement. orderId is non-null on success;
+     * on rejection, errorMessage carries the body Alpaca returned (e.g.
+     * "buying power exceeded", "asset not tradable") so callers can persist
+     * a row explaining why nothing happened.
+     */
+    public static class OrderResult {
+        public final String orderId;
+        public final String errorMessage;
+        private OrderResult(String orderId, String errorMessage) {
+            this.orderId = orderId;
+            this.errorMessage = errorMessage;
+        }
+        public static OrderResult success(String id) { return new OrderResult(id, null); }
+        public static OrderResult rejected(String msg) { return new OrderResult(null, msg); }
+        public boolean isSuccess() { return orderId != null; }
+    }
+
     private final RestTemplate restTemplate = new RestTemplate();
     private final CryptoService cryptoService;
 
@@ -47,11 +65,11 @@ public class AlpacaService {
         return new String[] { globalApiKey, globalApiSecret };
     }
 
-    public String placeMarketOrder(User user, String ticker, String side, BigDecimal notional) {
+    public OrderResult placeMarketOrder(User user, String ticker, String side, BigDecimal notional) {
         String[] creds = resolveCreds(user);
         if (creds[0] == null || creds[0].isBlank()) {
             log.warn("No Alpaca credentials available; skipping order for {}", ticker);
-            return null;
+            return OrderResult.rejected("No Alpaca credentials configured");
         }
         try {
             String url = baseUrl + "/orders";
@@ -73,23 +91,29 @@ public class AlpacaService {
 
             if (resp.getStatusCode().is2xxSuccessful() && resp.getBody() != null) {
                 Object id = resp.getBody().get("id");
-                return id != null ? id.toString() : null;
+                if (id != null) return OrderResult.success(id.toString());
             }
-
-            log.warn("Alpaca order failed: status {}", resp.getStatusCode().value());
-            return null;
+            log.warn("Alpaca order returned non-success: status {}", resp.getStatusCode().value());
+            return OrderResult.rejected("Unexpected response: " + resp.getStatusCode().value());
+        } catch (org.springframework.web.client.HttpClientErrorException e) {
+            String msg = extractAlpacaError(e);
+            log.warn("Alpaca rejected {} order for {}: {} — {}", side, ticker, e.getStatusCode().value(), msg);
+            return OrderResult.rejected(msg);
+        } catch (org.springframework.web.client.HttpServerErrorException e) {
+            log.error("Alpaca server error placing order for {}: {} — {}", ticker, e.getStatusCode().value(), e.getResponseBodyAsString());
+            return OrderResult.rejected("Alpaca server error: " + e.getStatusCode().value());
         } catch (Exception e) {
             log.error("Error placing alpaca order: {}", e.getMessage());
-            return null;
+            return OrderResult.rejected("Network/IO error: " + e.getMessage());
         }
     }
 
     /** Sell by share quantity (required for sells — Alpaca rejects notional sells for fractional shares). */
-    public String placeMarketOrderByQty(User user, String ticker, String side, BigDecimal qty) {
+    public OrderResult placeMarketOrderByQty(User user, String ticker, String side, BigDecimal qty) {
         String[] creds = resolveCreds(user);
         if (creds[0] == null || creds[0].isBlank()) {
             log.warn("No Alpaca credentials available; skipping order for {}", ticker);
-            return null;
+            return OrderResult.rejected("No Alpaca credentials configured");
         }
         try {
             String url = baseUrl + "/orders";
@@ -111,15 +135,37 @@ public class AlpacaService {
 
             if (resp.getStatusCode().is2xxSuccessful() && resp.getBody() != null) {
                 Object id = resp.getBody().get("id");
-                return id != null ? id.toString() : null;
+                if (id != null) return OrderResult.success(id.toString());
             }
-
-            log.warn("Alpaca order failed: status {}", resp.getStatusCode().value());
-            return null;
+            log.warn("Alpaca order returned non-success: status {}", resp.getStatusCode().value());
+            return OrderResult.rejected("Unexpected response: " + resp.getStatusCode().value());
+        } catch (org.springframework.web.client.HttpClientErrorException e) {
+            String msg = extractAlpacaError(e);
+            log.warn("Alpaca rejected {} order for {}: {} — {}", side, ticker, e.getStatusCode().value(), msg);
+            return OrderResult.rejected(msg);
+        } catch (org.springframework.web.client.HttpServerErrorException e) {
+            log.error("Alpaca server error placing order for {}: {} — {}", ticker, e.getStatusCode().value(), e.getResponseBodyAsString());
+            return OrderResult.rejected("Alpaca server error: " + e.getStatusCode().value());
         } catch (Exception e) {
             log.error("Error placing alpaca order: {}", e.getMessage());
-            return null;
+            return OrderResult.rejected("Network/IO error: " + e.getMessage());
         }
+    }
+
+    /**
+     * Extracts a human-readable error message from an Alpaca 4xx response.
+     * Alpaca returns JSON like {"message":"asset is not tradable"}.
+     */
+    private String extractAlpacaError(org.springframework.web.client.HttpClientErrorException e) {
+        String body = e.getResponseBodyAsString();
+        if (body == null || body.isBlank()) return e.getStatusText();
+        try {
+            com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+            Map<String, Object> parsed = mapper.readValue(body, Map.class);
+            Object msg = parsed.get("message");
+            if (msg != null) return msg.toString();
+        } catch (Exception ignored) { /* fall through to raw body */ }
+        return body.length() > 200 ? body.substring(0, 200) : body;
     }
 
     public BigDecimal getAccountEquity(User user) {

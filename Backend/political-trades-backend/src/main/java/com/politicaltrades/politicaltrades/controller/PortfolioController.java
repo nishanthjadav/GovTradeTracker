@@ -86,24 +86,27 @@ public class PortfolioController {
             // Only buys contribute to "money invested" and PnL. Sells are
             // exits and shouldn't count as fresh capital deployed.
             boolean isBuy = "buy".equalsIgnoreCase(t.getSide());
-            boolean isFailedOrRejected = t.getStatus() != null
-                && ("failed".equalsIgnoreCase(t.getStatus())
-                    || "rejected".equalsIgnoreCase(t.getStatus())
-                    || "canceled".equalsIgnoreCase(t.getStatus())
-                    || "expired".equalsIgnoreCase(t.getStatus()));
+            // Only count rows whose order actually filled. "pending" rows have
+            // requested-notional populated but the order may never fill (or
+            // gets canceled later), so including them would inflate totals
+            // with phantom capital. "rejected"/"failed"/"canceled"/"expired"
+            // are excluded for the same reason.
+            boolean isFilled = t.getStatus() != null
+                && ("filled".equalsIgnoreCase(t.getStatus())
+                    || "partially_filled".equalsIgnoreCase(t.getStatus()));
 
-            if (isBuy && !isFailedOrRejected
+            if (isBuy && isFilled
                     && currentPrice != null
                     && t.getFillPrice() != null && t.getFillPrice().compareTo(BigDecimal.ZERO) > 0
                     && t.getAmountInvested() != null) {
-                BigDecimal shares = t.getAmountInvested().divide(t.getFillPrice(), 8, BigDecimal.ROUND_HALF_UP);
+                BigDecimal shares = t.getAmountInvested().divide(t.getFillPrice(), 8, java.math.RoundingMode.HALF_UP);
                 pnl = currentPrice.subtract(t.getFillPrice()).multiply(shares);
-                pnlPercent = currentPrice.subtract(t.getFillPrice()).divide(t.getFillPrice(), 8, BigDecimal.ROUND_HALF_UP).multiply(new BigDecimal(100)).doubleValue();
+                pnlPercent = currentPrice.subtract(t.getFillPrice()).divide(t.getFillPrice(), 8, java.math.RoundingMode.HALF_UP).multiply(new BigDecimal(100)).doubleValue();
                 totalCurrentValue = totalCurrentValue.add(currentPrice.multiply(shares));
                 totalInvestedCounted = totalInvestedCounted.add(t.getAmountInvested());
             }
 
-            if (isBuy && !isFailedOrRejected && t.getAmountInvested() != null) {
+            if (isBuy && isFilled && t.getAmountInvested() != null) {
                 totalInvested = totalInvested.add(t.getAmountInvested());
             }
 
@@ -118,7 +121,7 @@ public class PortfolioController {
         double overallReturnPercent = 0.0;
         if (totalInvestedCounted.compareTo(BigDecimal.ZERO) > 0) {
             BigDecimal diff = totalCurrentValue.subtract(totalInvestedCounted);
-            overallReturnPercent = diff.divide(totalInvestedCounted, 8, BigDecimal.ROUND_HALF_UP).multiply(new BigDecimal(100)).doubleValue();
+            overallReturnPercent = diff.divide(totalInvestedCounted, 8, java.math.RoundingMode.HALF_UP).multiply(new BigDecimal(100)).doubleValue();
         }
 
         Map<String, BigDecimal> politicianPnl = new HashMap<>();
@@ -134,16 +137,19 @@ public class PortfolioController {
         }
 
         String bestPolitician = null;
-        double bestPoliticianReturn = 0.0;
+        double bestPoliticianReturn = Double.NEGATIVE_INFINITY;
         for (String pid : politicianPnl.keySet()) {
             BigDecimal invested = politicianInvested.getOrDefault(pid, BigDecimal.ZERO);
             if (invested.compareTo(BigDecimal.ZERO) <= 0) continue;
-            double pct = politicianPnl.get(pid).divide(invested, 8, BigDecimal.ROUND_HALF_UP).multiply(new BigDecimal(100)).doubleValue();
+            double pct = politicianPnl.get(pid).divide(invested, 8, java.math.RoundingMode.HALF_UP).multiply(new BigDecimal(100)).doubleValue();
             if (bestPolitician == null || pct > bestPoliticianReturn) {
                 bestPolitician = politicianNames.get(pid);
                 bestPoliticianReturn = pct;
             }
         }
+        // If no politicians had any invested-with-fill rows, leave the
+        // displayed return blank rather than reporting -Infinity.
+        Double bestPoliticianReturnOut = bestPolitician == null ? null : bestPoliticianReturn;
 
         String bestTradeTicker = null;
         double bestTradeReturn = Double.NEGATIVE_INFINITY;
@@ -155,15 +161,16 @@ public class PortfolioController {
                 bestTradeTicker = (String) r.get("ticker");
             }
         }
+        Double bestTradeReturnOut = bestTradeTicker == null ? null : bestTradeReturn;
 
         Map<String, Object> summary = new HashMap<>();
         summary.put("totalInvested", totalInvested);
         summary.put("totalCurrentValue", totalCurrentValue);
         summary.put("overallReturnPercent", overallReturnPercent);
         summary.put("bestPolitician", bestPolitician);
-        summary.put("bestPoliticianReturnPercent", bestPoliticianReturn);
+        summary.put("bestPoliticianReturnPercent", bestPoliticianReturnOut);
         summary.put("bestTradeTicker", bestTradeTicker);
-        summary.put("bestTradeReturnPercent", bestTradeReturn);
+        summary.put("bestTradeReturnPercent", bestTradeReturnOut);
 
         Map<String, Object> resp = new HashMap<>();
         resp.put("summary", summary);

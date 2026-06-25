@@ -5,7 +5,13 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "executed_trades")
+@Table(
+    name = "executed_trades",
+    uniqueConstraints = @UniqueConstraint(
+        name = "uk_executed_trades_user_capitol",
+        columnNames = {"user_id", "capitol_trades_id"}
+    )
+)
 public class ExecutedTrade {
 
     @Id
@@ -14,6 +20,9 @@ public class ExecutedTrade {
 
     @Column(name = "user_id", nullable = false)
     private Long userId;
+
+    @Column(name = "capitol_trades_id")
+    private String capitolTradesId;
 
     @Column(name = "politician_id")
     private String politicianId;
@@ -40,7 +49,10 @@ public class ExecutedTrade {
     private String alpacaOrderId;
 
     @Column(name = "status")
-    private String status; // pending, filled, failed
+    private String status; // pending, filled, failed, rejected
+
+    @Column(name = "error_message", length = 500)
+    private String errorMessage;
 
     public ExecutedTrade() {}
 
@@ -49,6 +61,9 @@ public class ExecutedTrade {
 
     public Long getUserId() { return userId; }
     public void setUserId(Long userId) { this.userId = userId; }
+
+    public String getCapitolTradesId() { return capitolTradesId; }
+    public void setCapitolTradesId(String capitolTradesId) { this.capitolTradesId = capitolTradesId; }
 
     public String getPoliticianId() { return politicianId; }
     public void setPoliticianId(String politicianId) { this.politicianId = politicianId; }
@@ -76,4 +91,7 @@ public class ExecutedTrade {
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+
+    public String getErrorMessage() { return errorMessage; }
+    public void setErrorMessage(String errorMessage) { this.errorMessage = errorMessage; }
 }
