@@ -60,11 +60,12 @@ export default function TradeTable({
         seenPoliticians.add(t.politicianId);
 
         const isFollowUpForCopied = isCopied && !isFirstRowForPolitician;
+        const isFollowUpForPending = isPending && !isFirstRowForPolitician;
 
         return (
           <div
             key={t.id ?? i}
-            className={`table-row${isFollowUpForCopied ? " table-row--copy-follow" : ""}${
+            className={`table-row${(isFollowUpForCopied || isFollowUpForPending) ? " table-row--copy-follow" : ""}${
               isCopied && isFirstRowForPolitician ? " table-row--copy-lead" : ""
             }`}
             style={{ gridTemplateColumns: cols }}
