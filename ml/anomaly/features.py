@@ -1,4 +1,4 @@
-# three feature families — keep them orthogonal-ish so the "reason" string is meaningful
+# three feature families, keep them orthogonal-ish so the "reason" string is meaningful
 
 from __future__ import annotations
 
@@ -31,7 +31,7 @@ def midpoint_size(size_min: Optional[float], size_max: Optional[float]) -> Optio
     if size_min is None or pd.isna(size_min):
         return None
     if size_max is None or pd.isna(size_max) or size_max >= LONG_MAX_VALUE:
-        # open-ended upper bound — cap at 1.5x lower to match the java scraper's computeSellQty
+        # open-ended upper bound, cap at 1.5x lower to match the java scraper's computeSellQty
         return float(size_min) * 1.5
     return (float(size_min) + float(size_max)) / 2.0
 
@@ -62,7 +62,7 @@ def _per_politician_z(values: pd.Series, politician_ids: pd.Series) -> pd.Series
 
 
 def compute_filing_lateness_z(trades: pd.DataFrame) -> pd.Series:
-    # null filed_after_days stays NaN — fillna(0) later treats it as "average", not a penalty
+    # null filed_after_days stays NaN, fillna(0) later treats it as "average", not a penalty
     return _per_politician_z(trades["filed_after_days"].astype(float),
                              trades["politician_id"])
 
@@ -116,7 +116,7 @@ def build_features(trades: pd.DataFrame) -> FeatureFrame:
 
 
 def top_reason(feature_row: pd.Series, trade_row: pd.Series) -> str:
-    # for cluster_density, ratio > 1 is the "extreme" direction — treat like a positive z
+    # for cluster_density, ratio > 1 is the "extreme" direction, treat like a positive z
     candidates = [
         ("filing_lateness_z", abs(feature_row["filing_lateness_z"])),
         ("size_log_z", abs(feature_row["size_log_z"])),
@@ -129,7 +129,7 @@ def top_reason(feature_row: pd.Series, trade_row: pd.Series) -> str:
         fad = trade_row.get("filed_after_days")
         if fad is None or pd.isna(fad):
             return "Unusual filing pattern for this politician"
-        return f"Filed {int(fad)} days after trade — unusual for this politician"
+        return f"Filed {int(fad)} days after trade, unusual for this politician"
 
     if name == "size_log_z":
         mid = midpoint_size(trade_row.get("size_min"), trade_row.get("size_max"))
@@ -141,7 +141,7 @@ def top_reason(feature_row: pd.Series, trade_row: pd.Series) -> str:
             label = f"~${mid / 1_000:.0f}K"
         else:
             label = f"~${mid:.0f}"
-        return f"Position size {label} — unusual for this politician"
+        return f"Position size {label} is unusual for this politician...hmm why are they so confident"
 
     ticker = trade_row.get("ticker") or "this ticker"
-    return f"Many politicians traded {ticker} within a week of this trade"
+    return f"Many politicians traded {ticker} within a week of this trade...suspicious"

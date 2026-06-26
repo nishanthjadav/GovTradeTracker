@@ -144,7 +144,7 @@ export default function AnomaliesPage({
           </div>
         </div>
 
-        <div className="filter-group">
+        {/* <div className="filter-group">
           <label className="filter-label">Score</label>
           <select
             className="filter-select"
@@ -157,7 +157,7 @@ export default function AnomaliesPage({
               </option>
             ))}
           </select>
-        </div>
+        </div> */}
 
         {showCopy && (
           <div className="filter-group">
@@ -220,8 +220,8 @@ function AnomalyTable({
 
   const showCopy = !!onCopyToggle;
   const cols = showCopy
-    ? "36px minmax(130px,1.2fr) minmax(130px,1fr) 84px 90px 110px 80px minmax(180px,1.6fr)"
-    : "minmax(130px,1.2fr) minmax(130px,1fr) 84px 90px 110px 80px minmax(180px,1.6fr)";
+    ? "36px minmax(130px,1.2fr) minmax(130px,1fr) 84px 90px 110px minmax(180px,1.6fr) 80px"
+    : "minmax(130px,1.2fr) minmax(130px,1fr) 84px 90px 110px minmax(180px,1.6fr) 80px";
 
   const checkboxShownFor = new Set();
 
@@ -234,8 +234,8 @@ function AnomalyTable({
         <div>Type</div>
         <div>Ticker</div>
         <div>Trade Date</div>
-        <div>Score</div>
         <div>Why anomalous</div>
+        <div>Score</div>
       </div>
       {trades.map((t, i) => {
         const isCopied = copiedPoliticianIds.has(t.politicianId);
@@ -245,7 +245,9 @@ function AnomalyTable({
         const isFollowUpForCopied = showCopy && isCopied && !isFirstRowForPolitician;
         const showCheckboxForThisRow = showCopy && (!isCopied || isFirstRowForPolitician);
         const scoreText =
-          t.anomalyScore != null ? Number(t.anomalyScore).toFixed(2) : "—";
+          t.anomalyScore != null
+            ? `${Math.round(Number(t.anomalyScore) * 100)}%`
+            : "—";
 
         return (
           <div
@@ -313,11 +315,11 @@ function AnomalyTable({
 
             <div className="date-cell">{t.tradeDate ?? t.publishedDate ?? "—"}</div>
 
-            <div className="anomaly-score-cell">{scoreText}</div>
-
             <div className="anomaly-reason-cell" title={t.anomalyReason || ""}>
               {t.anomalyReason || "—"}
             </div>
+
+            <div className="anomaly-score-cell">{scoreText}</div>
           </div>
         );
       })}
