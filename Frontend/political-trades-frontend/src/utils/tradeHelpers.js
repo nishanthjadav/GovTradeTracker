@@ -21,7 +21,7 @@ const getSortDateValue = (trade) => {
 const normalizeChamber = (value) => value?.toString().trim().toLowerCase() ?? "";
 
 export const applyFilters = (trades, filters) => {
-  let result = trades.filter((t) => t.ticker);
+  let result = [...trades];
 
   if (filters.tradeType !== "all")
     result = result.filter((t) => t.tradeType?.toLowerCase() === filters.tradeType);

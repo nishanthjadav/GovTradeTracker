@@ -31,6 +31,7 @@ export default function App() {
   const [currentPage, setCurrentPage] = useState(1);
   const [copyConfigs, setCopyConfigs] = useState([]);
   const [copyPanelOpen, setCopyPanelOpen] = useState(false);
+  const [pendingCopyIds, setPendingCopyIds] = useState(new Set());
   const [portfolioRefreshKey, setPortfolioRefreshKey] = useState(0);
   const [showSignInPrompt, setShowSignInPrompt] = useState(false);
   const copyPanelRef = useRef(null);
@@ -225,6 +226,21 @@ export default function App() {
     }
   };
 
+  const handlePendingToggle = (politicianId) => {
+    if (isGuest) { setShowSignInPrompt(true); return; }
+    setPendingCopyIds((prev) => {
+      const next = new Set(prev);
+      next.has(politicianId) ? next.delete(politicianId) : next.add(politicianId);
+      return next;
+    });
+  };
+
+  const handleSaveCopies = () => {
+    const toSave = [...pendingCopyIds];
+    setPendingCopyIds(new Set());
+    toSave.forEach((politicianId) => handleCopyToggleById(politicianId));
+  };
+
   return (
     <div className="app dark">
       <div className="topbar">
@@ -288,7 +304,8 @@ export default function App() {
                   loading={loading}
                   onSelectPolitician={selectPoliticianById}
                   copyConfigs={displayedCopyConfigs}
-                  onCopyToggle={handleCopyToggleById}
+                  pendingCopyIds={pendingCopyIds}
+                  onPendingToggle={handlePendingToggle}
                 />
               </div>
               <Pagination
@@ -410,6 +427,11 @@ export default function App() {
             </div>
           )}
         </div>
+      )}
+      {pendingCopyIds.size > 0 && (
+        <button className="save-copies-btn" onClick={handleSaveCopies}>
+          Save {pendingCopyIds.size} {pendingCopyIds.size === 1 ? "politician" : "politicians"}
+        </button>
       )}
       {showSignInPrompt && (
         <div

@@ -27,11 +27,8 @@ export default function ProfilePage({
           </div>
         </div>
       </div>
-      <div className="tab-row">
-        <div className="tab" onClick={onBack}>
-          ← Back to Feed
-        </div>
-      </div>
+           <div style={{ height: 16 }} />
+
       <FilterBar trades={enrichedTrades} filters={filters} setFilters={setFilters} profileMode={true} />
       <div className="results-meta">
         {filteredTrades.length.toLocaleString()} trades

@@ -1005,6 +1005,35 @@ body {
 }
 
 
+.save-copies-btn {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 300;
+  padding: 10px 20px;
+  background: var(--color-accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  font-family: var(--font-family-ui);
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  transition: background 0.15s;
+}
+
+.save-copies-btn:hover {
+  background: var(--color-accent-hover);
+}
+
+.copy-indicator {
+  display: inline-flex;
+  align-items: center;
+  color: var(--color-accent);
+  flex-shrink: 0;
+}
+
 .copy-tray {
   position: fixed;
   bottom: 20px;

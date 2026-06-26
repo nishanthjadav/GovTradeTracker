@@ -22,15 +22,15 @@ export default function TradeTable({
   loading,
   onSelectPolitician,
   copyConfigs,
-  onCopyToggle,
+  pendingCopyIds,
+  onPendingToggle,
 }) {
   if (loading) return <div className="loading">Loading trades...</div>;
   if (!trades.length) return <div className="empty">No trades match the current filters.</div>;
 
-  const showCopy = showPolitician && copyConfigs && onCopyToggle;
+  const showCopy = showPolitician && copyConfigs && onPendingToggle;
 
-  // only show checkbox on the first row per copied politician — dim the rest
-  const checkboxShownFor = new Set();
+  const seenPoliticians = new Set();
 
   const cols = showPolitician
     ? showCopy
@@ -53,15 +53,13 @@ export default function TradeTable({
         const isCopied = showCopy
           ? !!copyConfigs.find((c) => c.politicianId === t.politicianId)
           : false;
+        const isPending = showCopy ? !!(pendingCopyIds?.has(t.politicianId)) : false;
         const av = avatarBg(t.party);
 
-        const isFirstRowForPolitician =
-          showCopy && !checkboxShownFor.has(t.politicianId);
-        if (showCopy && isCopied) checkboxShownFor.add(t.politicianId);
+        const isFirstRowForPolitician = !seenPoliticians.has(t.politicianId);
+        seenPoliticians.add(t.politicianId);
 
-        const isFollowUpForCopied =
-          showCopy && isCopied && !isFirstRowForPolitician;
-        const showCheckboxForThisRow = showCopy && (!isCopied || isFirstRowForPolitician);
+        const isFollowUpForCopied = isCopied && !isFirstRowForPolitician;
 
         return (
           <div
@@ -73,14 +71,14 @@ export default function TradeTable({
           >
             {showCopy && (
               <div className="row-copy-cell">
-                {showCheckboxForThisRow ? (
+                {!isCopied && isFirstRowForPolitician ? (
                   <input
                     type="checkbox"
                     className="row-copy-checkbox"
-                    checked={isCopied}
+                    checked={isPending}
                     onChange={(e) => {
                       e.stopPropagation();
-                      onCopyToggle(t.politicianId);
+                      onPendingToggle(t.politicianId);
                     }}
                   />
                 ) : null}
@@ -100,7 +98,16 @@ export default function TradeTable({
                   className="pol-link"
                   onClick={() => onSelectPolitician?.(t.politicianId)}
                 >
-                  <div className="pol-name" style={{ fontSize: 12 }}>{t.politicianName}</div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                    <div className="pol-name" style={{ fontSize: 12 }}>{t.politicianName}</div>
+                    {isCopied && isFirstRowForPolitician && (
+                      <span className="copy-indicator" title="You are copying this politician">
+                        <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor">
+                          <path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zM4.5 7.5a.5.5 0 0 1 .5-.5h4.293L7.646 5.354a.5.5 0 1 1 .708-.708l2.5 2.5a.5.5 0 0 1 0 .708l-2.5 2.5a.5.5 0 0 1-.708-.708L9.293 8H5a.5.5 0 0 1-.5-.5z"/>
+                        </svg>
+                      </span>
+                    )}
+                  </div>
                   <div className="pol-meta">
                     {t.party?.replace("Republican", "R").replace("Democrat", "D")}
                   </div>
@@ -128,7 +135,7 @@ export default function TradeTable({
             </div>
 
             <div>
-              <span className="ticker-badge">{t.ticker}</span>
+              {t.ticker && <span className="ticker-badge">{t.ticker}</span>}
             </div>
 
             <div className="size-cell">{fmtSize(t.sizeMin, t.sizeMax)}</div>
