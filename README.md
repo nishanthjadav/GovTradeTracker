@@ -7,10 +7,10 @@ A web app for tracking stock trades made by US politicians and optionally copyin
 - Aggregates congressional stock trade disclosures and displays them in a filterable feed
 - Browse trades by politician, party, chamber, ticker, or date range
 - View individual politician profiles with their full trade history and buy/sell breakdown
-- **Leaderboard** — ranks politicians by trading activity
-- **Anomalies** — an ML model (Isolation Forest) scores each trade based on filing lateness, trade size, and clustering patterns. High-scoring trades are surfaced here as statistically unusual (not an accusation of wrongdoing)
-- **Copy trading** — sign in with Google, pick politicians to follow, and the app will mirror their new trades into your connected Alpaca brokerage account
-- **My Portfolio** — tracks P&L on all copied trades using live prices from Alpaca
+- **Leaderboard**: ranks politicians by trading activity
+- **Anomalies**: an ML model (Isolation Forest) scores each trade based on filing lateness, trade size, and clustering patterns. High-scoring trades are surfaced here as statistically unusual
+- **Copy trading**: sign in with Google, pick politicians to follow, and the app will mirror their new trades into your connected Alpaca brokerage account
+- **My Portfolio**: tracks P&L on all copied trades using live prices from Alpaca
 
 ## Stack
 
@@ -29,7 +29,7 @@ GovTradeTracker/
 
 ## Running locally
 
-**Backend** — requires Java 17+ and a PostgreSQL database
+**Backend**: requires Java 17+ and a PostgreSQL database
 ```bash
 cd Backend/political-trades-backend
 cp .env.example .env   # fill in DB credentials and API keys
