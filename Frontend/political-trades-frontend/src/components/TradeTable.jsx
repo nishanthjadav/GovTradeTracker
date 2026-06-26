@@ -71,7 +71,7 @@ export default function TradeTable({
           >
             {showCopy && (
               <div className="row-copy-cell">
-                {!isCopied && isFirstRowForPolitician ? (
+                {!isCopied ? (
                   <input
                     type="checkbox"
                     className="row-copy-checkbox"
