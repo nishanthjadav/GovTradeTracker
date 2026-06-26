@@ -52,7 +52,7 @@ export default function PortfolioPage({
   const [currentPage, setCurrentPage] = useState(1);
   const [clearing, setClearing] = useState(false);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
-  const [allocTooltip, setAllocTooltip] = useState(null); // { name, pct, party, x }
+  const [allocTooltip, setAllocTooltip] = useState(null);
 
   const copying = externalCopyConfigs ?? [];
 
@@ -66,7 +66,6 @@ export default function PortfolioPage({
       .catch(() => {});
   }, [refreshKey]);
 
-  // Sync slider + maxFiledDays values when configs arrive or change
   useEffect(() => {
     setSliderValues(prev => {
       const next = { ...prev };
@@ -140,7 +139,6 @@ export default function PortfolioPage({
   };
 
   const handleMaxFiledDaysChange = (config, rawVal) => {
-    // Allow empty string to clear the cap
     if (rawVal === "" || rawVal == null) {
       setMaxFiledDaysValues(prev => ({ ...prev, [config.id]: "" }));
       patchMaxFiledDays(config.id, null);
@@ -179,14 +177,12 @@ export default function PortfolioPage({
         setSummary((s) => s ? { ...s, totalInvested: 0, totalCurrentValue: 0, overallReturnPercent: 0, bestPolitician: null, bestTradeTicker: null } : null);
       }
     } catch {
-      // noop
     } finally {
       setClearing(false);
       setShowClearConfirm(false);
     }
   };
 
-  // ---- Default allocation profiles ----
   const applyProfile = async (profile) => {
     if (enrichedCopying.length === 0) return;
     const updates = computeProfileAllocations(enrichedCopying, profile);
@@ -198,9 +194,7 @@ export default function PortfolioPage({
       return next;
     });
 
-    // Build the body for each PATCH: always send portfolioPercent; only send
-    // `active` when it actually differs from the config's current state, so we
-    // don't churn rows that don't need to change.
+    // always send portfolioPercent; only send `active` when it actually changed
     const patches = updates.map(({ id, percent }) => {
       const cfg = enrichedCopying.find((c) => c.id === id);
       const desiredActive = activeMap[id];
@@ -232,7 +226,6 @@ export default function PortfolioPage({
     if (onSelectPolitician && politicianId) onSelectPolitician(politicianId);
   };
 
-  // ---- Trade history pagination ----
   const pageCount = Math.max(1, Math.ceil(trades.length / PAGE_SIZE));
   const paginatedTrades = useMemo(
     () => trades.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE),
@@ -253,7 +246,6 @@ export default function PortfolioPage({
         </div>
       </div>
 
-      {/* Summary stats */}
       <div className="stats-row">
         <div className="stat-card">
           <div className="stat-label">Total Invested</div>
@@ -287,13 +279,11 @@ export default function PortfolioPage({
         </div>
       </div>
 
-      {/* P/L Chart */}
       <div className="portfolio-section">
         <div className="portfolio-section-title">Net Profit / Loss</div>
         <PnlChart trades={trades} />
       </div>
 
-      {/* Copying section */}
       <div className="portfolio-section">
 
         {enrichedCopying.length > 0 && (
@@ -309,8 +299,7 @@ export default function PortfolioPage({
                 .sort((a, b) => {
                   const pa = (a.politician?.party ?? a.party ?? "").toLowerCase();
                   const pb = (b.politician?.party ?? b.party ?? "").toLowerCase();
-                  // Group reds (Republican) together, then blues (Democrat),
-                  // then anything else. Within a group, preserve original order.
+                  // group reps then dems then others
                   const rank = (p) => (p.startsWith("r") ? 0 : p.startsWith("d") ? 1 : 2);
                   return rank(pa) - rank(pb);
                 })
@@ -362,7 +351,6 @@ export default function PortfolioPage({
               )}
             </div>
 
-            {/* Default allocation profiles */}
             <div className="allocation-profiles">
               <span className="allocation-profiles-label">Quick allocate:</span>
               <button className="allocation-profile-btn" onClick={() => applyProfile("even")}>
@@ -449,7 +437,6 @@ export default function PortfolioPage({
                     </div>
                   </div>
 
-                  {/* Max Filed Days control */}
                   <div className="copy-card-mfd-section">
                     <label className="copy-mfd-label" htmlFor={`mfd-${c.id}`}>
                       Max filed days
@@ -488,7 +475,6 @@ export default function PortfolioPage({
         )}
       </div>
 
-      {/* Trade History */}
       <div className="portfolio-section">
         <div className="portfolio-section-title-row">
           <div className="portfolio-section-title">Trade History</div>
@@ -577,7 +563,6 @@ export default function PortfolioPage({
         )}
       </div>
 
-      {/* Confirm clear history modal */}
       {showClearConfirm && (
         <div className="portfolio-modal-overlay" onClick={() => !clearing && setShowClearConfirm(false)}>
           <div className="portfolio-modal" onClick={(e) => e.stopPropagation()}>
@@ -610,16 +595,6 @@ export default function PortfolioPage({
   );
 }
 
-/**
- * Compute new percent allocations for the given profile.
- * Returns array of { id, percent } that sum to exactly 100 (using 0.5 steps to
- * match the slider). Profile rules:
- *  - "even": split evenly across all configs
- *  - "dem75": 75% pooled across Democrats, 25% across Republicans (others get 0 unless no D/R)
- *  - "rep75": mirror of dem75
- *  - "demOnly": 100% across Democrats (others 0)
- *  - "repOnly": 100% across Republicans (others 0)
- */
 function computeProfileAllocations(configs, profile) {
   const total = 100;
 
@@ -676,11 +651,6 @@ function computeProfileAllocations(configs, profile) {
   ];
 }
 
-/**
- * Split `budget` across `items` as evenly as possible in 0.5% steps, guaranteed
- * to sum to exactly `budget`. Any rounding remainder is absorbed by the first
- * item so the total always lands on the target.
- */
 function distribute(items, budget) {
   if (items.length === 0) return [];
   const each = budget / items.length;
@@ -694,17 +664,9 @@ function distribute(items, budget) {
 }
 
 function round1(n) {
-  return Math.round(n * 2) / 2; // round to nearest 0.5 to match slider step
+  return Math.round(n * 2) / 2;
 }
 
-/**
- * Decide which configs should be active vs paused for a given profile.
- *  - "even": everyone active (reset state)
- *  - "demOnly": Dems active, Reps + others paused
- *  - "repOnly": Reps active, Dems + others paused
- *  - "dem75" / "rep75": everyone active — both sides get a real allocation
- * Returns { [configId]: boolean }.
- */
 function computeProfileActive(configs, profile) {
   const result = {};
   for (const c of configs) {
@@ -714,7 +676,6 @@ function computeProfileActive(configs, profile) {
     } else if (profile === "repOnly") {
       result[c.id] = isRepublican(party);
     } else {
-      // "even", "dem75", "rep75" → everyone active
       result[c.id] = true;
     }
   }

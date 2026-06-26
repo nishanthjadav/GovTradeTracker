@@ -3,10 +3,7 @@ import axios from 'axios';
 export const API_BASE = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:8080' : '');
 export const API = `${API_BASE}/api`;
 
-// All app fetches must include credentials so the JSESSIONID cookie rides along.
-// X-Requested-With is required by the backend's CsrfHeaderFilter on state-
-// changing requests — a custom header forces a CORS preflight, which only our
-// allowed frontend origin can pass, so cross-site CSRF attempts are blocked.
+// credentials + X-Requested-With header — backend csrf filter requires both
 export const apiFetch = (path, options = {}) =>
   fetch(path.startsWith('http') ? path : `${API}${path}`, {
     credentials: 'include',
@@ -17,8 +14,7 @@ export const apiFetch = (path, options = {}) =>
       ...(options.headers || {}),
     },
   }).then((r) => {
-    // 401 on auth-required endpoint → session expired. Let callers handle by
-    // attaching a flag, but don't try to parse the body as JSON (it'll be HTML).
+    // 401 = session expired. flag it and skip json parse (body will be html)
     if (!r.ok) {
       r.__notOk = true;
       r.__status = r.status;
@@ -36,3 +32,7 @@ export const fetchAllTrades       = ()     => api.get('/trades');
 export const fetchByPolitician    = (name) => api.get(`/trades/politician/${name}`);
 export const fetchUnexecuted      = ()     => api.get('/trades/unexecuted');
 export const triggerIngest        = ()     => api.post('/trades/ingest');
+
+export const fetchAnomalies = (limit = 50, minScore = 0.8) =>
+  apiFetch(`/trades/anomalies?limit=${limit}&minScore=${minScore}`)
+    .then((r) => (r.__notOk ? [] : r.json()));

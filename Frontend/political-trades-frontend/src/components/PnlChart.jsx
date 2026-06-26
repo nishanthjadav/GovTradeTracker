@@ -1,24 +1,8 @@
 import { useMemo, useState, useRef } from "react";
 
-/**
- * Net P/L chart — Robinhood / Fidelity style.
- *
- * Data model: each trade row from /portfolio carries:
- *   - amountInvested, fillPrice, currentPrice (snapshot now)
- *   - executedAt (ISO datetime)
- *
- * We construct a step-wise series of "cumulative net P/L" at each trade's
- * execution date. Between executions, the line stays flat at the most recent
- * realized value (since we only have today's price snapshot — we can't
- * reconstruct historical mark-to-market without a price-history feed).
- *
- * Each point: x = executedAt date, y = sum of (current - fill) * shares for
- * all buys executed at-or-before that point. A final point at "today" extends
- * the line to the right edge so the most recent state is visible.
- */
 export default function PnlChart({ trades = [] }) {
-  const [range, setRange] = useState("ALL"); // "1W" | "1M" | "3M" | "1Y" | "ALL"
-  const [hover, setHover] = useState(null); // { x, y, value, date } in user units
+  const [range, setRange] = useState("ALL");
+  const [hover, setHover] = useState(null);
   const svgRef = useRef(null);
 
   const allPoints = useMemo(() => buildPoints(trades), [trades]);
@@ -42,7 +26,6 @@ export default function PnlChart({ trades = [] }) {
   const ys = points.map((p) => p.v);
   const xMin = Math.min(...xs);
   const xMax = Math.max(...xs, xMin + 1); // avoid div by zero
-  // Pad y range a bit so the line never hugs the edge
   const rawYMin = Math.min(...ys, 0);
   const rawYMax = Math.max(...ys, 0);
   const ySpan = Math.max(rawYMax - rawYMin, 1);
@@ -54,7 +37,7 @@ export default function PnlChart({ trades = [] }) {
   const yScale = (v) => padT + (1 - (v - yMin) / (yMax - yMin)) * innerH;
   const zeroY = yScale(0);
 
-  // Build step-after path: hold then jump (mimics realized P/L stepping at each trade)
+  // step-after path: hold then jump, mimics realized p/l stepping at each trade
   const linePath = buildStepPath(points, xScale, yScale);
   const areaPath = linePath
     + ` L ${xScale(points[points.length - 1].t)} ${zeroY}`
@@ -69,7 +52,6 @@ export default function PnlChart({ trades = [] }) {
   const lineColor = positive ? "var(--color-success)" : "var(--color-danger)";
   const areaColor = positive ? "var(--color-success)" : "var(--color-danger)";
 
-  // Y-axis tick labels
   const yTicks = niceTicks(yMin, yMax, 4);
 
   const handleMove = (e) => {
@@ -82,7 +64,6 @@ export default function PnlChart({ trades = [] }) {
       setHover(null);
       return;
     }
-    // Find nearest point
     let best = points[0];
     let bestDist = Infinity;
     for (const p of points) {
@@ -135,7 +116,6 @@ export default function PnlChart({ trades = [] }) {
           </linearGradient>
         </defs>
 
-        {/* Y gridlines + labels */}
         {yTicks.map((t, i) => (
           <g key={i}>
             <line
@@ -158,7 +138,6 @@ export default function PnlChart({ trades = [] }) {
           </g>
         ))}
 
-        {/* X axis labels (first, middle, last) */}
         {[points[0], points[Math.floor(points.length / 2)], points[points.length - 1]].map((p, i) => (
           <text
             key={i}
@@ -173,11 +152,9 @@ export default function PnlChart({ trades = [] }) {
           </text>
         ))}
 
-        {/* Area + line */}
         <path d={areaPath} fill="url(#pnlAreaGradient)" stroke="none" />
         <path d={linePath} fill="none" stroke={lineColor} strokeWidth="2" strokeLinejoin="round" />
 
-        {/* Hover crosshair */}
         {hover && (
           <>
             <line
@@ -210,17 +187,8 @@ export default function PnlChart({ trades = [] }) {
   );
 }
 
-/**
- * Build cumulative P/L points from executed trades.
- * - Each trade contributes (current - fill) * (amountInvested / fill) for buys.
- * - For sells, we treat amountInvested as the qty sold and skip from P/L
- *   contribution since the realized P/L was already booked when the position
- *   moved. (Approximation — without lot tracking we can't reconstruct exact
- *   realized P/L; this matches the existing /portfolio summary behavior.)
- *
- * Sorts by executedAt ascending, accumulates step-wise. Adds a synthetic
- * "now" point at the end to extend the line to today.
- */
+// sells skip p/l contribution — without lot tracking we can't compute realized
+// p/l exactly, so we mirror the /portfolio summary approach
 function buildPoints(trades) {
   if (!trades || trades.length === 0) return [];
 
@@ -243,8 +211,7 @@ function buildPoints(trades) {
 
   let cum = 0;
   const out = [];
-  // Start with a baseline 0 just before the first trade, so the area
-  // visually rises from zero rather than starting at the first P/L value.
+  // baseline 0 just before the first trade so area rises from zero
   const firstT = valid[0].t;
   out.push({ t: Math.max(firstT - 24 * 3600 * 1000, firstT - 60 * 1000), v: 0 });
 
@@ -252,7 +219,6 @@ function buildPoints(trades) {
     cum += p.pnl;
     out.push({ t: p.t, v: cum });
   }
-  // Extend to "now"
   const nowT = Date.now();
   if (nowT > out[out.length - 1].t) {
     out.push({ t: nowT, v: cum });
@@ -269,7 +235,7 @@ function filterByRange(points, range) {
   const cutoff = now - days * 24 * 3600 * 1000;
   const inRange = points.filter((p) => p.t >= cutoff);
   if (inRange.length < 2) {
-    // Synthesize a starting baseline at cutoff using the most recent prior cumulative value
+    // synthesize a starting baseline at cutoff using the most recent prior value
     let baseline = 0;
     for (const p of points) {
       if (p.t < cutoff) baseline = p.v;
@@ -287,7 +253,7 @@ function buildStepPath(points, xScale, yScale) {
     const x = xScale(points[i].t);
     const y = yScale(points[i].v);
     const prevY = yScale(points[i - 1].v);
-    // Step-after style: hold prev value then jump vertically at new x
+    // step-after: hold prev value then jump vertically at new x
     d += ` L ${x} ${prevY} L ${x} ${y}`;
   }
   return d;
@@ -323,7 +289,7 @@ function niceTicks(min, max, count) {
   for (let v = start; v <= max; v += step) {
     ticks.push(Number(v.toFixed(8)));
   }
-  // Always include zero if it's in range
+  // always include zero if it's in range
   if (min < 0 && max > 0 && !ticks.includes(0)) {
     ticks.push(0);
     ticks.sort((a, b) => a - b);

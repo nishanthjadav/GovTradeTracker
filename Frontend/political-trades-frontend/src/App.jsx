@@ -10,6 +10,7 @@ import AccountPage from "./components/AccountPage";
 import LeaderboardPage from "./components/LeaderboardPage";
 import AboutPage from "./components/AboutPage";
 import FaqPage from "./components/FaqPage";
+import AnomaliesPage from "./components/AnomaliesPage";
 import { defaultFilters } from "./utils/filterHelpers";
 import { applyFilters } from "./utils/tradeHelpers";
 import { apiFetch } from "./api";
@@ -58,7 +59,6 @@ export default function App() {
     setFilters(defaultFilters());
   }, [currentView, selectedPol]);
 
-  // Close copy panel when clicking outside
   useEffect(() => {
     if (!copyPanelOpen) return;
     const handler = (e) => {
@@ -70,7 +70,7 @@ export default function App() {
     return () => document.removeEventListener("mousedown", handler);
   }, [copyPanelOpen]);
 
-  // Auto-open panel when first politician is added
+  // auto-open panel when first politician is added
   const prevCountRef = useRef(0);
   useEffect(() => {
     if (copyConfigs.length > prevCountRef.current && prevCountRef.current === 0) {
@@ -142,9 +142,8 @@ export default function App() {
   const totalBuys = filteredTrades.filter((t) => t.tradeType?.toLowerCase() === "buy").length;
   const totalSells = filteredTrades.filter((t) => t.tradeType?.toLowerCase() === "sell").length;
 
-  // Dedupe copyConfigs by politicianId for display (defensive — earlier StrictMode
-  // bugs may have left duplicate rows in the DB). Prefer numeric-id entries over
-  // optimistic-id ones; among numerics, prefer the highest id.
+  // dedupe copyConfigs by politicianId — strictmode used to leave dupes in db.
+  // prefer numeric ids over optimistic ones; highest numeric id wins
   const displayedCopyConfigs = useMemo(() => {
     const isReal = (c) => typeof c.id === "number";
     const seen = new Map();
@@ -170,7 +169,6 @@ export default function App() {
     const existing = copyConfigs.find((c) => c.politicianId === politicianId);
 
     if (existing) {
-      // Optimistic remove
       setCopyConfigs((prev) => prev.filter((c) => c.politicianId !== politicianId));
       if (typeof existing.id === "number") {
         apiFetch(`/copy-configs/${existing.id}`, { method: "DELETE" })
@@ -248,6 +246,12 @@ export default function App() {
             Leaderboard
           </button>
           <button
+            className={`top-action${currentView === "anomalies" ? " active" : ""}`}
+            onClick={() => setCurrentView("anomalies")}
+          >
+            Anomalies
+          </button>
+          <button
             className={`top-action${currentView === "about" ? " active" : ""}`}
             onClick={() => setCurrentView("about")}
           >
@@ -315,6 +319,12 @@ export default function App() {
               onSelectPolitician={selectPoliticianById}
               onBack={() => setCurrentView("feed")}
             />
+          ) : currentView === "anomalies" ? (
+            <AnomaliesPage
+              copyConfigs={displayedCopyConfigs}
+              onSelectPolitician={selectPoliticianById}
+              onCopyToggle={handleCopyToggleById}
+            />
           ) : currentView === "about" ? (
             <AboutPage onBack={() => setCurrentView("feed")} />
           ) : currentView === "faq" ? (
@@ -339,7 +349,6 @@ export default function App() {
         </div>
       </div>
 
-      {/* Bottom-left copy panel — shown whenever there are active copy configs */}
       {displayedCopyConfigs.length > 0 && (
         <div className="copy-tray" ref={copyPanelRef}>
           <button
@@ -393,7 +402,6 @@ export default function App() {
           )}
         </div>
       )}
-      {/* Sign-in prompt modal for guests */}
       {showSignInPrompt && (
         <div
           onClick={() => setShowSignInPrompt(false)}

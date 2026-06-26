@@ -96,7 +96,6 @@ export default function AccountPage({ onBack }) {
       <div style={{ height: 16 }} />
 
 
-      {/* Profile */}
       <section style={cardStyle}>
         <div style={sectionTitleStyle}>Profile</div>
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
@@ -121,7 +120,6 @@ export default function AccountPage({ onBack }) {
         </div>
       </section>
 
-      {/* Alpaca paper */}
       <section style={cardStyle}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>
@@ -190,7 +188,6 @@ export default function AccountPage({ onBack }) {
         )}
       </section>
 
-      {/* Real trading — coming soon */}
       <section style={{ ...cardStyle, opacity: 0.7 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>

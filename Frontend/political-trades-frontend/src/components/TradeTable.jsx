@@ -13,6 +13,9 @@ function avatarBg(party) {
   return { bg: "#f1f5f9", color: "#94a3b8" };
 }
 
+// keep in sync with AnomaliesPage default minScore — top 20% most anomalous
+const ANOMALY_CHIP_THRESHOLD = 0.8;
+
 export default function TradeTable({
   trades,
   showPolitician,
@@ -26,9 +29,7 @@ export default function TradeTable({
 
   const showCopy = showPolitician && copyConfigs && onCopyToggle;
 
-  // Track which COPIED politicians have already had their lead row rendered.
-  // Used to collapse follow-up rows of an already-copied politician to a single
-  // checkbox + dimmed siblings. Uncopied politicians keep checkboxes on every row.
+  // only show checkbox on the first row per copied politician — dim the rest
   const checkboxShownFor = new Set();
 
   const cols = showPolitician
@@ -54,9 +55,6 @@ export default function TradeTable({
           : false;
         const av = avatarBg(t.party);
 
-        // For a COPIED politician, show the checkbox only on the first row in the
-        // current view and dim/strip follow-ups. For uncopied politicians, every
-        // row keeps its own checkbox.
         const isFirstRowForPolitician =
           showCopy && !checkboxShownFor.has(t.politicianId);
         if (showCopy && isCopied) checkboxShownFor.add(t.politicianId);
@@ -111,7 +109,17 @@ export default function TradeTable({
             ) : null}
 
             <div>
-              <div className="issuer-name">{t.issuerName || "—"}</div>
+              <div className="issuer-name">
+                {t.issuerName || "—"}
+                {t.anomalyScore != null && t.anomalyScore >= ANOMALY_CHIP_THRESHOLD && (
+                  <span
+                    className="anomaly-chip"
+                    title={t.anomalyReason || "Statistically unusual trade"}
+                  >
+                    ⚠ Anomalous
+                  </span>
+                )}
+              </div>
               {t.filedAfterDays != null && (
                 <div className="issuer-meta">filed {t.filedAfterDays}d after</div>
               )}

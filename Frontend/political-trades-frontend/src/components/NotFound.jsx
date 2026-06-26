@@ -10,13 +10,10 @@ export default function NotFound() {
       fontFamily: "sans-serif",
       gap: 16,
     }}>
-      {/* Animated stock chart */}
       <svg width="220" height="100" viewBox="0 0 220 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-        {/* Grid lines */}
         {[20, 40, 60, 80].map(y => (
           <line key={y} x1="10" y1={y} x2="210" y2={y} stroke="#e2e8f0" strokeWidth="1" />
         ))}
-        {/* Animated chart line */}
         <polyline
           points="10,20 35,40 60,28 85,55 110,42 135,65 160,50 185,75 210,88"
           fill="none"
@@ -28,14 +25,12 @@ export default function NotFound() {
           strokeDashoffset="400"
           style={{ animation: "drawLine 1.8s ease forwards" }}
         />
-        {/* Animated fill */}
         <polygon
           points="10,20 35,40 60,28 85,55 110,42 135,65 160,50 185,75 210,88 210,95 10,95"
           fill="url(#grad)"
           opacity="0"
           style={{ animation: "fadeIn 0.6s ease 1.6s forwards" }}
         />
-        {/* Animated dot at end */}
         <circle
           cx="210" cy="88" r="4"
           fill="#ef4444"
@@ -50,7 +45,6 @@ export default function NotFound() {
         </defs>
       </svg>
 
-      {/* Ticker falling animation */}
       <div style={{
         display: "flex",
         alignItems: "center",

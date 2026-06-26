@@ -2,9 +2,7 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
-/* === CSS VARIABLES === */
 :root {
-  /* Palette */
   --color-bg-primary: #0f172a;
   --color-bg-secondary: #1a1f2e;
   --color-bg-tertiary: #0a0e14;
@@ -25,7 +23,6 @@
   --color-bg-overlay: rgba(0, 0, 0, 0.35);
   --color-border-strong: #2b3648;
 
-  /* Typography */
   --font-family-ui: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-family-mono: 'JetBrains Mono', monospace;
   --font-size-xs: 11px;
@@ -40,7 +37,6 @@
   --font-weight-semibold: 600;
   --font-weight-bold: 700;
 
-  /* Spacing (4px baseline) */
   --spacing-1: 4px;
   --spacing-2: 8px;
   --spacing-3: 12px;
@@ -49,17 +45,14 @@
   --spacing-6: 24px;
   --spacing-8: 32px;
 
-  /* Borders */
   --border-radius-sm: 4px;
   --border-radius: 6px;
   --border-width: 1px;
 
-  /* Shadows (minimal) */
   --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
-/* === GLOBAL === */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -97,7 +90,6 @@ body {
   background: var(--color-text-muted);
 }
 
-/* === APP LAYOUT === */
 .app {
   display: flex;
   flex-direction: column;
@@ -106,7 +98,6 @@ body {
   background: var(--color-bg-primary);
 }
 
-/* === TOPBAR === */
 .topbar {
   display: flex;
   align-items: center;
@@ -168,7 +159,6 @@ body {
   color: #fff;
 }
 
-/* Inline copy checkbox in trade table rows */
 .row-copy-cell {
   display: flex;
   align-items: center;
@@ -205,7 +195,6 @@ body {
   font-family: var(--font-family-mono);
 }
 
-/* === MAIN LAYOUT === */
 .main {
   display: flex;
   flex: 1;
@@ -304,7 +293,6 @@ body {
   font-size: var(--font-size-sm);
 }
 
-/* === CONTENT AREA === */
 .content {
   flex: 1;
   min-width: 0;
@@ -340,7 +328,6 @@ body {
   margin-top: var(--spacing-1);
 }
 
-/* === METRICS ROW === */
 .stats-row {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -390,7 +377,6 @@ body {
   }
 }
 
-/* === TABS === */
 .tab-row {
   display: flex;
   gap: 0;
@@ -428,7 +414,6 @@ body {
   border-bottom-color: var(--color-accent);
 }
 
-/* === TRADES TABLE === */
 .trades-table {
   width: 100%;
   border-collapse: collapse;
@@ -474,7 +459,7 @@ body {
   background: var(--color-bg-tertiary);
 }
 
-/* Lead row for a copied politician — subtle blue stripe on the left */
+/* subtle blue stripe on the left for the lead row of a copied politician */
 .table-row--copy-lead {
   box-shadow: inset 3px 0 0 var(--color-accent);
   background: color-mix(in srgb, var(--color-accent) 4%, transparent);
@@ -484,7 +469,7 @@ body {
   background: color-mix(in srgb, var(--color-accent) 8%, var(--color-bg-tertiary));
 }
 
-/* Follow-up rows for a politician already shown above — dimmed, no checkbox */
+/* dim follow-up rows for a politician already shown above */
 .table-row--copy-follow {
   opacity: 0.55;
   background: color-mix(in srgb, var(--color-accent) 2%, transparent);
@@ -502,6 +487,39 @@ body {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.anomaly-chip {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 6px;
+  font-family: var(--font-family-mono);
+  font-size: 10px;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-warning);
+  background: var(--color-warning-bg, rgba(234, 179, 8, 0.12));
+  border: var(--border-width) solid var(--color-warning);
+  border-radius: var(--border-radius-sm);
+  letter-spacing: 0.03em;
+  vertical-align: middle;
+  cursor: help;
+  white-space: nowrap;
+}
+
+.anomalies-disclaimer {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  background: var(--color-bg-secondary);
+  border: var(--border-width) solid var(--color-border);
+  border-left: 3px solid var(--color-warning);
+  border-radius: var(--border-radius-sm);
+  padding: var(--spacing-3) var(--spacing-4);
+  margin-bottom: var(--spacing-4);
+  line-height: 1.5;
+}
+
+.anomalies-disclaimer strong {
+  color: var(--color-text-primary);
 }
 
 .issuer-meta {
@@ -566,7 +584,7 @@ body {
   font-size: var(--font-size-xs);
   color: var(--color-text-secondary);
 }
-/* Filter bar */
+
 .filter-bar {
   display: flex;
   flex-wrap: wrap;
@@ -713,8 +731,7 @@ body {
   border-color: var(--color-danger);
   color: var(--color-danger);
 }
- 
-/* Results count bar */
+
 .results-meta {
   display: flex;
   align-items: center;
@@ -855,8 +872,6 @@ body {
 .sell-text { color: var(--color-danger); }
 
 
-/* === SEARCHABLE SELECT === */
-
 .searchable-select {
   position: relative;
   height: 30px;
@@ -974,8 +989,6 @@ body {
   background: var(--color-text-muted);
 }
 
-
-/* === COPY TRAY (bottom-left panel) === */
 
 .copy-tray {
   position: fixed;
@@ -1126,7 +1139,6 @@ body {
   background: var(--color-accent-hover);
 }
 
-/* Portfolio section hint */
 .portfolio-section-hint {
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-regular);

@@ -1,17 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
-/**
- * Searchable single-select combobox.
- *
- * Props:
- *   options:    Array<{ value: string, label: string }>
- *   value:      currently selected value (string)
- *   onChange:   (newValue: string) => void
- *   placeholder optional placeholder text
- *   allLabel    label shown for the "no selection" option (default "All")
- *   width       optional pixel width for the trigger (defaults to 160)
- *   uppercase   if true, the typed query is uppercased before filtering (for tickers)
- */
 export default function SearchableSelect({
   options,
   value,
@@ -26,7 +14,6 @@ export default function SearchableSelect({
   const wrapperRef = useRef(null);
   const inputRef = useRef(null);
 
-  // Close on outside click
   useEffect(() => {
     if (!open) return;
     const handler = (e) => {
@@ -39,7 +26,6 @@ export default function SearchableSelect({
     return () => document.removeEventListener("mousedown", handler);
   }, [open]);
 
-  // When opening, focus the input
   useEffect(() => {
     if (open && inputRef.current) {
       inputRef.current.focus();
