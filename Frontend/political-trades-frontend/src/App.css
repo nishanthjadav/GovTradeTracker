@@ -506,20 +506,27 @@ body {
   white-space: nowrap;
 }
 
-.anomalies-disclaimer {
+.anomaly-score-cell {
+  font-family: var(--font-family-mono);
   font-size: var(--font-size-sm);
-  color: var(--color-text-secondary);
-  background: var(--color-bg-secondary);
-  border: var(--border-width) solid var(--color-border);
-  border-left: 3px solid var(--color-warning);
-  border-radius: var(--border-radius-sm);
-  padding: var(--spacing-3) var(--spacing-4);
-  margin-bottom: var(--spacing-4);
-  line-height: 1.5;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-warning);
 }
 
-.anomalies-disclaimer strong {
-  color: var(--color-text-primary);
+.anomaly-reason-cell {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  line-height: 1.4;
+  max-height: 3.6em;
+  overflow-y: auto;
+  white-space: normal;
+  word-break: break-word;
+  padding-right: 4px;
+  scrollbar-width: thin;
+}
+
+.anomaly-table {
+  min-width: 880px;
 }
 
 .issuer-meta {
