@@ -210,6 +210,20 @@ body {
   flex-shrink: 0;
 }
 
+.leaderboard-buysell {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+}
+
+.leaderboard-buysell-sep {
+  color: var(--color-text-muted);
+  font-weight: var(--font-weight-normal);
+}
+
 .pol-avatar {
   width: 28px;
   height: 28px;
@@ -516,6 +530,20 @@ body {
 .anomaly-score-cell {
   display: flex;
   align-items: center;
+}
+
+.anomaly-percentile-header {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.anomaly-percentile-info {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  cursor: help;
+  line-height: 1;
+  flex-shrink: 0;
 }
 
 .anomaly-score-bar-wrap {

@@ -7,10 +7,14 @@ const PAGE_SIZE = 25;
 const DEFAULT_LIMIT = 300;
 const FETCH_MIN_SCORE = 0.5;
 
+const SCORE_MIN = 0.5;
+const SCORE_MAX = 1.0;
+
 function ScoreBar({ score }) {
   if (score == null) return <span style={{ color: "var(--color-text-muted)" }}>—</span>;
   const pct = Math.round(score * 100);
-  const pos = Math.max(4, Math.min(96, score * 100));
+  const clamped = Math.max(SCORE_MIN, Math.min(SCORE_MAX, score));
+  const pos = Math.max(4, Math.min(96, ((clamped - SCORE_MIN) / (SCORE_MAX - SCORE_MIN)) * 100));
   return (
     <div className="anomaly-score-bar-wrap">
       <div className="anomaly-score-bar">
@@ -251,7 +255,15 @@ function AnomalyTable({
         <div>Trade Date</div>
         <div>Size</div>
         <div>Why anomalous</div>
-        <div>Percentile</div>
+        <div className="anomaly-percentile-header">
+          Percentile
+          <span
+            className="anomaly-percentile-info"
+            title="Percentile rank from 50–100% showing how unusual this trade is compared to all trades in the database. Scored by an Isolation Forest model on filing lateness, trade size, and clustering with other politicians. 100% = most anomalous."
+          >
+            ⓘ
+          </span>
+        </div>
       </div>
       {trades.map((t, i) => {
         const isCopied = copiedPoliticianIds.has(t.politicianId);
