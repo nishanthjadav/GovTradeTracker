@@ -64,9 +64,6 @@ public class ScrapeScheduler {
         return candidate.toInstant();
     }
 
-    /**
-     * Full historical backfill — call manually via REST.
-     */
     public void fullBackfill() {
         log.info("Starting full historical backfill (runs until no trades found)...");
         scraper.scrapePages(1, 500);

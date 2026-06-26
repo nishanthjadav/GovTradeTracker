@@ -49,14 +49,13 @@ public class ExecutedTrade {
     private String alpacaOrderId;
 
     @Column(name = "status")
-    private String status; // pending, filled, failed, rejected
+    private String status;
 
     @Column(name = "error_message", length = 500)
     private String errorMessage;
 
     public ExecutedTrade() {}
 
-    // Getters and setters
     public Long getId() { return id; }
 
     public Long getUserId() { return userId; }

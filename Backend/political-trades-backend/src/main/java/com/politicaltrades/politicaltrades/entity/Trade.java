@@ -24,7 +24,7 @@ public class Trade {
     private String issuerName;
 
     @Column(name = "ticker")
-    private String ticker; 
+    private String ticker;
 
     @Column(name = "published_date")
     private LocalDate publishedDate;
@@ -36,22 +36,29 @@ public class Trade {
     private Integer filedAfterDays;
 
     @Column(name = "owner")
-    private String owner; // "Self", "Spouse", "Undisclosed", etc.
+    private String owner;
 
     @Column(name = "trade_type", nullable = false)
-    private String tradeType; // "buy" or "sell"
+    private String tradeType;
 
     @Column(name = "size_min")
-    private Long sizeMin; // e.g. 1000
+    private Long sizeMin;
 
     @Column(name = "size_max")
-    private Long sizeMax; // e.g. 15000
+    private Long sizeMax;
 
     @Column(name = "price", precision = 10, scale = 2)
-    private BigDecimal price; // nullable — not always disclosed
+    private BigDecimal price;
 
     @Column(name = "scraped_at")
     private LocalDateTime scrapedAt;
+
+    // populated weekly by the ml/anomaly python job. null until first scoring run. score is 0-1 percentile rank
+    @Column(name = "anomaly_score", precision = 5, scale = 4)
+    private BigDecimal anomalyScore;
+
+    @Column(name = "anomaly_reason", length = 120)
+    private String anomalyReason;
 
     @PrePersist
     protected void onCreate() {
@@ -60,7 +67,6 @@ public class Trade {
 
     public Trade() {}
 
-    // Getters & Setters
     public Long getId() { return id; }
 
     public String getCapitolTradesId() { return capitolTradesId; }
@@ -100,4 +106,10 @@ public class Trade {
     public void setPrice(BigDecimal price) { this.price = price; }
 
     public LocalDateTime getScrapedAt() { return scrapedAt; }
+
+    public BigDecimal getAnomalyScore() { return anomalyScore; }
+    public void setAnomalyScore(BigDecimal anomalyScore) { this.anomalyScore = anomalyScore; }
+
+    public String getAnomalyReason() { return anomalyReason; }
+    public void setAnomalyReason(String anomalyReason) { this.anomalyReason = anomalyReason; }
 }

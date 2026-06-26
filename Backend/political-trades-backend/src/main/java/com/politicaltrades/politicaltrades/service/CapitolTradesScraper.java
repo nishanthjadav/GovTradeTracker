@@ -70,13 +70,19 @@ public class CapitolTradesScraper {
         scrapePages(startPage, Integer.MAX_VALUE, true);
     }
 
+    private static final int MAX_CONSECUTIVE_ERRORS = 5;
+
+    private enum RowResult { NEW, DUPLICATE, UNPARSEABLE }
+
     private void scrapePages(int startPage, int endPage, boolean stopOnDuplicatePage) {
         int newTrades = 0;
         int skipped = 0;
+        int consecutiveErrors = 0;
 
         try (Playwright playwright = Playwright.create()) {
             Browser browser = playwright.chromium().launch(new BrowserType.LaunchOptions().setHeadless(true));
             Page page = browser.newPage();
+            page.setDefaultNavigationTimeout(30000);
 
             for (int pageNum = startPage; pageNum <= endPage; pageNum++) {
                 String targetUrl = BASE_URL + pageNum;
@@ -84,7 +90,6 @@ public class CapitolTradesScraper {
 
                 try {
                     page.navigate(targetUrl);
-                    // Wait for the trades table to appear, up to 15 seconds
                     page.waitForSelector("table tbody tr", new Page.WaitForSelectorOptions().setTimeout(15000));
 
                     String html = page.content();
@@ -102,19 +107,30 @@ public class CapitolTradesScraper {
                         break;
                     }
 
+                    consecutiveErrors = 0;
+
                     int pageNewTrades = 0;
-                    int pageSkipped = 0;
+                    int pageDuplicates = 0;
+                    int pageUnparseable = 0;
                     for (Element row : rows) {
                         try {
-                            int result = processRow(row);
-                            if (result == 1) { newTrades++; pageNewTrades++; }
-                            else { skipped++; pageSkipped++; }
+                            RowResult result = processRow(row);
+                            switch (result) {
+                                case NEW -> { newTrades++; pageNewTrades++; }
+                                case DUPLICATE -> { skipped++; pageDuplicates++; }
+                                case UNPARSEABLE -> { skipped++; pageUnparseable++; }
+                            }
                         } catch (Exception e) {
+                            pageUnparseable++;
                             log.warn("Failed to parse row on page {}: {}", pageNum, e.getMessage());
                         }
                     }
 
-                    if (stopOnDuplicatePage && pageNewTrades == 0 && pageSkipped > 0) {
+                    if (pageUnparseable > 0) {
+                        log.warn("Page {}: {} row(s) failed to parse — possible layout change on Capitol Trades.", pageNum, pageUnparseable);
+                    }
+
+                    if (stopOnDuplicatePage && pageNewTrades == 0 && pageDuplicates > 0) {
                         log.info("Page {} had no new trades — caught up to existing data, stopping.", pageNum);
                         break;
                     }
@@ -126,7 +142,22 @@ public class CapitolTradesScraper {
                     log.error("Scraping interrupted at page {}", pageNum);
                     break;
                 } catch (Exception e) {
-                    log.error("Error fetching page {}: {}", pageNum, e.getMessage());
+                    consecutiveErrors++;
+                    log.error("Error fetching page {} ({}/{} consecutive errors): {}", pageNum, consecutiveErrors, MAX_CONSECUTIVE_ERRORS, e.getMessage());
+                    if (consecutiveErrors >= MAX_CONSECUTIVE_ERRORS) {
+                        log.error("SCRAPE_ABORTED: reached {} consecutive errors on page {} — Capitol Trades is likely rate-limiting or has changed layout. Aborting to avoid endless timeout loop.",
+                                MAX_CONSECUTIVE_ERRORS, pageNum);
+                        break;
+                    }
+                    // back off so we don't confirm bot behavior by hammering: 15s, 30s, 60s, 60s, 60s
+                    long backoffMs = Math.min(60_000L, 15_000L * (1L << Math.min(consecutiveErrors - 1, 2)));
+                    log.info("Backing off {}ms before retrying.", backoffMs);
+                    try {
+                        Thread.sleep(backoffMs);
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                        break;
+                    }
                 }
             }
 
@@ -142,17 +173,17 @@ public class CapitolTradesScraper {
 
 
 
-    private int processRow(Element row) {
+    private RowResult processRow(Element row) {
         Elements cells = row.select("td");
-        if (cells.size() < 8) return 0;
+        if (cells.size() < 8) return RowResult.UNPARSEABLE;
 
         String tradeDetailUrl = row.select("a[href*='/trades/']").last() != null
                 ? row.select("a[href*='/trades/']").last().attr("href")
                 : null;
         String capitolTradesId = extractTradeId(tradeDetailUrl);
-        if (capitolTradesId == null) return 0;
+        if (capitolTradesId == null) return RowResult.UNPARSEABLE;
 
-        if (tradeRepository.existsByCapitolTradesId(capitolTradesId)) return 0;
+        if (tradeRepository.existsByCapitolTradesId(capitolTradesId)) return RowResult.DUPLICATE;
 
         Element politicianCell = cells.get(0);
         String politicianName = politicianCell.select("a").first() != null
@@ -206,7 +237,6 @@ public class CapitolTradesScraper {
         trade.setPrice(price);
 
         tradeRepository.save(trade);
-        // After saving a new trade, check for active copy configs and fire copy orders
         try {
             String polId = politician.getId();
             java.util.List<CopyConfig> configs = copyConfigRepository.findByPoliticianIdAndActiveTrue(polId);
@@ -215,14 +245,11 @@ public class CapitolTradesScraper {
                 boolean isBuy  = "buy".equalsIgnoreCase(trade.getTradeType());
                 if (!isBuy && !isSell) {
                     log.info("Unknown trade type '{}' — skipping copy.", trade.getTradeType());
-                    return 1;
+                    return RowResult.NEW;
                 }
                 for (CopyConfig cfg : configs) {
                     try {
-                        // Only copy trades whose disclosure was published on or
-                        // after the user activated this copy config. Without this
-                        // a backfill of historical trades would retroactively fire
-                        // orders for everything the politician has ever done.
+                        // skip historical trades published before the user activated this config — otherwise backfills retroactively fire orders
                         if (cfg.getCreatedAt() != null && trade.getPublishedDate() != null
                                 && trade.getPublishedDate().isBefore(cfg.getCreatedAt().toLocalDate())) {
                             log.info("Skipping copy for user {} on {} {} — trade published {} predates config createdAt {}.",
@@ -231,8 +258,7 @@ public class CapitolTradesScraper {
                             continue;
                         }
 
-                        // Enforce maxFiledDays cap: if the user only wants to copy
-                        // trades filed within N days, skip stale disclosures.
+                        // skip stale disclosures past the user's maxFiledDays cap
                         Integer mfd = cfg.getMaxFiledDays();
                         if (mfd != null && mfd > 0 && trade.getFiledAfterDays() != null
                                 && trade.getFiledAfterDays() > mfd) {
@@ -244,10 +270,7 @@ public class CapitolTradesScraper {
 
                         User cfgUser = userRepository.findById(cfg.getUserId()).orElse(null);
 
-                        // Idempotency: if we've already processed this exact
-                        // capitol-trades disclosure for this user, skip. Defends
-                        // against re-scrapes, concurrent backfills, and any
-                        // duplicate CopyConfig that may have slipped through.
+                        // skip if we already processed this disclosure for this user
                         if (executedTradeRepository.existsByUserIdAndCapitolTradesId(
                                 cfg.getUserId(), capitolTradesId)) {
                             log.info("Already executed copy for user {} on capitol trade {} — skipping.",
@@ -256,8 +279,8 @@ public class CapitolTradesScraper {
                         }
 
                         AlpacaService.OrderResult orderResult = null;
-                        BigDecimal dollarAmount = null;  // dollars invested (buy) or proceeds (sell)
-                        BigDecimal sharesQty = null;     // shares bought/sold
+                        BigDecimal dollarAmount = null;
+                        BigDecimal sharesQty = null;
 
                         if (isBuy) {
                             BigDecimal equity = alpacaService.getAccountEquity(cfgUser);
@@ -276,10 +299,7 @@ public class CapitolTradesScraper {
                                 continue;
                             }
 
-                            // Compute proportion from politician's sell vs their
-                            // known buy history. Returns null if we can't
-                            // determine a sensible proportion — in which case
-                            // we skip rather than liquidate the full position.
+                            // returns null if we can't compute proportion — skip rather than dump the whole position on a weak signal
                             sharesQty = computeSellQty(positionQty, polId, trade);
                             if (sharesQty == null) {
                                 log.info("Cannot determine sell proportion for {}/{} — skipping (refusing to liquidate full position on weak signal).",
@@ -290,9 +310,7 @@ public class CapitolTradesScraper {
                         }
 
                         if (orderResult == null || !orderResult.isSuccess()) {
-                            // Persist a rejection row so the user has visibility:
-                            // "we tried to copy this but Alpaca said no, here's why".
-                            // No amountInvested → doesn't pollute portfolio totals.
+                            // persist a rejection row so the user can see what alpaca refused — no amountInvested so it doesn't pollute totals
                             String errMsg = orderResult != null ? orderResult.errorMessage : "Unknown error";
                             log.warn("Alpaca rejected {} order for user {} on {}: {}",
                                     trade.getTradeType(), cfg.getUserId(), trade.getTicker(), errMsg);
@@ -309,15 +327,14 @@ public class CapitolTradesScraper {
                             rej.setErrorMessage(errMsg);
                             try { executedTradeRepository.save(rej); }
                             catch (org.springframework.dao.DataIntegrityViolationException dup) {
-                                // Lost the race to a concurrent attempt — fine, the other won.
+                                // lost the race to a concurrent attempt — fine
                             }
                             continue;
                         }
 
                         String orderId = orderResult.orderId;
 
-                        // Wait briefly for the order to fill so we can record the
-                        // actual fill price and qty, which PnL math depends on.
+                        // poll a few seconds for fill — pnl math needs the actual fill price
                         java.util.Map<String, Object> filled = alpacaService.waitForOrderFill(cfgUser, orderId);
                         BigDecimal fillPrice = null;
                         BigDecimal filledQty = null;
@@ -335,9 +352,7 @@ public class CapitolTradesScraper {
                             if (st != null) fillStatus = st.toString();
                         }
 
-                        // Compute amountInvested as actual dollars, in both directions.
-                        // For buys: prefer (filledQty * fillPrice) if available, else the requested notional.
-                        // For sells: (filledQty * fillPrice) if available, else (requestedQty * fillPrice), else null.
+                        // amountInvested: prefer actual filled qty * price, fall back to requested notional for buys
                         BigDecimal amountInvested = null;
                         if (filledQty != null && fillPrice != null) {
                             amountInvested = filledQty.multiply(fillPrice).setScale(2, BigDecimal.ROUND_HALF_UP);
@@ -373,18 +388,11 @@ public class CapitolTradesScraper {
         } catch (Exception e) {
             log.warn("Error processing copy configs: {}", e.getMessage());
         }
-        return 1;
+        return RowResult.NEW;
     }
 
-    /**
-     * Computes how many shares to sell proportionally.
-     * Uses the midpoint of the politician's sell size vs their total known buy
-     * size for this ticker. Returns null if a sensible proportion can't be
-     * determined — caller should skip the order in that case rather than risk
-     * liquidating the entire position on a weak signal.
-     */
+    // returns null if we can't compute proportion — caller skips rather than dumping the whole position
     private BigDecimal computeSellQty(BigDecimal positionQty, String politicianId, Trade sellTrade) {
-        // Sum the politician's total known buys for this ticker (use sizeMin+sizeMax midpoint)
         java.util.List<Trade> politicianTrades = tradeRepository.findByPoliticianId(politicianId);
         long totalBuyMidpoint = politicianTrades.stream()
             .filter(t -> "buy".equalsIgnoreCase(t.getTradeType())
@@ -396,9 +404,7 @@ public class CapitolTradesScraper {
             .sum();
 
         if (totalBuyMidpoint <= 0) {
-            // No known buy history for this politician+ticker. Could be a buy
-            // before our scrape window, or before the user's copy config. We
-            // can't compute a proportion, so refuse — caller will skip.
+            // no known buy history — can't compute proportion, refuse
             return null;
         }
 
@@ -406,7 +412,6 @@ public class CapitolTradesScraper {
         long sellMidpoint = (sellTrade.getSizeMin() + sellMax) / 2;
 
         if (sellMidpoint <= 0) {
-            // The disclosed sell size was unparseable or zero. Refuse.
             return null;
         }
 
@@ -416,8 +421,7 @@ public class CapitolTradesScraper {
 
         BigDecimal sellQty = positionQty.multiply(proportion).setScale(8, java.math.RoundingMode.HALF_DOWN);
         if (sellQty.compareTo(BigDecimal.ZERO) <= 0) {
-            // Proportion rounded down to 0 shares — don't fall back to full
-            // liquidation. Skip.
+            // rounded down to 0 — don't fall back to full liquidation
             return null;
         }
 
@@ -485,23 +489,21 @@ private String[] parsePoliticianMeta(Element politicianCell) {
         return null;
     }
 
-    // Date cells now render as two stacked divs: e.g. "26 May" + "2026", or "11:15" + "Today"
+    // date cells render as two stacked divs: e.g. "26 May" + "2026", or "11:15" + "Today"
     private LocalDate parseSplitDate(Element cell) {
         Elements divs = cell.select("div > div");
         if (divs.size() >= 2) {
-            String part1 = divs.get(0).text().trim(); // e.g. "11:15" or "26 May"
-            String part2 = divs.get(1).text().trim(); // e.g. "Today" or "2026"
-            // published date: part1=time, part2=relative label ("Today"/"Yesterday") or month+year
+            String part1 = divs.get(0).text().trim();
+            String part2 = divs.get(1).text().trim();
             if (part2.equalsIgnoreCase("Today")) return LocalDate.now();
             if (part2.equalsIgnoreCase("Yesterday")) return LocalDate.now().minusDays(1);
-            // trade date: part1="26 May", part2="2026"
             LocalDate d = parseDate(part1 + " " + part2);
             if (d != null) return d;
         }
         return parseDate(cell.text());
     }
 
-    // Filed-days cell: .q-value holds the number, .q-label holds "days"
+    // .q-value holds the number, .q-label holds "days"
     private Integer parseFiledDaysCell(Element cell) {
         Element valueEl = cell.selectFirst(".q-value");
         if (valueEl != null) return parseFiledDays(valueEl.text());

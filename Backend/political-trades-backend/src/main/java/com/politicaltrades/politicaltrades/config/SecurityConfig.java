@@ -41,11 +41,7 @@ public class SecurityConfig {
                 try {
                     userService.findOrCreateFromOidc(oidc);
                 } catch (Exception e) {
-                    // DB failure during user bootstrap. Without a DB row,
-                    // subsequent requireByGoogleSub() will 500 on every API
-                    // call — leaving the user "logged in" but unable to use
-                    // the app. Invalidate the session and redirect to an
-                    // error page so the user can retry.
+                    // without a user row, every later api call 500s — kill the session and bounce to an error page
                     request.getSession().invalidate();
                     response.sendRedirect(frontendUrl + "/auth/callback?error=user_init_failed");
                     return;
@@ -90,8 +86,7 @@ public class SecurityConfig {
         CorsConfiguration cfg = new CorsConfiguration();
         cfg.setAllowedOrigins(List.of(frontendUrl));
         cfg.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        // Explicit allowlist (instead of "*") so the X-Requested-With header
-        // — used by CsrfHeaderFilter for CSRF defense — passes preflight.
+        // explicit allowlist (not "*") so X-Requested-With survives preflight for the csrf filter
         cfg.setAllowedHeaders(List.of("Content-Type", "Authorization", "X-Requested-With", "Accept"));
         cfg.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

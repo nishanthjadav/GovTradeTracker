@@ -42,13 +42,11 @@ public class PortfolioController {
 
         List<Map<String, Object>> enriched = new ArrayList<>();
 
-        // Pre-fetch all politician names to avoid N+1 and fix stale IDs stored in politician_name
+        // prefetch politician names to avoid N+1 and fix stale ids in politician_name
         Map<String, String> politicianNameCache = new HashMap<>();
         politicianRepository.findAll().forEach(p -> politicianNameCache.put(p.getId(), p.getName()));
 
-        // Batch all the live prices in a single Alpaca call instead of per-trade.
-        // Without this, a portfolio of N trades fires N requests and hits the 200
-        // req/min data API limit on every page load.
+        // batch all live prices in one alpaca call — per-trade would blow the 200 req/min limit on big portfolios
         Set<String> tickers = trades.stream()
             .map(ExecutedTrade::getTicker)
             .filter(Objects::nonNull)
@@ -83,14 +81,9 @@ public class PortfolioController {
             BigDecimal pnl = null;
             Double pnlPercent = null;
 
-            // Only buys contribute to "money invested" and PnL. Sells are
-            // exits and shouldn't count as fresh capital deployed.
+            // only buys count as money invested — sells are exits
             boolean isBuy = "buy".equalsIgnoreCase(t.getSide());
-            // Only count rows whose order actually filled. "pending" rows have
-            // requested-notional populated but the order may never fill (or
-            // gets canceled later), so including them would inflate totals
-            // with phantom capital. "rejected"/"failed"/"canceled"/"expired"
-            // are excluded for the same reason.
+            // only count filled rows. pending may never fill and would inflate totals with phantom capital
             boolean isFilled = t.getStatus() != null
                 && ("filled".equalsIgnoreCase(t.getStatus())
                     || "partially_filled".equalsIgnoreCase(t.getStatus()));
@@ -147,8 +140,7 @@ public class PortfolioController {
                 bestPoliticianReturn = pct;
             }
         }
-        // If no politicians had any invested-with-fill rows, leave the
-        // displayed return blank rather than reporting -Infinity.
+        // leave best return blank rather than showing -Infinity when no qualifying rows
         Double bestPoliticianReturnOut = bestPolitician == null ? null : bestPoliticianReturn;
 
         String bestTradeTicker = null;
@@ -191,11 +183,6 @@ public class PortfolioController {
         return ResponseEntity.ok(list);
     }
 
-    /**
-     * Clears all executed trade rows for the authenticated user. Useful for
-     * resetting the portfolio history (e.g. after a paper-trading reset).
-     * Does NOT affect Alpaca positions, copy configs, or anything else.
-     */
     @DeleteMapping("/executed-trades")
     public ResponseEntity<Map<String, Object>> clearExecutedTrades(@AuthenticationPrincipal OidcUser oidc) {
         User user = userService.requireByGoogleSub(oidc.getSubject());

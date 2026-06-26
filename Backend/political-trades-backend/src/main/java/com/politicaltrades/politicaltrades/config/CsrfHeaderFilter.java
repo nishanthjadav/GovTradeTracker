@@ -10,14 +10,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.Set;
 
-/**
- * Lightweight CSRF defense: state-changing requests against authenticated
- * /api/ routes must include the X-Requested-With header. Cross-site attacker
- * pages cannot set custom headers without triggering a CORS preflight, and
- * our CorsConfigurationSource only allows the configured frontend origin —
- * so the only way this header lands on a request is if it originated from
- * our own frontend.
- */
+// custom header forces a preflight, so cross-site forgeries get blocked by cors
 @Component
 public class CsrfHeaderFilter extends OncePerRequestFilter {
 
@@ -41,8 +34,7 @@ public class CsrfHeaderFilter extends OncePerRequestFilter {
         if (!MUTATING_METHODS.contains(req.getMethod())) return false;
         String path = req.getRequestURI();
         if (path == null) return false;
-        // Only enforce on our own authenticated API routes. OAuth callback
-        // and logout have their own auth flow and shouldn't be blocked here.
+        // oauth callback and logout have their own auth flow, don't block those
         return path.startsWith("/api/copy-configs")
             || path.startsWith("/api/portfolio")
             || path.startsWith("/api/me")

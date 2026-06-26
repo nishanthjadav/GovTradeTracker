@@ -34,9 +34,7 @@ public class CopyConfigController {
         Object mfdObj = body.get("maxFiledDays");
         Integer maxFiledDays = parseMaxFiledDays(mfdObj);
 
-        // Upsert: if a config already exists for (user, politician), return it
-        // instead of creating a duplicate row. Prevents StrictMode/double-submit
-        // from creating ghost rows.
+        // upsert — prevent StrictMode/double-submit dupes
         CopyConfig existing = copyConfigRepository.findByUserIdAndPoliticianId(user.getId(), politicianId);
         if (existing != null) {
             return ResponseEntity.ok(existing);
@@ -53,9 +51,7 @@ public class CopyConfigController {
             CopyConfig saved = copyConfigRepository.save(cfg);
             return ResponseEntity.ok(saved);
         } catch (org.springframework.dao.DataIntegrityViolationException dup) {
-            // Lost the race against a concurrent POST — the unique constraint
-            // on (user_id, politician_id) rejected our insert. Return whichever
-            // row won.
+            // lost the race against a concurrent POST — unique constraint kicked in, return the winner
             CopyConfig winner = copyConfigRepository.findByUserIdAndPoliticianId(user.getId(), politicianId);
             if (winner != null) return ResponseEntity.ok(winner);
             throw dup;
@@ -67,9 +63,7 @@ public class CopyConfigController {
         User user = userService.requireByGoogleSub(oidc.getSubject());
         List<CopyConfig> configs = copyConfigRepository.findByUserId(user.getId());
 
-        // Defensive cleanup: if multiple configs exist for the same politician
-        // (legacy data from before the upsert fix), keep the one with the highest
-        // id and delete the rest.
+        // keep newest if dupes exist (legacy data before the upsert fix)
         java.util.Map<String, CopyConfig> winners = new java.util.LinkedHashMap<>();
         java.util.List<CopyConfig> losers = new java.util.ArrayList<>();
         for (CopyConfig c : configs) {
@@ -105,7 +99,7 @@ public class CopyConfigController {
                 cfg.setActive(Boolean.valueOf(body.get("active").toString()));
             }
             if (body.containsKey("maxFiledDays")) {
-                // Allow explicit null to clear the cap
+                // explicit null clears the cap
                 cfg.setMaxFiledDays(parseMaxFiledDays(body.get("maxFiledDays")));
             }
             CopyConfig saved = copyConfigRepository.save(cfg);
@@ -125,11 +119,6 @@ public class CopyConfigController {
         }).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    /**
-     * Parse a max-filed-days value from the request body. Accepts null/empty/
-     * non-positive as "no cap" (returns null). Caps to 365 max to keep the
-     * value sane.
-     */
     private static Integer parseMaxFiledDays(Object raw) {
         if (raw == null) return null;
         String s = raw.toString().trim();

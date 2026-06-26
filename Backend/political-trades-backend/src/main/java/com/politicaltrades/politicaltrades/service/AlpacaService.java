@@ -17,12 +17,7 @@ public class AlpacaService {
 
     private static final Logger log = LoggerFactory.getLogger(AlpacaService.class);
 
-    /**
-     * Result of an Alpaca order placement. orderId is non-null on success;
-     * on rejection, errorMessage carries the body Alpaca returned (e.g.
-     * "buying power exceeded", "asset not tradable") so callers can persist
-     * a row explaining why nothing happened.
-     */
+    // on rejection, errorMessage carries alpaca's body so callers can persist why nothing happened
     public static class OrderResult {
         public final String orderId;
         public final String errorMessage;
@@ -108,7 +103,7 @@ public class AlpacaService {
         }
     }
 
-    /** Sell by share quantity (required for sells — Alpaca rejects notional sells for fractional shares). */
+    // alpaca rejects notional sells for fractional shares, so sells must use qty
     public OrderResult placeMarketOrderByQty(User user, String ticker, String side, BigDecimal qty) {
         String[] creds = resolveCreds(user);
         if (creds[0] == null || creds[0].isBlank()) {
@@ -152,10 +147,6 @@ public class AlpacaService {
         }
     }
 
-    /**
-     * Extracts a human-readable error message from an Alpaca 4xx response.
-     * Alpaca returns JSON like {"message":"asset is not tradable"}.
-     */
     private String extractAlpacaError(org.springframework.web.client.HttpClientErrorException e) {
         String body = e.getResponseBodyAsString();
         if (body == null || body.isBlank()) return e.getStatusText();
@@ -188,9 +179,6 @@ public class AlpacaService {
         return null;
     }
 
-    /**
-     * Returns the quantity of shares held for ticker, or null if no position exists.
-     */
     public BigDecimal getPositionQty(User user, String ticker) {
         String[] creds = resolveCreds(user);
         if (creds[0] == null || creds[0].isBlank()) return null;
@@ -218,17 +206,11 @@ public class AlpacaService {
         return prices.get(ticker);
     }
 
-    /**
-     * Batched price lookup. Hits Alpaca's bulk quotes endpoint once for the
-     * entire set of tickers instead of one HTTP request per ticker. Saves the
-     * portfolio summary from blowing the 200 req/min rate limit on every page
-     * load.
-     */
+    // bulk quotes endpoint — one http call for all tickers, keeps portfolio page under the 200 req/min limit
     public Map<String, BigDecimal> fetchLatestPrices(User user, java.util.Collection<String> tickers) {
         Map<String, BigDecimal> result = new HashMap<>();
         if (tickers == null || tickers.isEmpty()) return result;
 
-        // De-dupe and drop blanks
         java.util.Set<String> unique = new java.util.LinkedHashSet<>();
         for (String t : tickers) {
             if (t != null && !t.isBlank()) unique.add(t.trim());
@@ -269,10 +251,6 @@ public class AlpacaService {
         return result;
     }
 
-    /**
-     * Fetches the current state of an order. Returns a map with at least
-     * "status", "filled_avg_price", "filled_qty" when available.
-     */
     public Map<String, Object> getOrder(User user, String orderId) {
         String[] creds = resolveCreds(user);
         if (creds[0] == null || creds[0].isBlank()) return null;
@@ -292,13 +270,7 @@ public class AlpacaService {
         return null;
     }
 
-    /**
-     * Polls /orders/{id} for up to ~5 seconds waiting for a terminal state
-     * (filled / partially_filled / canceled / rejected / expired). Market
-     * orders on liquid US equities typically fill within 1-2 seconds during
-     * market hours, so this is enough for the common case without blocking
-     * the scrape pipeline forever.
-     */
+    // polls for up to ~5s waiting for a terminal state — market orders typically fill in 1-2s
     public Map<String, Object> waitForOrderFill(User user, String orderId) {
         for (int i = 0; i < 10; i++) {
             Map<String, Object> order = getOrder(user, orderId);
@@ -317,7 +289,7 @@ public class AlpacaService {
                 return order;
             }
         }
-        // Out of patience — return whatever we last saw
+        // out of patience — return whatever we last saw
         return getOrder(user, orderId);
     }
 }
