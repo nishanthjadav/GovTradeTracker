@@ -2,8 +2,6 @@ name: Anomaly scoring
 
 on:
   schedule:
-    # Sundays at 11:07 UTC. The :07 minute is intentional — landing on :00
-    # piles onto every other workflow on GitHub's shared infra.
     - cron: "7 11 * * 0"
   workflow_dispatch:
 

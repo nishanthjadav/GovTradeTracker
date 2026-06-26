@@ -109,14 +109,14 @@ export default function TradeTable({
             ) : null}
 
             <div>
-              <div className="issuer-name">
-                {t.issuerName || "—"}
+              <div className="issuer-row">
+                <div className="issuer-name">{t.issuerName || "—"}</div>
                 {t.anomalyScore != null && t.anomalyScore >= ANOMALY_CHIP_THRESHOLD && (
                   <span
                     className="anomaly-chip"
                     title={t.anomalyReason || "Statistically unusual trade"}
                   >
-                    ⚠ Anomalous
+                    Anomalous
                   </span>
                 )}
               </div>

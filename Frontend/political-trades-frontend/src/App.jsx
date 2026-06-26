@@ -271,7 +271,7 @@ export default function App() {
         <div className="content">
           {currentView === "feed" ? (
             <>
-              <FilterBar trades={recentTrades} filters={filters} setFilters={setFilters} />
+              <FilterBar trades={recentTrades} politicians={politicians} filters={filters} setFilters={setFilters} />
               <div className="trades-table-scroll">
                 <TradeTable
                   trades={paginatedTrades}

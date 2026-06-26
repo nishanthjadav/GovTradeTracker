@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { SORT_OPTIONS, defaultFilters, hasActiveFilters } from "../utils/filterHelpers";
 import SearchableSelect from "./SearchableSelect";
 
-export default function FilterBar({ trades, filters, setFilters, profileMode = false }) {
+export default function FilterBar({ trades, politicians, filters, setFilters, profileMode = false }) {
   const tickerOptions = useMemo(() => {
     const s = new Set(trades.map((t) => t.ticker).filter(Boolean));
     return [...s].sort().map((t) => ({ value: t, label: t }));
@@ -15,7 +15,16 @@ export default function FilterBar({ trades, filters, setFilters, profileMode = f
       .map((c) => ({ value: c, label: c }));
   }, [trades]);
 
+  // prefer the authoritative politicians list when caller provides one — the
+  // trades prop only carries the recent slice, so deriving from it drops anyone
+  // who hasn't traded lately
   const politicianOptions = useMemo(() => {
+    if (politicians && politicians.length > 0) {
+      return politicians
+        .filter((p) => p && p.name)
+        .map((p) => ({ value: p.id, label: p.name }))
+        .sort((a, b) => a.label.localeCompare(b.label));
+    }
     const seen = new Map();
     trades.forEach((t) => {
       if (t.politicianName && !seen.has(t.politicianId))
@@ -24,7 +33,7 @@ export default function FilterBar({ trades, filters, setFilters, profileMode = f
     return [...seen.entries()]
       .sort((a, b) => a[1].localeCompare(b[1]))
       .map(([id, name]) => ({ value: id, label: name }));
-  }, [trades]);
+  }, [politicians, trades]);
 
   return (
     <div className="filter-bar">

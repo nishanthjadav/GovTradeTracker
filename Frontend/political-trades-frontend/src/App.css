@@ -489,6 +489,23 @@ body {
   text-overflow: ellipsis;
 }
 
+.issuer-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  min-width: 0;
+}
+
+.issuer-row .issuer-name {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.issuer-row .anomaly-chip {
+  flex: 0 0 auto;
+  margin-left: auto;
+}
+
 .anomaly-chip {
   display: inline-block;
   margin-left: 6px;
