@@ -501,26 +501,16 @@ body {
   min-width: 0;
 }
 
-.issuer-row .anomaly-chip {
-  flex: 0 0 auto;
-  margin-left: auto;
-}
-
-.anomaly-chip {
+.anomaly-dot {
   display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-warning, #eab308);
   margin-left: 6px;
-  padding: 1px 6px;
-  font-family: var(--font-family-mono);
-  font-size: 10px;
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-warning);
-  background: var(--color-warning-bg, rgba(234, 179, 8, 0.12));
-  border: var(--border-width) solid var(--color-warning);
-  border-radius: var(--border-radius-sm);
-  letter-spacing: 0.03em;
   vertical-align: middle;
+  flex-shrink: 0;
   cursor: help;
-  white-space: nowrap;
 }
 
 .anomaly-score-cell {
@@ -600,6 +590,8 @@ body {
   font-family: var(--font-family-mono);
   font-size: var(--font-size-xs);
   color: var(--color-text-muted);
+  display: flex;
+  align-items: center;
 }
 
 .size-cell {

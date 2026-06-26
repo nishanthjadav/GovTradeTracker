@@ -92,9 +92,18 @@ export default function App() {
       .catch(() => setTradesLoading(false));
   };
 
-  const selectPoliticianById = (id) => {
+  const selectPoliticianById = (id, fallbackMeta) => {
     const pol = politicians.find((p) => p.id === id);
-    if (pol) selectPolitician(pol);
+    if (pol) {
+      selectPolitician(pol);
+    } else if (fallbackMeta) {
+      // politician not in local cache yet — use metadata from the trade and navigate anyway
+      const synthetic = { id, ...fallbackMeta };
+      setPoliticians((prev) =>
+        prev.find((p) => p.id === id) ? prev : [...prev, synthetic]
+      );
+      selectPolitician(synthetic);
+    }
   };
 
   const activePol = politicians.find((p) => p.id === selectedPol?.id);

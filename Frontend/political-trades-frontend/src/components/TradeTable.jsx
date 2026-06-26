@@ -111,14 +111,6 @@ export default function TradeTable({
             <div>
               <div className="issuer-row">
                 <div className="issuer-name">{t.issuerName || "—"}</div>
-                {t.anomalyScore != null && t.anomalyScore >= ANOMALY_CHIP_THRESHOLD && (
-                  <span
-                    className="anomaly-chip"
-                    title={t.anomalyReason || "Statistically unusual trade"}
-                  >
-                    Anomalous
-                  </span>
-                )}
               </div>
               {t.filedAfterDays != null && (
                 <div className="issuer-meta">filed {t.filedAfterDays}d after</div>
@@ -140,7 +132,15 @@ export default function TradeTable({
             </div>
 
             <div className="size-cell">{fmtSize(t.sizeMin, t.sizeMax)}</div>
-            <div className="date-cell">{t.tradeDate ?? t.publishedDate ?? "—"}</div>
+            <div className="date-cell">
+              {t.tradeDate ?? t.publishedDate ?? "—"}
+              {t.anomalyScore != null && t.anomalyScore >= ANOMALY_CHIP_THRESHOLD && (
+                <span
+                  className="anomaly-dot"
+                  title={t.anomalyReason || "Statistically unusual trade"}
+                />
+              )}
+            </div>
           </div>
         );
       })}

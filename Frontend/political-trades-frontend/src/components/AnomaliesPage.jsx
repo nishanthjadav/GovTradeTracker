@@ -283,7 +283,10 @@ function AnomalyTable({
               <button
                 type="button"
                 className="pol-link"
-                onClick={() => onSelectPolitician?.(t.politicianId)}
+                onClick={() => onSelectPolitician?.(t.politicianId, {
+                  name: t.politicianName,
+                  party: t.party,
+                })}
               >
                 <div className="pol-name" style={{ fontSize: 12 }}>
                   {t.politicianName}
