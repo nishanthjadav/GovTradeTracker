@@ -399,11 +399,12 @@ export default function App() {
                       <button
                         className="copy-tray-remove"
                         onClick={() => {
-                          apiFetch(`/copy-configs/${c.id}`, { method: "DELETE" })
-                            .then(() =>
-                              setCopyConfigs((prev) => prev.filter((x) => x.id !== c.id))
-                            )
-                            .catch(() => {});
+                          handleCopyToggleById(c.politicianId);
+                          setPendingCopyIds((prev) => {
+                            const next = new Set(prev);
+                            next.delete(c.politicianId);
+                            return next;
+                          });
                         }}
                         title="Remove"
                       >

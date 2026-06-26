@@ -7,6 +7,21 @@ const PAGE_SIZE = 25;
 const DEFAULT_LIMIT = 300;
 const FETCH_MIN_SCORE = 0.5;
 
+function ScoreBar({ score }) {
+  if (score == null) return <span style={{ color: "var(--color-text-muted)" }}>—</span>;
+  const pct = Math.round(score * 100);
+  const pos = Math.max(4, Math.min(96, score * 100));
+  return (
+    <div className="anomaly-score-bar-wrap">
+      <div className="anomaly-score-bar">
+        <div className="anomaly-score-bar-track" />
+        <div className="anomaly-score-bar-dot" style={{ left: `${pos}%` }} />
+      </div>
+      <span className="anomaly-score-pct">{pct}%</span>
+    </div>
+  );
+}
+
 const SORT_OPTIONS = [
   { value: "score_desc", label: "Most Anomalous" },
   { value: "score_asc", label: "Least Anomalous" },
@@ -220,8 +235,8 @@ function AnomalyTable({
 
   const showCopy = !!onCopyToggle;
   const cols = showCopy
-    ? "36px minmax(130px,1.2fr) minmax(130px,1fr) 84px 90px 110px minmax(180px,1.6fr) 80px"
-    : "minmax(130px,1.2fr) minmax(130px,1fr) 84px 90px 110px minmax(180px,1.6fr) 80px";
+    ? "36px minmax(130px,1.2fr) minmax(130px,1fr) 84px 90px 110px 110px minmax(180px,1.6fr) 80px"
+    : "minmax(130px,1.2fr) minmax(130px,1fr) 84px 90px 110px 110px minmax(180px,1.6fr) 80px";
 
   const checkboxShownFor = new Set();
 
@@ -234,8 +249,9 @@ function AnomalyTable({
         <div>Type</div>
         <div>Ticker</div>
         <div>Trade Date</div>
+        <div>Size</div>
         <div>Why anomalous</div>
-        <div>Score</div>
+        <div>Percentile</div>
       </div>
       {trades.map((t, i) => {
         const isCopied = copiedPoliticianIds.has(t.politicianId);
@@ -244,10 +260,6 @@ function AnomalyTable({
         if (showCopy && isCopied) checkboxShownFor.add(t.politicianId);
         const isFollowUpForCopied = showCopy && isCopied && !isFirstRowForPolitician;
         const showCheckboxForThisRow = showCopy && (!isCopied || isFirstRowForPolitician);
-        const scoreText =
-          t.anomalyScore != null
-            ? `${Math.round(Number(t.anomalyScore) * 100)}%`
-            : "—";
 
         return (
           <div
@@ -299,7 +311,6 @@ function AnomalyTable({
 
             <div>
               <div className="issuer-name">{t.issuerName || "—"}</div>
-              <div className="issuer-meta">{fmtSize(t.sizeMin, t.sizeMax)}</div>
             </div>
 
             <div>
@@ -318,11 +329,15 @@ function AnomalyTable({
 
             <div className="date-cell">{t.tradeDate ?? t.publishedDate ?? "—"}</div>
 
+            <div className="size-cell">{fmtSize(t.sizeMin, t.sizeMax)}</div>
+
             <div className="anomaly-reason-cell" title={t.anomalyReason || ""}>
               {t.anomalyReason || "—"}
             </div>
 
-            <div className="anomaly-score-cell">{scoreText}</div>
+            <div className="anomaly-score-cell">
+              <ScoreBar score={t.anomalyScore != null ? Number(t.anomalyScore) : null} />
+            </div>
           </div>
         );
       })}
