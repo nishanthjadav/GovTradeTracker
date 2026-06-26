@@ -1,0 +1,39 @@
+name: Anomaly scoring
+
+on:
+  schedule:
+    # Sundays at 11:07 UTC. The :07 minute is intentional — landing on :00
+    # piles onto every other workflow on GitHub's shared infra.
+    - cron: "7 11 * * 0"
+  workflow_dispatch:
+
+concurrency:
+  group: anomaly-scoring
+  cancel-in-progress: true
+
+jobs:
+  score:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: ml/anomaly/requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r ml/anomaly/requirements.txt
+
+      - name: Run tests
+        run: |
+          pip install pytest
+          pytest ml/anomaly/tests
+
+      - name: Score anomalies
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: python -m ml.anomaly.score_anomalies
