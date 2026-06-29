@@ -1,10 +1,5 @@
 package com.politicaltrades.politicaltrades.service;
 
-import com.microsoft.playwright.Browser;
-import com.microsoft.playwright.BrowserContext;
-import com.microsoft.playwright.BrowserType;
-import com.microsoft.playwright.Page;
-import com.microsoft.playwright.Playwright;
 import com.politicaltrades.politicaltrades.entity.Politician;
 import com.politicaltrades.politicaltrades.entity.Trade;
 import com.politicaltrades.politicaltrades.entity.User;
@@ -15,6 +10,13 @@ import com.politicaltrades.politicaltrades.repository.ExecutedTradeRepository;
 import com.politicaltrades.politicaltrades.repository.UserRepository;
 import com.politicaltrades.politicaltrades.entity.CopyConfig;
 import com.politicaltrades.politicaltrades.entity.ExecutedTrade;
+import java.net.CookieManager;
+import java.net.CookiePolicy;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -85,139 +87,149 @@ public class CapitolTradesScraper {
         int skipped = 0;
         int consecutiveErrors = 0;
 
-        try (Playwright playwright = Playwright.create()) {
-            // --disable-blink-features=AutomationControlled hides the navigator.webdriver flag that Vercel checks for.
-            Browser browser = playwright.chromium().launch(new BrowserType.LaunchOptions()
-                    .setHeadless(true)
-                    .setArgs(java.util.List.of(
-                            "--disable-blink-features=AutomationControlled",
-                            "--disable-features=IsolateOrigins,site-per-process"
-                    )));
+        // Plain HttpClient instead of Playwright. The /trades page is fully server-rendered
+        // (the static HTML already contains the full <tbody>), and Playwright's headless Chromium
+        // gets fingerprinted by Vercel's bot protection — plugins.length, WebGL vendor, etc. —
+        // even with --disable-blink-features=AutomationControlled. A bare curl with a real UA
+        // and a cookie jar sails through.
+        CookieManager cookieJar = new CookieManager();
+        cookieJar.setCookiePolicy(CookiePolicy.ACCEPT_ALL);
+        HttpClient http = HttpClient.newBuilder()
+                .cookieHandler(cookieJar)
+                .followRedirects(HttpClient.Redirect.NORMAL)
+                .connectTimeout(Duration.ofSeconds(15))
+                .build();
 
-            // Build a realistic browser context — UA, locale, timezone, viewport. Missing any of these has been observed to flip Vercel
-            // into serving the "Vercel Security Checkpoint" interstitial instead of the trades table.
-            BrowserContext ctx = browser.newContext(new Browser.NewContextOptions()
-                    .setUserAgent(USER_AGENT)
-                    .setLocale("en-US")
-                    .setTimezoneId("America/New_York")
-                    .setViewportSize(1366, 768)
-                    .setExtraHTTPHeaders(java.util.Map.of(
-                            "Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-                            "Accept-Language", "en-US,en;q=0.9",
-                            "Sec-Ch-Ua", "\"Google Chrome\";v=\"131\", \"Chromium\";v=\"131\", \"Not_A Brand\";v=\"24\"",
-                            "Sec-Ch-Ua-Mobile", "?0",
-                            "Sec-Ch-Ua-Platform", "\"Windows\""
-                    )));
+        // Warm-up: hit the homepage so Vercel sets its session cookie before we touch /trades.
+        // Going cold to /trades has been observed to trigger the Security Checkpoint.
+        try {
+            HttpResponse<String> warmup = http.send(
+                    buildRequest(URI.create("https://www.capitoltrades.com/")),
+                    HttpResponse.BodyHandlers.ofString());
+            log.info("Warm-up GET / -> {} ({} bytes, cookies now: {})",
+                    warmup.statusCode(), warmup.body().length(), cookieJar.getCookieStore().getCookies().size());
+            Thread.sleep(1500 + (long)(Math.random() * 1500));
+        } catch (Exception e) {
+            log.warn("Warm-up navigation failed (continuing anyway): {}", e.getMessage());
+        }
 
-            // Hide the webdriver flag at runtime too — extra belt-and-braces because some Vercel checks read it via JS.
-            ctx.addInitScript("Object.defineProperty(navigator, 'webdriver', {get: () => undefined});");
+        for (int pageNum = startPage; pageNum <= endPage; pageNum++) {
+            String targetUrl = BASE_URL + pageNum;
+            log.info("Scraping page {}/{}: {}", pageNum, endPage, targetUrl);
 
-            Page page = ctx.newPage();
-            page.setDefaultNavigationTimeout(30000);
-
-            // Warm-up: hit the homepage first so the Vercel bot-detection cookie gets set before we touch /trades.
-            // Going straight to /trades cold is what's been triggering the checkpoint.
             try {
-                page.navigate("https://www.capitoltrades.com/");
-                page.waitForTimeout(2000 + (long)(Math.random() * 1500));
-            } catch (Exception e) {
-                log.warn("Warm-up navigation failed (continuing anyway): {}", e.getMessage());
-            }
+                HttpResponse<String> resp = http.send(
+                        buildRequest(URI.create(targetUrl)),
+                        HttpResponse.BodyHandlers.ofString());
 
-            for (int pageNum = startPage; pageNum <= endPage; pageNum++) {
-                String targetUrl = BASE_URL + pageNum;
-                log.info("Scraping page {}/{}: {}", pageNum, endPage, targetUrl);
+                int status = resp.statusCode();
+                String html = resp.body();
 
-                try {
-                    page.navigate(targetUrl);
-
-                    // Detect bot-challenge pages BEFORE waiting 15s for a selector that will never appear.
-                    String earlyHtml = page.content();
-                    if (earlyHtml.contains("Vercel Security Checkpoint") || earlyHtml.contains("_vcrcs")) {
-                        log.error("Vercel Security Checkpoint served on page {} — blocked as a bot. Aborting.", pageNum);
-                        break;
-                    }
-                    if (earlyHtml.contains("Just a moment") || earlyHtml.contains("cf-browser-verification")) {
-                        log.error("Cloudflare challenge on page {} — stopping.", pageNum);
-                        break;
-                    }
-                    if (earlyHtml.contains("429") && earlyHtml.contains("Too Many Requests")) {
-                        log.error("HTTP 429 (rate-limited) on page {} — aborting; will retry on next scheduled run.", pageNum);
-                        break;
-                    }
-
-                    page.waitForSelector("table tbody tr", new Page.WaitForSelectorOptions().setTimeout(15000));
-
-                    String html = page.content();
-
-                    Document doc = Jsoup.parse(html);
-                    Elements rows = doc.select("table tbody tr");
-
-                    if (rows.isEmpty()) {
-                        log.info("No rows found on page {} — assuming end of data, stopping.", pageNum);
-                        break;
-                    }
-
-                    consecutiveErrors = 0;
-
-                    int pageNewTrades = 0;
-                    int pageDuplicates = 0;
-                    int pageUnparseable = 0;
-                    for (Element row : rows) {
-                        try {
-                            RowResult result = processRow(row);
-                            switch (result) {
-                                case NEW -> { newTrades++; pageNewTrades++; }
-                                case DUPLICATE -> { skipped++; pageDuplicates++; }
-                                case UNPARSEABLE -> { skipped++; pageUnparseable++; }
-                            }
-                        } catch (Exception e) {
-                            pageUnparseable++;
-                            log.warn("Failed to parse row on page {}: {}", pageNum, e.getMessage());
-                        }
-                    }
-
-                    if (pageUnparseable > 0) {
-                        log.warn("Page {}: {} row(s) failed to parse — possible layout change on Capitol Trades.", pageNum, pageUnparseable);
-                    }
-
-                    if (stopOnDuplicatePage && pageNewTrades == 0 && pageDuplicates > 0) {
-                        log.info("Page {} had no new trades — caught up to existing data, stopping.", pageNum);
-                        break;
-                    }
-
-                    // Jitter the delay so the request pattern doesn't look mechanical to Vercel's bot detection.
-                    Thread.sleep(REQUEST_DELAY_MS + (long)(Math.random() * REQUEST_JITTER_MS));
-
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    log.error("Scraping interrupted at page {}", pageNum);
+                if (status == 429) {
+                    log.error("HTTP 429 (rate-limited) on page {} — aborting; will retry on next scheduled run.", pageNum);
                     break;
-                } catch (Exception e) {
-                    consecutiveErrors++;
-                    log.error("Error fetching page {} ({}/{} consecutive errors): {}", pageNum, consecutiveErrors, MAX_CONSECUTIVE_ERRORS, e.getMessage());
-                    if (consecutiveErrors >= MAX_CONSECUTIVE_ERRORS) {
-                        log.error("SCRAPE_ABORTED: reached {} consecutive errors on page {} — Capitol Trades is likely rate-limiting or has changed layout. Aborting to avoid endless timeout loop.",
-                                MAX_CONSECUTIVE_ERRORS, pageNum);
-                        break;
-                    }
-                    // back off so we don't confirm bot behavior by hammering: 15s, 30s, 60s, 60s, 60s
-                    long backoffMs = Math.min(60_000L, 15_000L * (1L << Math.min(consecutiveErrors - 1, 2)));
-                    log.info("Backing off {}ms before retrying.", backoffMs);
+                }
+                if (status >= 500) {
+                    throw new RuntimeException("Upstream " + status + " on page " + pageNum);
+                }
+                if (status != 200) {
+                    throw new RuntimeException("Unexpected status " + status + " on page " + pageNum);
+                }
+
+                if (html.contains("Vercel Security Checkpoint") || html.contains("_vcrcs")) {
+                    log.error("Vercel Security Checkpoint served on page {} — blocked as a bot. Aborting.", pageNum);
+                    break;
+                }
+                if (html.contains("Just a moment") || html.contains("cf-browser-verification")) {
+                    log.error("Cloudflare challenge on page {} — stopping.", pageNum);
+                    break;
+                }
+
+                Document doc = Jsoup.parse(html);
+                Elements rows = doc.select("table tbody tr");
+
+                if (rows.isEmpty()) {
+                    log.info("No rows found on page {} — assuming end of data, stopping.", pageNum);
+                    break;
+                }
+
+                consecutiveErrors = 0;
+
+                int pageNewTrades = 0;
+                int pageDuplicates = 0;
+                int pageUnparseable = 0;
+                for (Element row : rows) {
                     try {
-                        Thread.sleep(backoffMs);
-                    } catch (InterruptedException ie) {
-                        Thread.currentThread().interrupt();
-                        break;
+                        RowResult result = processRow(row);
+                        switch (result) {
+                            case NEW -> { newTrades++; pageNewTrades++; }
+                            case DUPLICATE -> { skipped++; pageDuplicates++; }
+                            case UNPARSEABLE -> { skipped++; pageUnparseable++; }
+                        }
+                    } catch (Exception e) {
+                        pageUnparseable++;
+                        log.warn("Failed to parse row on page {}: {}", pageNum, e.getMessage());
                     }
                 }
-            }
 
-            ctx.close();
-            browser.close();
+                if (pageUnparseable > 0) {
+                    log.warn("Page {}: {} row(s) failed to parse — possible layout change on Capitol Trades.", pageNum, pageUnparseable);
+                }
+
+                if (stopOnDuplicatePage && pageNewTrades == 0 && pageDuplicates > 0) {
+                    log.info("Page {} had no new trades — caught up to existing data, stopping.", pageNum);
+                    break;
+                }
+
+                // Jitter the delay so the request pattern doesn't look mechanical to Vercel's bot detection.
+                Thread.sleep(REQUEST_DELAY_MS + (long)(Math.random() * REQUEST_JITTER_MS));
+
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                log.error("Scraping interrupted at page {}", pageNum);
+                break;
+            } catch (Exception e) {
+                consecutiveErrors++;
+                log.error("Error fetching page {} ({}/{} consecutive errors): {}", pageNum, consecutiveErrors, MAX_CONSECUTIVE_ERRORS, e.getMessage());
+                if (consecutiveErrors >= MAX_CONSECUTIVE_ERRORS) {
+                    log.error("SCRAPE_ABORTED: reached {} consecutive errors on page {} — Capitol Trades is likely rate-limiting or has changed layout. Aborting to avoid endless timeout loop.",
+                            MAX_CONSECUTIVE_ERRORS, pageNum);
+                    break;
+                }
+                // back off so we don't confirm bot behavior by hammering: 15s, 30s, 60s, 60s, 60s
+                long backoffMs = Math.min(60_000L, 15_000L * (1L << Math.min(consecutiveErrors - 1, 2)));
+                log.info("Backing off {}ms before retrying.", backoffMs);
+                try {
+                    Thread.sleep(backoffMs);
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+            }
         }
 
         log.info("Scrape complete. New trades saved: {}, Already existed (skipped): {}", newTrades, skipped);
+    }
+
+    // Browser-shaped headers. Vercel's bot protection has been observed to challenge requests
+    // missing Accept-Language / Sec-Fetch-* even when the UA is realistic.
+    private HttpRequest buildRequest(URI uri) {
+        return HttpRequest.newBuilder(uri)
+                .timeout(Duration.ofSeconds(20))
+                .header("User-Agent", USER_AGENT)
+                .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8")
+                .header("Accept-Language", "en-US,en;q=0.9")
+                .header("Accept-Encoding", "identity") // ask for uncompressed so JSoup gets raw text
+                .header("Sec-Ch-Ua", "\"Google Chrome\";v=\"131\", \"Chromium\";v=\"131\", \"Not_A Brand\";v=\"24\"")
+                .header("Sec-Ch-Ua-Mobile", "?0")
+                .header("Sec-Ch-Ua-Platform", "\"Windows\"")
+                .header("Sec-Fetch-Dest", "document")
+                .header("Sec-Fetch-Mode", "navigate")
+                .header("Sec-Fetch-Site", "none")
+                .header("Sec-Fetch-User", "?1")
+                .header("Upgrade-Insecure-Requests", "1")
+                .GET()
+                .build();
     }
 
     public void scrapeLatest() {
