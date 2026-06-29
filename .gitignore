@@ -1,0 +1,30 @@
+# Local scripts with secrets
+run_scrape.bat
+*.bat
+
+# Logs
+*.log
+scrape.log
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+env/
+.env
+.env.*
+!.env.example
+
+# Java / Maven
+Backend/political-trades-backend/target/
+
+# Node / Frontend
+Frontend/political-trades-frontend/node_modules/
+Frontend/political-trades-frontend/dist/
+Frontend/political-trades-frontend/.vite/
+
+# OS
+.DS_Store
+Thumbs.db
