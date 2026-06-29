@@ -24,6 +24,11 @@ export default function App() {
   const [recentTrades, setRecentTrades] = useState([]);
   const [selectedPol, setSelectedPol] = useState(null);
   const [polTrades, setPolTrades] = useState([]);
+  // Cache of full per-politician trade lists, keyed by politician id. Populated lazily when the
+  // user picks someone from the feed's politician filter — the recentTrades slice usually doesn't
+  // contain their older trades, so without this the filter just shows an empty table.
+  const [feedPolTradesCache, setFeedPolTradesCache] = useState({});
+  const [feedPolTradesLoading, setFeedPolTradesLoading] = useState(false);
   const [currentView, setCurrentView] = useState("feed");
   const [loading, setLoading] = useState(true);
   const [tradesLoading, setTradesLoading] = useState(false);
@@ -109,13 +114,50 @@ export default function App() {
 
   const activePol = politicians.find((p) => p.id === selectedPol?.id);
 
+  // When the feed's politician filter is set, fetch that politician's full trade history once and
+  // cache it. Without this, the filter is applied against the recent-trades slice, which usually
+  // doesn't include that politician's older trades — so the table appears empty.
+  useEffect(() => {
+    if (currentView !== "feed") return;
+    const polId = filters.politicianId;
+    if (!polId) return;
+    if (feedPolTradesCache[polId]) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- legitimate "start loading" before an async fetch
+    setFeedPolTradesLoading(true);
+    apiFetch(`/politicians/${polId}/trades`)
+      .then((r) => (r.ok ? r.json() : []))
+      .then((trades) => {
+        setFeedPolTradesCache((prev) => ({ ...prev, [polId]: trades || [] }));
+        setFeedPolTradesLoading(false);
+      })
+      .catch(() => setFeedPolTradesLoading(false));
+  }, [currentView, filters.politicianId, feedPolTradesCache]);
+
   const enrichedRecentTrades = useMemo(() => {
     const politiciansById = new Map(politicians.map((p) => [p.id, p]));
-    return recentTrades.map((trade) => ({
+    // If the user picked a specific politician in the feed filter, use that politician's full
+    // trade list (once it's loaded) as the source — otherwise we'd be filtering only the recent
+    // slice. The trades coming from /politicians/{id}/trades don't carry politician metadata on
+    // each row (since the endpoint is keyed by politician), so we stamp it back on here.
+    const filterPolId = filters.politicianId;
+    const sourceTrades =
+      filterPolId && feedPolTradesCache[filterPolId]
+        ? feedPolTradesCache[filterPolId].map((t) => {
+            const pol = politiciansById.get(filterPolId);
+            return {
+              ...t,
+              politicianId: filterPolId,
+              politicianName: t.politicianName ?? pol?.name,
+              party: t.party ?? pol?.party,
+              chamber: t.chamber ?? pol?.chamber,
+            };
+          })
+        : recentTrades;
+    return sourceTrades.map((trade) => ({
       ...trade,
       chamber: trade.chamber ?? politiciansById.get(trade.politicianId)?.chamber,
     }));
-  }, [recentTrades, politicians]);
+  }, [recentTrades, politicians, filters.politicianId, feedPolTradesCache]);
 
   const enrichedTrades = useMemo(() => {
     if (currentView === "politician" && selectedPol) {
@@ -310,13 +352,12 @@ export default function App() {
                 politicians={politicians}
                 filters={filters}
                 setFilters={setFilters}
-                onSelectPolitician={selectPoliticianById}
               />
               <div className="trades-table-scroll">
                 <TradeTable
                   trades={paginatedTrades}
                   showPolitician={true}
-                  loading={loading}
+                  loading={loading || feedPolTradesLoading}
                   onSelectPolitician={selectPoliticianById}
                   copyConfigs={displayedCopyConfigs}
                   pendingCopyIds={pendingCopyIds}
