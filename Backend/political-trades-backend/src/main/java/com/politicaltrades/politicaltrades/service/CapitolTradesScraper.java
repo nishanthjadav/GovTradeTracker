@@ -2,14 +2,7 @@ package com.politicaltrades.politicaltrades.service;
 
 import com.politicaltrades.politicaltrades.entity.Politician;
 import com.politicaltrades.politicaltrades.entity.Trade;
-import com.politicaltrades.politicaltrades.entity.User;
-import com.politicaltrades.politicaltrades.repository.PoliticianRepository;
 import com.politicaltrades.politicaltrades.repository.TradeRepository;
-import com.politicaltrades.politicaltrades.repository.CopyConfigRepository;
-import com.politicaltrades.politicaltrades.repository.ExecutedTradeRepository;
-import com.politicaltrades.politicaltrades.repository.UserRepository;
-import com.politicaltrades.politicaltrades.entity.CopyConfig;
-import com.politicaltrades.politicaltrades.entity.ExecutedTrade;
 import java.net.CookieManager;
 import java.net.CookiePolicy;
 import java.net.URI;
@@ -17,7 +10,6 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
-import java.time.LocalDateTime;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -39,35 +31,21 @@ public class CapitolTradesScraper {
 
     private static final Logger log = LoggerFactory.getLogger(CapitolTradesScraper.class);
     private static final String BASE_URL = "https://www.capitoltrades.com/trades?page=";
-    // Bumped from 2000 → 4500ms with jitter — Vercel Bot Protection 429s us if we hammer too fast.
     private static final int REQUEST_DELAY_MS = 4500;
     private static final int REQUEST_JITTER_MS = 1500;
-    // Realistic Chrome on Windows — Playwright's default UA leaks "HeadlessChrome" which trips Vercel's checkpoint.
     private static final String USER_AGENT =
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36";
 
     private static final Pattern SIZE_PATTERN = Pattern.compile("([\\d.]+)(K|M)?[–-]([\\d.]+)(K|M)?|([\\d.]+)(K|M)?\\+");
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("d MMM yyyy", Locale.ENGLISH);
 
-    private final PoliticianRepository politicianRepository;
     private final TradeRepository tradeRepository;
-    private final CopyConfigRepository copyConfigRepository;
-    private final AlpacaService alpacaService;
-    private final ExecutedTradeRepository executedTradeRepository;
-    private final UserRepository userRepository;
+    private final TradeIngestionService ingestionService;
 
-    public CapitolTradesScraper(PoliticianRepository politicianRepository,
-                               TradeRepository tradeRepository,
-                               CopyConfigRepository copyConfigRepository,
-                               AlpacaService alpacaService,
-                               ExecutedTradeRepository executedTradeRepository,
-                               UserRepository userRepository) {
-        this.politicianRepository = politicianRepository;
+    public CapitolTradesScraper(TradeRepository tradeRepository,
+                                TradeIngestionService ingestionService) {
         this.tradeRepository = tradeRepository;
-        this.copyConfigRepository = copyConfigRepository;
-        this.alpacaService = alpacaService;
-        this.executedTradeRepository = executedTradeRepository;
-        this.userRepository = userRepository;
+        this.ingestionService = ingestionService;
     }
 
     public void scrapePages(int startPage, int endPage) {
@@ -258,7 +236,7 @@ public class CapitolTradesScraper {
         String politicianId = extractPoliticianId(politicianUrl);
         String[] partyAndRest = parsePoliticianMeta(politicianCell);
 
-        Politician politician = getOrCreatePolitician(politicianId, politicianName,
+        Politician politician = ingestionService.getOrCreatePolitician(politicianId, politicianName,
                 partyAndRest[0], partyAndRest[1], partyAndRest[2]);
 
         Element issuerCell = cells.get(1);
@@ -268,9 +246,7 @@ public class CapitolTradesScraper {
         String ticker = extractTicker(issuerCell.text());
 
         LocalDate publishedDate = parseSplitDate(cells.get(2));
-
         LocalDate tradeDate = parseSplitDate(cells.get(3));
-
         Integer filedAfterDays = parseFiledDaysCell(cells.get(4));
 
         Element ownerCell = cells.get(5);
@@ -289,7 +265,6 @@ public class CapitolTradesScraper {
 
         Trade trade = new Trade();
         trade.setCapitolTradesId(capitolTradesId);
-        trade.setPolitician(politician);
         trade.setIssuerName(issuerName);
         trade.setTicker(ticker);
         trade.setPublishedDate(publishedDate);
@@ -301,197 +276,8 @@ public class CapitolTradesScraper {
         trade.setSizeMax(sizeRange[1]);
         trade.setPrice(price);
 
-        tradeRepository.save(trade);
-        try {
-            String polId = politician.getId();
-            java.util.List<CopyConfig> configs = copyConfigRepository.findByPoliticianIdAndActiveTrue(polId);
-            if (configs != null && !configs.isEmpty() && trade.getTicker() != null) {
-                boolean isSell = "sell".equalsIgnoreCase(trade.getTradeType());
-                boolean isBuy  = "buy".equalsIgnoreCase(trade.getTradeType());
-                if (!isBuy && !isSell) {
-                    log.info("Unknown trade type '{}' — skipping copy.", trade.getTradeType());
-                    return RowResult.NEW;
-                }
-                for (CopyConfig cfg : configs) {
-                    try {
-                        // skip historical trades published before the user activated this config — otherwise backfills retroactively fire orders
-                        if (cfg.getCreatedAt() != null && trade.getPublishedDate() != null
-                                && trade.getPublishedDate().isBefore(cfg.getCreatedAt().toLocalDate())) {
-                            log.info("Skipping copy for user {} on {} {} — trade published {} predates config createdAt {}.",
-                                    cfg.getUserId(), trade.getTicker(), trade.getTradeType(),
-                                    trade.getPublishedDate(), cfg.getCreatedAt());
-                            continue;
-                        }
-
-                        // skip stale disclosures past the user's maxFiledDays cap
-                        Integer mfd = cfg.getMaxFiledDays();
-                        if (mfd != null && mfd > 0 && trade.getFiledAfterDays() != null
-                                && trade.getFiledAfterDays() > mfd) {
-                            log.info("Skipping copy for user {} on {} {} — filed after {} days exceeds cap of {}.",
-                                    cfg.getUserId(), trade.getTicker(), trade.getTradeType(),
-                                    trade.getFiledAfterDays(), mfd);
-                            continue;
-                        }
-
-                        User cfgUser = userRepository.findById(cfg.getUserId()).orElse(null);
-
-                        // skip if we already processed this disclosure for this user
-                        if (executedTradeRepository.existsByUserIdAndCapitolTradesId(
-                                cfg.getUserId(), capitolTradesId)) {
-                            log.info("Already executed copy for user {} on capitol trade {} — skipping.",
-                                    cfg.getUserId(), capitolTradesId);
-                            continue;
-                        }
-
-                        AlpacaService.OrderResult orderResult = null;
-                        BigDecimal dollarAmount = null;
-                        BigDecimal sharesQty = null;
-
-                        if (isBuy) {
-                            BigDecimal equity = alpacaService.getAccountEquity(cfgUser);
-                            if (equity == null || equity.compareTo(BigDecimal.ZERO) <= 0) {
-                                log.warn("Could not fetch account equity for user {} — skipping buy.", cfg.getUserId());
-                                continue;
-                            }
-                            BigDecimal pct = cfg.getPortfolioPercent() != null ? cfg.getPortfolioPercent() : new BigDecimal("5");
-                            BigDecimal notional = equity.multiply(pct).divide(new BigDecimal("100"), 2, BigDecimal.ROUND_HALF_UP);
-                            orderResult = alpacaService.placeMarketOrder(cfgUser, trade.getTicker(), "buy", notional);
-                            dollarAmount = notional;
-                        } else {
-                            BigDecimal positionQty = alpacaService.getPositionQty(cfgUser, trade.getTicker());
-                            if (positionQty == null || positionQty.compareTo(BigDecimal.ZERO) <= 0) {
-                                log.info("No position in {} for user {} — skipping sell copy.", trade.getTicker(), cfg.getUserId());
-                                continue;
-                            }
-
-                            // returns null if we can't compute proportion — skip rather than dump the whole position on a weak signal
-                            sharesQty = computeSellQty(positionQty, polId, trade);
-                            if (sharesQty == null) {
-                                log.info("Cannot determine sell proportion for {}/{} — skipping (refusing to liquidate full position on weak signal).",
-                                        polId, trade.getTicker());
-                                continue;
-                            }
-                            orderResult = alpacaService.placeMarketOrderByQty(cfgUser, trade.getTicker(), "sell", sharesQty);
-                        }
-
-                        if (orderResult == null || !orderResult.isSuccess()) {
-                            // persist a rejection row so the user can see what alpaca refused — no amountInvested so it doesn't pollute totals
-                            String errMsg = orderResult != null ? orderResult.errorMessage : "Unknown error";
-                            log.warn("Alpaca rejected {} order for user {} on {}: {}",
-                                    trade.getTradeType(), cfg.getUserId(), trade.getTicker(), errMsg);
-
-                            ExecutedTrade rej = new ExecutedTrade();
-                            rej.setUserId(cfg.getUserId());
-                            rej.setCapitolTradesId(capitolTradesId);
-                            rej.setPoliticianId(polId);
-                            rej.setPoliticianName(politician.getName());
-                            rej.setTicker(trade.getTicker());
-                            rej.setSide(trade.getTradeType());
-                            rej.setExecutedAt(LocalDateTime.now());
-                            rej.setStatus("rejected");
-                            rej.setErrorMessage(errMsg);
-                            try { executedTradeRepository.save(rej); }
-                            catch (org.springframework.dao.DataIntegrityViolationException dup) {
-                                // lost the race to a concurrent attempt — fine
-                            }
-                            continue;
-                        }
-
-                        String orderId = orderResult.orderId;
-
-                        // poll a few seconds for fill — pnl math needs the actual fill price
-                        java.util.Map<String, Object> filled = alpacaService.waitForOrderFill(cfgUser, orderId);
-                        BigDecimal fillPrice = null;
-                        BigDecimal filledQty = null;
-                        String fillStatus = "pending";
-                        if (filled != null) {
-                            Object fap = filled.get("filled_avg_price");
-                            Object fq = filled.get("filled_qty");
-                            Object st = filled.get("status");
-                            if (fap != null) {
-                                try { fillPrice = new BigDecimal(fap.toString()); } catch (NumberFormatException ignored) {}
-                            }
-                            if (fq != null) {
-                                try { filledQty = new BigDecimal(fq.toString()); } catch (NumberFormatException ignored) {}
-                            }
-                            if (st != null) fillStatus = st.toString();
-                        }
-
-                        // amountInvested: prefer actual filled qty * price, fall back to requested notional for buys
-                        BigDecimal amountInvested = null;
-                        if (filledQty != null && fillPrice != null) {
-                            amountInvested = filledQty.multiply(fillPrice).setScale(2, BigDecimal.ROUND_HALF_UP);
-                        } else if (isBuy) {
-                            amountInvested = dollarAmount;
-                        } else if (sharesQty != null && fillPrice != null) {
-                            amountInvested = sharesQty.multiply(fillPrice).setScale(2, BigDecimal.ROUND_HALF_UP);
-                        }
-
-                        ExecutedTrade et = new ExecutedTrade();
-                        et.setUserId(cfg.getUserId());
-                        et.setCapitolTradesId(capitolTradesId);
-                        et.setPoliticianId(polId);
-                        et.setPoliticianName(politician.getName());
-                        et.setTicker(trade.getTicker());
-                        et.setSide(trade.getTradeType());
-                        et.setAmountInvested(amountInvested);
-                        et.setFillPrice(fillPrice);
-                        et.setExecutedAt(LocalDateTime.now());
-                        et.setAlpacaOrderId(orderId);
-                        et.setStatus(fillStatus);
-                        try { executedTradeRepository.save(et); }
-                        catch (org.springframework.dao.DataIntegrityViolationException dup) {
-                            log.warn("Race detected on ExecutedTrade for user {} capitol {} — another worker beat us. " +
-                                    "Note: this means an Alpaca order was placed but the row was not saved. orderId={}",
-                                    cfg.getUserId(), capitolTradesId, orderId);
-                        }
-                    } catch (Exception e) {
-                        log.warn("Failed to execute copy for politician {}: {}", polId, e.getMessage());
-                    }
-                }
-            }
-        } catch (Exception e) {
-            log.warn("Error processing copy configs: {}", e.getMessage());
-        }
-        return RowResult.NEW;
-    }
-
-    // returns null if we can't compute proportion — caller skips rather than dumping the whole position
-    private BigDecimal computeSellQty(BigDecimal positionQty, String politicianId, Trade sellTrade) {
-        java.util.List<Trade> politicianTrades = tradeRepository.findByPoliticianId(politicianId);
-        long totalBuyMidpoint = politicianTrades.stream()
-            .filter(t -> "buy".equalsIgnoreCase(t.getTradeType())
-                      && sellTrade.getTicker().equalsIgnoreCase(t.getTicker()))
-            .mapToLong(t -> {
-                long max = t.getSizeMax() == Long.MAX_VALUE ? t.getSizeMin() * 2 : t.getSizeMax();
-                return (t.getSizeMin() + max) / 2;
-            })
-            .sum();
-
-        if (totalBuyMidpoint <= 0) {
-            // no known buy history — can't compute proportion, refuse
-            return null;
-        }
-
-        long sellMax = sellTrade.getSizeMax() == Long.MAX_VALUE ? sellTrade.getSizeMin() * 2 : sellTrade.getSizeMax();
-        long sellMidpoint = (sellTrade.getSizeMin() + sellMax) / 2;
-
-        if (sellMidpoint <= 0) {
-            return null;
-        }
-
-        BigDecimal proportion = new BigDecimal(sellMidpoint)
-            .divide(new BigDecimal(totalBuyMidpoint), 8, java.math.RoundingMode.HALF_UP)
-            .min(BigDecimal.ONE);
-
-        BigDecimal sellQty = positionQty.multiply(proportion).setScale(8, java.math.RoundingMode.HALF_DOWN);
-        if (sellQty.compareTo(BigDecimal.ZERO) <= 0) {
-            // rounded down to 0 — don't fall back to full liquidation
-            return null;
-        }
-
-        log.info("Sell copy {}: proportion={}, positionQty={}, sellQty={}", sellTrade.getTicker(), proportion, positionQty, sellQty);
-        return sellQty;
+        return ingestionService.saveAndCopy(trade, politician) == TradeIngestionService.SaveResult.NEW
+                ? RowResult.NEW : RowResult.DUPLICATE;
     }
 
     private String extractTradeId(String url) {
@@ -614,12 +400,5 @@ private String[] parsePoliticianMeta(Element politicianCell) {
         } catch (NumberFormatException e) {
             return null;
         }
-    }
-
-    private Politician getOrCreatePolitician(String id, String name, String party, String chamber, String state) {
-        return politicianRepository.findById(id).orElseGet(() -> {
-            Politician p = new Politician(id, name != null ? name : "Unknown", party, chamber, state);
-            return politicianRepository.save(p);
-        });
     }
 }

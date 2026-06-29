@@ -60,6 +60,7 @@ public class SecurityConfig {
                 .requestMatchers("/oauth2/**", "/login/**").permitAll()
                 .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                 .requestMatchers("/error").permitAll()
+                .requestMatchers("/api/ingest/**").permitAll()
                 .requestMatchers("/api/scrape/**").access((authSupplier, context) -> {
                     var principal = authSupplier.get();
                     if (!principal.isAuthenticated()) return new org.springframework.security.authorization.AuthorizationDecision(false);

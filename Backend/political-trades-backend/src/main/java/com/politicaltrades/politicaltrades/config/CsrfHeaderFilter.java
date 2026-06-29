@@ -39,5 +39,6 @@ public class CsrfHeaderFilter extends OncePerRequestFilter {
             || path.startsWith("/api/portfolio")
             || path.startsWith("/api/me")
             || path.startsWith("/api/scrape");
+        // /api/ingest is intentionally excluded — it uses X-Ingest-Secret for auth, not the CSRF header
     }
 }
