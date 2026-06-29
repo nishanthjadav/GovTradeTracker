@@ -115,3 +115,40 @@ def test_top_reason_picks_dominant_feature():
     reason = features.top_reason(feature_row, trade_row)
     assert "size" in reason.lower()
     assert len(reason) < 120
+
+
+def test_top_reason_uses_first_name_when_available():
+    feature_row = pd.Series({
+        "filing_lateness_z": 0.5,
+        "size_log_z": 4.0,
+        "cluster_density": 1.1,
+    })
+    trade_row = pd.Series({
+        "filed_after_days": 5,
+        "size_min": 1_500_000,
+        "size_max": 5_000_000,
+        "ticker": "MSFT",
+        "politician_name": "Nancy Pelosi",
+    })
+    reason = features.top_reason(feature_row, trade_row)
+    assert "Nancy" in reason
+    assert "this politician" not in reason
+
+
+def test_top_reason_falls_back_when_name_missing():
+    # missing/NaN/empty name should still produce a readable reason
+    feature_row = pd.Series({
+        "filing_lateness_z": 4.0,  # dominant
+        "size_log_z": 0.1,
+        "cluster_density": 1.0,
+    })
+    for name in (None, float("nan"), "", "   "):
+        trade_row = pd.Series({
+            "filed_after_days": 90,
+            "size_min": 1000,
+            "size_max": 15000,
+            "ticker": "AAPL",
+            "politician_name": name,
+        })
+        reason = features.top_reason(feature_row, trade_row)
+        assert "this politician" in reason

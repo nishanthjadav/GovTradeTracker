@@ -30,15 +30,17 @@ RANDOM_STATE = 42
 def load_trades(conn) -> pd.DataFrame:
     sql = """
         SELECT
-            id,
-            politician_id,
-            ticker,
-            trade_date,
-            published_date,
-            filed_after_days,
-            size_min,
-            size_max
-        FROM trades
+            t.id,
+            t.politician_id,
+            p.name AS politician_name,
+            t.ticker,
+            t.trade_date,
+            t.published_date,
+            t.filed_after_days,
+            t.size_min,
+            t.size_max
+        FROM trades t
+        LEFT JOIN politicians p ON p.id = t.politician_id
     """
     with conn.cursor() as cur:
         cur.execute(sql)

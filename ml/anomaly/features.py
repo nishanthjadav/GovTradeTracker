@@ -115,6 +115,22 @@ def build_features(trades: pd.DataFrame) -> FeatureFrame:
     return FeatureFrame(df=df)
 
 
+def _first_name(politician_name) -> Optional[str]:
+    # reason strings read better as "unusual for Nancy" than "unusual for this politician".
+    # Be defensive: scoring tests pass synthetic trade rows without this field at all.
+    if politician_name is None:
+        return None
+    try:
+        if pd.isna(politician_name):
+            return None
+    except (TypeError, ValueError):
+        pass
+    text = str(politician_name).strip()
+    if not text:
+        return None
+    return text.split()[0]
+
+
 def top_reason(feature_row: pd.Series, trade_row: pd.Series) -> str:
     # for cluster_density, ratio > 1 is the "extreme" direction, treat like a positive z
     candidates = [
@@ -125,23 +141,26 @@ def top_reason(feature_row: pd.Series, trade_row: pd.Series) -> str:
     candidates.sort(key=lambda x: x[1], reverse=True)
     name = candidates[0][0]
 
+    first_name = _first_name(trade_row.get("politician_name"))
+    who = first_name or "this politician"
+
     if name == "filing_lateness_z":
         fad = trade_row.get("filed_after_days")
         if fad is None or pd.isna(fad):
-            return "Unusual filing pattern for this politician"
-        return f"Filed {int(fad)} days after trade, unusual for this politician"
+            return f"Unusual filing pattern for {who}"
+        return f"Filed {int(fad)} days after trade, unusual for {who}"
 
     if name == "size_log_z":
         mid = midpoint_size(trade_row.get("size_min"), trade_row.get("size_max"))
         if mid is None:
-            return "Unusual position size for this politician"
+            return f"Unusual position size for {who}"
         if mid >= 1_000_000:
             label = f"~${mid / 1_000_000:.1f}M"
         elif mid >= 1_000:
             label = f"~${mid / 1_000:.0f}K"
         else:
             label = f"~${mid:.0f}"
-        return f"Position size {label} is unusual for this politician...hmm why are they so confident"
+        return f"Position size {label} is unusual for {who}...hmm why are they so confident"
 
     ticker = trade_row.get("ticker") or "this ticker"
     return f"Many politicians traded {ticker} within a week of this trade...suspicious"
