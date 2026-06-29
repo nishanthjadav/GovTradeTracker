@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { SORT_OPTIONS, defaultFilters, hasActiveFilters } from "../utils/filterHelpers";
 import SearchableSelect from "./SearchableSelect";
 
-export default function FilterBar({ trades, politicians, filters, setFilters, profileMode = false }) {
+export default function FilterBar({ trades, politicians, filters, setFilters, profileMode = false, onSelectPolitician }) {
   const tickerOptions = useMemo(() => {
     const s = new Set(trades.map((t) => t.ticker).filter(Boolean));
     return [...s].sort().map((t) => ({ value: t, label: t }));
@@ -98,7 +98,17 @@ export default function FilterBar({ trades, politicians, filters, setFilters, pr
           <SearchableSelect
             options={politicianOptions}
             value={filters.politicianId}
-            onChange={(v) => setFilters((f) => ({ ...f, politicianId: v }))}
+            onChange={(v) => {
+              // Picking a politician navigates to their profile page (which loads their full trade
+              // history from the API). If we just stuffed politicianId into filters, we'd be
+              // filtering the recent-trades slice — politicians who haven't traded lately would
+              // produce an empty table, which looks like a broken dropdown.
+              if (v && onSelectPolitician) {
+                onSelectPolitician(v);
+              } else {
+                setFilters((f) => ({ ...f, politicianId: v }));
+              }
+            }}
             placeholder="Search politician..."
             width={200}
           />

@@ -246,7 +246,16 @@ export default function App() {
       <div className="topbar">
         <div
           className="logo"
-          onClick={() => setCurrentView("feed")}
+          onClick={() => {
+            // Full reset — not just setCurrentView. The user expects clicking the brand to wipe
+            // any politician filter / selected profile and land on the clean feed. Without resetting
+            // filters here, picking a politician (which sets filters.politicianId) leaves the feed
+            // empty when they come back via the logo.
+            setSelectedPol(null);
+            setFilters(defaultFilters());
+            setCurrentPage(1);
+            setCurrentView("feed");
+          }}
           style={{ cursor: "pointer" }}
         >
           Gov Trade Tracker
@@ -296,7 +305,13 @@ export default function App() {
         <div className="content">
           {currentView === "feed" ? (
             <>
-              <FilterBar trades={recentTrades} politicians={politicians} filters={filters} setFilters={setFilters} />
+              <FilterBar
+                trades={recentTrades}
+                politicians={politicians}
+                filters={filters}
+                setFilters={setFilters}
+                onSelectPolitician={selectPoliticianById}
+              />
               <div className="trades-table-scroll">
                 <TradeTable
                   trades={paginatedTrades}
