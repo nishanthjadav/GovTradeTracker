@@ -1,6 +1,7 @@
 package com.politicaltrades.politicaltrades.service;
 
 import com.microsoft.playwright.Browser;
+import com.microsoft.playwright.BrowserContext;
 import com.microsoft.playwright.BrowserType;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Playwright;
@@ -36,7 +37,12 @@ public class CapitolTradesScraper {
 
     private static final Logger log = LoggerFactory.getLogger(CapitolTradesScraper.class);
     private static final String BASE_URL = "https://www.capitoltrades.com/trades?page=";
-    private static final int REQUEST_DELAY_MS = 2000;
+    // Bumped from 2000 → 4500ms with jitter — Vercel Bot Protection 429s us if we hammer too fast.
+    private static final int REQUEST_DELAY_MS = 4500;
+    private static final int REQUEST_JITTER_MS = 1500;
+    // Realistic Chrome on Windows — Playwright's default UA leaks "HeadlessChrome" which trips Vercel's checkpoint.
+    private static final String USER_AGENT =
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36";
 
     private static final Pattern SIZE_PATTERN = Pattern.compile("([\\d.]+)(K|M)?[–-]([\\d.]+)(K|M)?|([\\d.]+)(K|M)?\\+");
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("d MMM yyyy", Locale.ENGLISH);
@@ -80,9 +86,43 @@ public class CapitolTradesScraper {
         int consecutiveErrors = 0;
 
         try (Playwright playwright = Playwright.create()) {
-            Browser browser = playwright.chromium().launch(new BrowserType.LaunchOptions().setHeadless(true));
-            Page page = browser.newPage();
+            // --disable-blink-features=AutomationControlled hides the navigator.webdriver flag that Vercel checks for.
+            Browser browser = playwright.chromium().launch(new BrowserType.LaunchOptions()
+                    .setHeadless(true)
+                    .setArgs(java.util.List.of(
+                            "--disable-blink-features=AutomationControlled",
+                            "--disable-features=IsolateOrigins,site-per-process"
+                    )));
+
+            // Build a realistic browser context — UA, locale, timezone, viewport. Missing any of these has been observed to flip Vercel
+            // into serving the "Vercel Security Checkpoint" interstitial instead of the trades table.
+            BrowserContext ctx = browser.newContext(new Browser.NewContextOptions()
+                    .setUserAgent(USER_AGENT)
+                    .setLocale("en-US")
+                    .setTimezoneId("America/New_York")
+                    .setViewportSize(1366, 768)
+                    .setExtraHTTPHeaders(java.util.Map.of(
+                            "Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+                            "Accept-Language", "en-US,en;q=0.9",
+                            "Sec-Ch-Ua", "\"Google Chrome\";v=\"131\", \"Chromium\";v=\"131\", \"Not_A Brand\";v=\"24\"",
+                            "Sec-Ch-Ua-Mobile", "?0",
+                            "Sec-Ch-Ua-Platform", "\"Windows\""
+                    )));
+
+            // Hide the webdriver flag at runtime too — extra belt-and-braces because some Vercel checks read it via JS.
+            ctx.addInitScript("Object.defineProperty(navigator, 'webdriver', {get: () => undefined});");
+
+            Page page = ctx.newPage();
             page.setDefaultNavigationTimeout(30000);
+
+            // Warm-up: hit the homepage first so the Vercel bot-detection cookie gets set before we touch /trades.
+            // Going straight to /trades cold is what's been triggering the checkpoint.
+            try {
+                page.navigate("https://www.capitoltrades.com/");
+                page.waitForTimeout(2000 + (long)(Math.random() * 1500));
+            } catch (Exception e) {
+                log.warn("Warm-up navigation failed (continuing anyway): {}", e.getMessage());
+            }
 
             for (int pageNum = startPage; pageNum <= endPage; pageNum++) {
                 String targetUrl = BASE_URL + pageNum;
@@ -90,14 +130,25 @@ public class CapitolTradesScraper {
 
                 try {
                     page.navigate(targetUrl);
-                    page.waitForSelector("table tbody tr", new Page.WaitForSelectorOptions().setTimeout(15000));
 
-                    String html = page.content();
-
-                    if (html.contains("Just a moment") || html.contains("cf-browser-verification")) {
+                    // Detect bot-challenge pages BEFORE waiting 15s for a selector that will never appear.
+                    String earlyHtml = page.content();
+                    if (earlyHtml.contains("Vercel Security Checkpoint") || earlyHtml.contains("_vcrcs")) {
+                        log.error("Vercel Security Checkpoint served on page {} — blocked as a bot. Aborting.", pageNum);
+                        break;
+                    }
+                    if (earlyHtml.contains("Just a moment") || earlyHtml.contains("cf-browser-verification")) {
                         log.error("Cloudflare challenge on page {} — stopping.", pageNum);
                         break;
                     }
+                    if (earlyHtml.contains("429") && earlyHtml.contains("Too Many Requests")) {
+                        log.error("HTTP 429 (rate-limited) on page {} — aborting; will retry on next scheduled run.", pageNum);
+                        break;
+                    }
+
+                    page.waitForSelector("table tbody tr", new Page.WaitForSelectorOptions().setTimeout(15000));
+
+                    String html = page.content();
 
                     Document doc = Jsoup.parse(html);
                     Elements rows = doc.select("table tbody tr");
@@ -135,7 +186,8 @@ public class CapitolTradesScraper {
                         break;
                     }
 
-                    Thread.sleep(REQUEST_DELAY_MS);
+                    // Jitter the delay so the request pattern doesn't look mechanical to Vercel's bot detection.
+                    Thread.sleep(REQUEST_DELAY_MS + (long)(Math.random() * REQUEST_JITTER_MS));
 
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
@@ -161,6 +213,7 @@ public class CapitolTradesScraper {
                 }
             }
 
+            ctx.close();
             browser.close();
         }
 
