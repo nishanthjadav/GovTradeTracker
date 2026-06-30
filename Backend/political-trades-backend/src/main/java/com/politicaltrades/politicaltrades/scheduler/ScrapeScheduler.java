@@ -1,7 +1,6 @@
 package com.politicaltrades.politicaltrades.scheduler;
 
 import com.politicaltrades.politicaltrades.service.CapitolTradesScraper;
-import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.TaskScheduler;
@@ -13,6 +12,12 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
+// Auto-scheduling disabled — the local Windows Task Scheduler job
+// (run_scrape.bat → ml/scraper/scrape_and_push.py) is now the source of truth.
+// The bean is still registered because ScrapeController injects it for the
+// manual /api/scrape/backfill endpoint. To re-enable daily auto-scrapes,
+// re-import jakarta.annotation.PostConstruct and add @PostConstruct back to
+// scheduleNextRun() below.
 @Component
 public class ScrapeScheduler {
 
@@ -29,7 +34,6 @@ public class ScrapeScheduler {
         this.taskScheduler = taskScheduler;
     }
 
-    @PostConstruct
     public void scheduleNextRun() {
         Instant next = computeNextRunBetween(START_HOUR, END_HOUR);
         ZonedDateTime nextLocal = next.atZone(ZoneId.systemDefault());
