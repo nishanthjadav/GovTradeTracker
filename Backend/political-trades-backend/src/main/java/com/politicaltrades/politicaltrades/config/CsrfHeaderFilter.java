@@ -10,7 +10,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.Set;
 
-// custom header forces a preflight, so cross-site forgeries get blocked by cors
+// custom header forces a preflight so cross-site forgeries get blocked by cors
 @Component
 public class CsrfHeaderFilter extends OncePerRequestFilter {
 
@@ -39,6 +39,6 @@ public class CsrfHeaderFilter extends OncePerRequestFilter {
             || path.startsWith("/api/portfolio")
             || path.startsWith("/api/me")
             || path.startsWith("/api/scrape");
-        // /api/ingest is intentionally excluded — it uses X-Ingest-Secret for auth, not the CSRF header
+        // /api/ingest intentionally excluded, it uses x-ingest-secret for auth
     }
 }

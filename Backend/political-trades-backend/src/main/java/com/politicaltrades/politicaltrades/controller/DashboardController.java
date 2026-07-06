@@ -24,22 +24,30 @@ public class DashboardController {
 
     @GetMapping("/politicians")
     public List<Map<String, Object>> getPoliticians() {
-        return politicianRepository.findAll().stream().map(p -> {
-            List<Trade> trades = tradeRepository.findByPoliticianId(p.getId());
-            long buys = trades.stream().filter(t -> "buy".equalsIgnoreCase(t.getTradeType())).count();
-            long sells = trades.stream().filter(t -> "sell".equalsIgnoreCase(t.getTradeType())).count();
+        // one aggregate query instead of one query per politician
+        Map<String, long[]> stats = new HashMap<>(); // pid -> [total, buys, sells]
+        for (Object[] row : tradeRepository.aggregateCountsByPolitician()) {
+            String pid = (String) row[0];
+            long total = ((Number) row[1]).longValue();
+            long buys  = row[2] != null ? ((Number) row[2]).longValue() : 0L;
+            long sells = row[3] != null ? ((Number) row[3]).longValue() : 0L;
+            stats.put(pid, new long[] { total, buys, sells });
+        }
 
+        return politicianRepository.findAll().stream().map(p -> {
+            long[] s = stats.getOrDefault(p.getId(), new long[] { 0L, 0L, 0L });
             Map<String, Object> m = new LinkedHashMap<>();
             m.put("id", p.getId());
             m.put("name", p.getName());
             m.put("party", p.getParty());
             m.put("chamber", p.getChamber());
             m.put("state", p.getState());
-            m.put("totalTrades", trades.size());
-            m.put("buys", buys);
-            m.put("sells", sells);
+            m.put("totalTrades", s[0]);
+            m.put("buys", s[1]);
+            m.put("sells", s[2]);
             return m;
-        }).sorted((a, b) -> ((Number) b.get("totalTrades")).intValue() - ((Number) a.get("totalTrades")).intValue())
+        }).sorted((a, b) -> Long.compare(((Number) b.get("totalTrades")).longValue(),
+                                         ((Number) a.get("totalTrades")).longValue()))
           .collect(Collectors.toList());
     }
 
@@ -75,6 +83,7 @@ public class DashboardController {
                 m.put("tradeType", t.getTradeType());
                 m.put("tradeDate", t.getTradeDate());
                 m.put("publishedDate", t.getPublishedDate());
+                m.put("scrapedAt", t.getScrapedAt());
                 m.put("filedAfterDays", t.getFiledAfterDays());
                 m.put("sizeMin", t.getSizeMin());
                 m.put("sizeMax", t.getSizeMax());
@@ -97,6 +106,7 @@ public class DashboardController {
         m.put("tradeType", t.getTradeType());
         m.put("tradeDate", t.getTradeDate());
         m.put("publishedDate", t.getPublishedDate());
+        m.put("scrapedAt", t.getScrapedAt());
         m.put("filedAfterDays", t.getFiledAfterDays());
         m.put("sizeMin", t.getSizeMin());
         m.put("sizeMax", t.getSizeMax());

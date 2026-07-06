@@ -34,7 +34,7 @@ public class CopyConfigController {
         Object mfdObj = body.get("maxFiledDays");
         Integer maxFiledDays = parseMaxFiledDays(mfdObj);
 
-        // upsert — prevent StrictMode/double-submit dupes
+        // upsert to prevent strictmode/double-submit dupes
         CopyConfig existing = copyConfigRepository.findByUserIdAndPoliticianId(user.getId(), politicianId);
         if (existing != null) {
             return ResponseEntity.ok(existing);
@@ -51,7 +51,7 @@ public class CopyConfigController {
             CopyConfig saved = copyConfigRepository.save(cfg);
             return ResponseEntity.ok(saved);
         } catch (org.springframework.dao.DataIntegrityViolationException dup) {
-            // lost the race against a concurrent POST — unique constraint kicked in, return the winner
+            // lost the race, unique constraint kicked in, return the winner
             CopyConfig winner = copyConfigRepository.findByUserIdAndPoliticianId(user.getId(), politicianId);
             if (winner != null) return ResponseEntity.ok(winner);
             throw dup;
@@ -63,7 +63,7 @@ public class CopyConfigController {
         User user = userService.requireByGoogleSub(oidc.getSubject());
         List<CopyConfig> configs = copyConfigRepository.findByUserId(user.getId());
 
-        // keep newest if dupes exist (legacy data before the upsert fix)
+        // keep newest if dupes exist, legacy data from before the upsert fix
         java.util.Map<String, CopyConfig> winners = new java.util.LinkedHashMap<>();
         java.util.List<CopyConfig> losers = new java.util.ArrayList<>();
         for (CopyConfig c : configs) {

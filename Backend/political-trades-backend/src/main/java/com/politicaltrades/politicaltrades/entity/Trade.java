@@ -53,7 +53,7 @@ public class Trade {
     @Column(name = "scraped_at")
     private LocalDateTime scrapedAt;
 
-    // populated weekly by the ml/anomaly python job. null until first scoring run. score is 0-1 percentile rank
+    // populated weekly by the ml/anomaly python job, null until first scoring run
     @Column(name = "anomaly_score", precision = 5, scale = 4)
     private BigDecimal anomalyScore;
 

@@ -30,11 +30,7 @@ public class IngestController {
         this.ingestionService = ingestionService;
     }
 
-    /**
-     * Called by the GitHub Actions scraper workflow.
-     * Each item in the array is a flat map with both politician and trade fields.
-     * Auth: X-Ingest-Secret header must match the INGEST_SECRET env var.
-     */
+    // called by the github actions scraper workflow, auth via x-ingest-secret header
     @PostMapping("/trades")
     public ResponseEntity<Map<String, Integer>> ingestTrades(
             @RequestHeader(value = "X-Ingest-Secret", required = false) String secret,

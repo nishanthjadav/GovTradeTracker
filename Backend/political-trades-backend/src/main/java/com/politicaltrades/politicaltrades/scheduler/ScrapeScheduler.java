@@ -12,12 +12,10 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
-// Auto-scheduling disabled — the local Windows Task Scheduler job
-// (run_scrape.bat → ml/scraper/scrape_and_push.py) is now the source of truth.
-// The bean is still registered because ScrapeController injects it for the
-// manual /api/scrape/backfill endpoint. To re-enable daily auto-scrapes,
-// re-import jakarta.annotation.PostConstruct and add @PostConstruct back to
-// scheduleNextRun() below.
+// auto-scheduling disabled — the local windows task scheduler job
+// (run_scrape.bat) is the source of truth now. bean stays registered
+// because scrapecontroller injects it for the manual /api/scrape/backfill endpoint.
+// to re-enable, add @postconstruct back to schedulenextrun below.
 @Component
 public class ScrapeScheduler {
 

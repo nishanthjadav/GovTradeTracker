@@ -41,7 +41,7 @@ public class SecurityConfig {
                 try {
                     userService.findOrCreateFromOidc(oidc);
                 } catch (Exception e) {
-                    // without a user row, every later api call 500s — kill the session and bounce to an error page
+                    // without a user row, every later api call 500s — kill the session and bounce
                     request.getSession().invalidate();
                     response.sendRedirect(frontendUrl + "/auth/callback?error=user_init_failed");
                     return;
@@ -87,7 +87,7 @@ public class SecurityConfig {
         CorsConfiguration cfg = new CorsConfiguration();
         cfg.setAllowedOrigins(List.of(frontendUrl));
         cfg.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        // explicit allowlist (not "*") so X-Requested-With survives preflight for the csrf filter
+        // explicit allowlist (not "*") so x-requested-with survives preflight for the csrf filter
         cfg.setAllowedHeaders(List.of("Content-Type", "Authorization", "X-Requested-With", "Accept"));
         cfg.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

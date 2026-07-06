@@ -42,11 +42,11 @@ public class PortfolioController {
 
         List<Map<String, Object>> enriched = new ArrayList<>();
 
-        // prefetch politician names to avoid N+1 and fix stale ids in politician_name
+        // prefetch politician names to avoid n+1 and fix stale ids in politician_name
         Map<String, String> politicianNameCache = new HashMap<>();
         politicianRepository.findAll().forEach(p -> politicianNameCache.put(p.getId(), p.getName()));
 
-        // batch all live prices in one alpaca call — per-trade would blow the 200 req/min limit on big portfolios
+        // batch prices in one alpaca call — per-trade would blow the 200 req/min limit
         Set<String> tickers = trades.stream()
             .map(ExecutedTrade::getTicker)
             .filter(Objects::nonNull)
@@ -81,9 +81,9 @@ public class PortfolioController {
             BigDecimal pnl = null;
             Double pnlPercent = null;
 
-            // only buys count as money invested — sells are exits
+            // only buys count as money invested, sells are exits
             boolean isBuy = "buy".equalsIgnoreCase(t.getSide());
-            // only count filled rows. pending may never fill and would inflate totals with phantom capital
+            // only count filled rows, pending may never fill and would inflate totals
             boolean isFilled = t.getStatus() != null
                 && ("filled".equalsIgnoreCase(t.getStatus())
                     || "partially_filled".equalsIgnoreCase(t.getStatus()));
@@ -164,6 +164,17 @@ public class PortfolioController {
         summary.put("bestTradeTicker", bestTradeTicker);
         summary.put("bestTradeReturnPercent", bestTradeReturnOut);
 
+        // pull once — Alpaca /account is one request and gives us both. Failures
+        // return nulls; the chart falls back to a $0 baseline when cash is null.
+        try {
+            var snapshot = alpacaService.getAccountSnapshot(user);
+            summary.put("cashBalance", snapshot.cash());
+            summary.put("equity", snapshot.equity());
+        } catch (Exception e) {
+            summary.put("cashBalance", null);
+            summary.put("equity", null);
+        }
+
         Map<String, Object> resp = new HashMap<>();
         resp.put("summary", summary);
         resp.put("trades", enriched.stream().sorted((a,b)-> {
@@ -181,6 +192,24 @@ public class PortfolioController {
         List<ExecutedTrade> list = executedTradeRepository.findByUserId(user.getId());
         list.sort(Comparator.comparing(ExecutedTrade::getExecutedAt, Comparator.nullsLast(Comparator.reverseOrder())));
         return ResponseEntity.ok(list);
+    }
+
+    // intraday/historical equity samples, straight from alpaca. range: 1D, 1M, 1Y, ALL.
+    @GetMapping("/history")
+    public ResponseEntity<Map<String, Object>> history(
+            @AuthenticationPrincipal OidcUser oidc,
+            @RequestParam(defaultValue = "1D") String range) {
+        User user = userService.requireByGoogleSub(oidc.getSubject());
+        AlpacaService.PortfolioHistory h = alpacaService.getPortfolioHistory(user, range);
+        Map<String, Object> body = new HashMap<>();
+        body.put("range", range);
+        body.put("timestamps", h.timestamps());
+        body.put("equity", h.equity());
+        body.put("timeframe", h.timeframe());
+        body.put("baseValue", h.baseValue());
+        body.put("windowStart", h.windowStart());
+        body.put("windowEnd", h.windowEnd());
+        return ResponseEntity.ok(body);
     }
 
     @DeleteMapping("/executed-trades")

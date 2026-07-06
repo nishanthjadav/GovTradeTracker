@@ -18,10 +18,6 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
-/**
- * Shared save-and-copy logic used by both CapitolTradesScraper (server-side parse)
- * and IngestController (GitHub Actions push).
- */
 @Service
 public class TradeIngestionService {
 
@@ -57,7 +53,7 @@ public class TradeIngestionService {
         });
     }
 
-    /** Saves the trade if new, then fires copy orders. Returns DUPLICATE if already stored. */
+    /** returns DUPLICATE if already stored */
     public SaveResult saveAndCopy(Trade trade, Politician politician) {
         String capitolTradesId = trade.getCapitolTradesId();
 

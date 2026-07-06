@@ -65,11 +65,9 @@ public class CapitolTradesScraper {
         int skipped = 0;
         int consecutiveErrors = 0;
 
-        // Plain HttpClient instead of Playwright. The /trades page is fully server-rendered
-        // (the static HTML already contains the full <tbody>), and Playwright's headless Chromium
-        // gets fingerprinted by Vercel's bot protection — plugins.length, WebGL vendor, etc. —
-        // even with --disable-blink-features=AutomationControlled. A bare curl with a real UA
-        // and a cookie jar sails through.
+        // plain httpclient instead of playwright — playwright's headless chromium
+        // gets fingerprinted by vercel's bot protection even with automationcontrolled off,
+        // but a bare curl with a real ua and cookie jar sails through
         CookieManager cookieJar = new CookieManager();
         cookieJar.setCookiePolicy(CookiePolicy.ACCEPT_ALL);
         HttpClient http = HttpClient.newBuilder()
@@ -78,8 +76,8 @@ public class CapitolTradesScraper {
                 .connectTimeout(Duration.ofSeconds(15))
                 .build();
 
-        // Warm-up: hit the homepage so Vercel sets its session cookie before we touch /trades.
-        // Going cold to /trades has been observed to trigger the Security Checkpoint.
+        // warm-up hit on / so vercel sets its session cookie before we touch /trades,
+        // going cold to /trades triggers the security checkpoint
         try {
             HttpResponse<String> warmup = http.send(
                     buildRequest(URI.create("https://www.capitoltrades.com/")),
@@ -159,7 +157,7 @@ public class CapitolTradesScraper {
                     break;
                 }
 
-                // Jitter the delay so the request pattern doesn't look mechanical to Vercel's bot detection.
+                // jitter the delay so the request pattern doesn't look mechanical to vercel
                 Thread.sleep(REQUEST_DELAY_MS + (long)(Math.random() * REQUEST_JITTER_MS));
 
             } catch (InterruptedException e) {
@@ -174,7 +172,7 @@ public class CapitolTradesScraper {
                             MAX_CONSECUTIVE_ERRORS, pageNum);
                     break;
                 }
-                // back off so we don't confirm bot behavior by hammering: 15s, 30s, 60s, 60s, 60s
+                // back off so we don't confirm bot behavior: 15s, 30s, 60s, 60s, 60s
                 long backoffMs = Math.min(60_000L, 15_000L * (1L << Math.min(consecutiveErrors - 1, 2)));
                 log.info("Backing off {}ms before retrying.", backoffMs);
                 try {
@@ -189,15 +187,14 @@ public class CapitolTradesScraper {
         log.info("Scrape complete. New trades saved: {}, Already existed (skipped): {}", newTrades, skipped);
     }
 
-    // Browser-shaped headers. Vercel's bot protection has been observed to challenge requests
-    // missing Accept-Language / Sec-Fetch-* even when the UA is realistic.
+    // browser-shaped headers — vercel challenges requests missing accept-language / sec-fetch-*
     private HttpRequest buildRequest(URI uri) {
         return HttpRequest.newBuilder(uri)
                 .timeout(Duration.ofSeconds(20))
                 .header("User-Agent", USER_AGENT)
                 .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8")
                 .header("Accept-Language", "en-US,en;q=0.9")
-                .header("Accept-Encoding", "identity") // ask for uncompressed so JSoup gets raw text
+                .header("Accept-Encoding", "identity")
                 .header("Sec-Ch-Ua", "\"Google Chrome\";v=\"131\", \"Chromium\";v=\"131\", \"Not_A Brand\";v=\"24\"")
                 .header("Sec-Ch-Ua-Mobile", "?0")
                 .header("Sec-Ch-Ua-Platform", "\"Windows\"")
@@ -340,7 +337,7 @@ private String[] parsePoliticianMeta(Element politicianCell) {
         return null;
     }
 
-    // date cells render as two stacked divs: e.g. "26 May" + "2026", or "11:15" + "Today"
+    // date cells render as two stacked divs: e.g. "26 May" + "2026", or "11:15" + "today"
     private LocalDate parseSplitDate(Element cell) {
         Elements divs = cell.select("div > div");
         if (divs.size() >= 2) {
