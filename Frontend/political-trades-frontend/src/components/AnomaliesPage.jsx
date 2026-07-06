@@ -1,11 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
-import { fetchAnomalies } from "../api";
 import { fmtSize } from "../utils/tradeHelpers";
 import Pagination from "./Pagination";
 
 const PAGE_SIZE = 25;
-const DEFAULT_LIMIT = 300;
-const FETCH_MIN_SCORE = 0.5;
 
 const SCORE_MIN = 0.5;
 const SCORE_MAX = 1.0;
@@ -31,6 +28,8 @@ const SORT_OPTIONS = [
   { value: "score_asc", label: "Least Anomalous" },
   { value: "date_desc", label: "Newest First" },
   { value: "date_asc", label: "Oldest First" },
+  { value: "scraped_desc", label: "Scraped Newest" },
+  { value: "scraped_asc", label: "Scraped Oldest" },
 ];
 
 const SCORE_FLOOR_OPTIONS = [
@@ -56,10 +55,11 @@ function avatarBg(party) {
 export default function AnomaliesPage({
   copyConfigs,
   onSelectPolitician,
-  onCopyToggle,
+  pendingCopyIds,
+  onPendingToggle,
+  anomalies = [],
+  anomaliesLoading = false,
 }) {
-  const [trades, setTrades] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
 
   const [sort, setSort] = useState("score_desc");
@@ -67,13 +67,8 @@ export default function AnomaliesPage({
   const [copyingOnly, setCopyingOnly] = useState(false);
   const [scoreFloor, setScoreFloor] = useState(0.5);
 
-  useEffect(() => {
-    setLoading(true);
-    fetchAnomalies(DEFAULT_LIMIT, FETCH_MIN_SCORE)
-      .then((data) => setTrades(Array.isArray(data) ? data : []))
-      .catch(() => setTrades([]))
-      .finally(() => setLoading(false));
-  }, []);
+  const trades = anomalies;
+  const loading = anomaliesLoading;
 
   const copiedPoliticianIds = useMemo(
     () => new Set((copyConfigs || []).map((c) => c.politicianId)),
@@ -89,6 +84,7 @@ export default function AnomaliesPage({
     });
 
     const dateOf = (t) => t.tradeDate ?? t.publishedDate ?? "";
+    const scrapedOf = (t) => t.scrapedAt ?? "";
     switch (sort) {
       case "score_asc":
         out = [...out].sort((a, b) => (a.anomalyScore ?? 0) - (b.anomalyScore ?? 0));
@@ -98,6 +94,20 @@ export default function AnomaliesPage({
         break;
       case "date_asc":
         out = [...out].sort((a, b) => dateOf(a).localeCompare(dateOf(b)));
+        break;
+      case "scraped_desc":
+        out = [...out].sort((a, b) => scrapedOf(b).localeCompare(scrapedOf(a)));
+        break;
+      case "scraped_asc":
+        // trades with no scrapedAt sink to the bottom regardless of direction —
+        // we want "oldest actually scraped", not "unscraped first"
+        out = [...out].sort((a, b) => {
+          const av = scrapedOf(a), bv = scrapedOf(b);
+          if (!av && !bv) return 0;
+          if (!av) return 1;
+          if (!bv) return -1;
+          return av.localeCompare(bv);
+        });
         break;
       case "score_desc":
       default:
@@ -117,7 +127,7 @@ export default function AnomaliesPage({
     currentPage * PAGE_SIZE
   );
 
-  const showCopy = !!onCopyToggle && !!copyConfigs;
+  const showCopy = !!onPendingToggle && !!copyConfigs;
 
   return (
     <>
@@ -211,7 +221,8 @@ export default function AnomaliesPage({
               loading={loading}
               onSelectPolitician={onSelectPolitician}
               copiedPoliticianIds={copiedPoliticianIds}
-              onCopyToggle={onCopyToggle}
+              pendingCopyIds={pendingCopyIds}
+              onPendingToggle={onPendingToggle}
             />
           </div>
           <Pagination
@@ -232,17 +243,21 @@ function AnomalyTable({
   loading,
   onSelectPolitician,
   copiedPoliticianIds,
-  onCopyToggle,
+  pendingCopyIds,
+  onPendingToggle,
 }) {
   if (loading) return <div className="loading">Loading trades...</div>;
   if (!trades.length) return null;
 
-  const showCopy = !!onCopyToggle;
+  const showCopy = !!onPendingToggle;
   const cols = showCopy
     ? "36px minmax(130px,1.2fr) minmax(130px,1fr) 84px 90px 110px 110px minmax(180px,1.6fr) 80px"
     : "minmax(130px,1.2fr) minmax(130px,1fr) 84px 90px 110px 110px minmax(180px,1.6fr) 80px";
 
-  const checkboxShownFor = new Set();
+  // match TradeTable: every politician's first row is the "lead", subsequent rows
+  // are follow-ups regardless of copied state — keeps the checkbox from repeating
+  // on every duplicate row of a non-copied politician too
+  const seenPoliticians = new Set();
 
   return (
     <div className="trades-table anomaly-table">
@@ -267,30 +282,31 @@ function AnomalyTable({
       </div>
       {trades.map((t, i) => {
         const isCopied = copiedPoliticianIds.has(t.politicianId);
+        const isPending = showCopy ? !!(pendingCopyIds?.has(t.politicianId)) : false;
         const av = avatarBg(t.party);
-        const isFirstRowForPolitician = showCopy && !checkboxShownFor.has(t.politicianId);
-        if (showCopy && isCopied) checkboxShownFor.add(t.politicianId);
+        const isFirstRowForPolitician = !seenPoliticians.has(t.politicianId);
+        seenPoliticians.add(t.politicianId);
         const isFollowUpForCopied = showCopy && isCopied && !isFirstRowForPolitician;
-        const showCheckboxForThisRow = showCopy && (!isCopied || isFirstRowForPolitician);
+        const isFollowUpForPending = showCopy && isPending && !isFirstRowForPolitician;
 
         return (
           <div
             key={t.id ?? i}
-            className={`table-row${isFollowUpForCopied ? " table-row--copy-follow" : ""}${
+            className={`table-row${(isFollowUpForCopied || isFollowUpForPending) ? " table-row--copy-follow" : ""}${
               isCopied && isFirstRowForPolitician ? " table-row--copy-lead" : ""
             }`}
             style={{ gridTemplateColumns: cols }}
           >
             {showCopy && (
               <div className="row-copy-cell">
-                {showCheckboxForThisRow ? (
+                {!isCopied && isFirstRowForPolitician ? (
                   <input
                     type="checkbox"
                     className="row-copy-checkbox"
-                    checked={isCopied}
+                    checked={isPending}
                     onChange={(e) => {
                       e.stopPropagation();
-                      onCopyToggle(t.politicianId);
+                      onPendingToggle(t.politicianId);
                     }}
                   />
                 ) : null}
@@ -312,8 +328,17 @@ function AnomalyTable({
                   party: t.party,
                 })}
               >
-                <div className="pol-name" style={{ fontSize: 12 }}>
-                  {t.politicianName}
+                <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                  <div className="pol-name" style={{ fontSize: 12 }}>
+                    {t.politicianName}
+                  </div>
+                  {isCopied && isFirstRowForPolitician && (
+                    <span className="copy-indicator" title="You are copying this politician">
+                      <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor">
+                        <path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zM4.5 7.5a.5.5 0 0 1 .5-.5h4.293L7.646 5.354a.5.5 0 1 1 .708-.708l2.5 2.5a.5.5 0 0 1 0 .708l-2.5 2.5a.5.5 0 0 1-.708-.708L9.293 8H5a.5.5 0 0 1-.5-.5z"/>
+                      </svg>
+                    </span>
+                  )}
                 </div>
                 <div className="pol-meta">
                   {t.party?.replace("Republican", "R").replace("Democrat", "D")}

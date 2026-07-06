@@ -639,6 +639,12 @@
   color: var(--color-accent);
   background: var(--color-surface);
 }
+.allocation-profile-btn.active {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+  background: var(--color-surface);
+  font-weight: 600;
+}
 
 .portfolio-section-title-row {
   display: flex;
@@ -751,43 +757,34 @@
   background: var(--color-surface);
   border: var(--border-width) solid var(--color-border);
   border-radius: var(--border-radius);
-  padding: var(--spacing-4);
+  padding: var(--spacing-4) var(--spacing-4) var(--spacing-3);
 }
 
 .pnl-chart-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: var(--spacing-3);
   gap: var(--spacing-3);
   flex-wrap: wrap;
+  margin-bottom: var(--spacing-3);
 }
 
-.pnl-chart-values {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.pnl-chart-current {
-  font-family: var(--font-family-mono);
-  font-size: var(--font-size-xl, 22px);
+.pnl-chart-header-title {
+  font-size: var(--font-size-md);
   font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  letter-spacing: -0.01em;
 }
 
-.pnl-chart-change {
-  font-family: var(--font-family-mono);
-  font-size: var(--font-size-xs);
-}
-
-.pnl-chart-change-period {
-  color: var(--color-text-muted);
-  margin-left: 4px;
+.pnl-chart-header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
 }
 
 .pnl-chart-ranges {
   display: flex;
-  gap: 4px;
+  gap: 2px;
   background: var(--color-bg-secondary);
   border: var(--border-width) solid var(--color-border);
   border-radius: var(--border-radius-sm);
@@ -797,14 +794,15 @@
 .pnl-chart-range {
   background: transparent;
   border: none;
-  border-radius: var(--border-radius-sm);
-  padding: 4px 10px;
+  border-radius: calc(var(--border-radius-sm) - 2px);
+  padding: 4px 12px;
   font-size: var(--font-size-xs);
   font-family: var(--font-family-mono);
   font-weight: var(--font-weight-semibold);
   color: var(--color-text-muted);
   cursor: pointer;
   transition: all 0.12s;
+  min-width: 32px;
 }
 .pnl-chart-range:hover {
   color: var(--color-text-primary);
@@ -812,20 +810,87 @@
 .pnl-chart-range.active {
   background: var(--color-surface);
   color: var(--color-text-primary);
-  box-shadow: var(--shadow-sm, 0 1px 2px rgba(0,0,0,0.1));
+  box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+}
+
+.pnl-chart-refresh {
+  background: transparent;
+  border: none;
+  padding: 6px;
+  border-radius: var(--border-radius-sm);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s, background 0.15s;
+}
+.pnl-chart-refresh:hover:not(:disabled) {
+  color: var(--color-text-primary);
+  background: var(--color-bg-secondary);
+}
+.pnl-chart-refresh:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.pnl-chart-refresh.spinning svg {
+  animation: pnl-chart-spin 0.7s linear infinite;
+}
+@keyframes pnl-chart-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.pnl-chart-values {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-family: var(--font-family-mono);
+  margin-top: var(--spacing-1);
+}
+
+.pnl-chart-value-prefix {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-lg, 18px);
+  font-weight: var(--font-weight-medium);
+}
+
+.pnl-chart-value {
+  color: var(--color-text-primary);
+  font-size: 26px;
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: -0.02em;
+}
+
+.pnl-chart-change {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.pnl-chart-change-pct {
+  font-weight: var(--font-weight-medium);
+  opacity: 0.9;
+}
+
+.pnl-chart-timestamp {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  margin-top: 4px;
+  margin-bottom: var(--spacing-3);
 }
 
 .pnl-chart-svg {
-  width: 100%;
-  height: 240px;
+  width: auto;
+  max-width: 100%;
+  height: 260px;
   display: block;
 }
 
-.pnl-chart-empty {
-  background: var(--color-surface);
-  border: var(--border-width) solid var(--color-border);
-  border-radius: var(--border-radius);
-  padding: var(--spacing-6);
+.pnl-chart-empty,
+.pnl-chart-empty-body {
+  background: transparent;
+  padding: var(--spacing-8) var(--spacing-6);
   text-align: center;
   color: var(--color-text-muted);
   font-size: var(--font-size-sm);
@@ -843,13 +908,14 @@
   font-size: var(--font-size-xs);
   font-family: var(--font-family-mono);
   white-space: nowrap;
-  box-shadow: var(--shadow-sm, 0 2px 6px rgba(0,0,0,0.15));
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
   z-index: 2;
 }
 
 .pnl-chart-tooltip-value {
   font-weight: var(--font-weight-semibold);
   font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
 }
 
 .pnl-chart-tooltip-date {

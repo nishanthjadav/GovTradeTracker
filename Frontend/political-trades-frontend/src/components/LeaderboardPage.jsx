@@ -37,6 +37,8 @@ export default function LeaderboardPage({
   politicians,
   trades,
   copyConfigs,
+  pendingCopyIds,
+  onPendingToggle,
   onSelectPolitician,
   onBack,
 }) {
@@ -125,7 +127,15 @@ export default function LeaderboardPage({
     return `${Math.round(row.bullishRatio * 100)}% buys`;
   };
 
-  const cols = "48px minmax(180px,1fr) 70px 90px 110px 120px";
+  const showCopy = !!onPendingToggle;
+  const copiedIds = useMemo(
+    () => new Set((copyConfigs || []).map((c) => c.politicianId)),
+    [copyConfigs]
+  );
+
+  const cols = showCopy
+    ? "36px 48px minmax(180px,1fr) 70px 90px 110px 120px"
+    : "48px minmax(180px,1fr) 70px 90px 110px 120px";
 
   return (
     <>
@@ -172,6 +182,7 @@ export default function LeaderboardPage({
       <div className="trades-table-scroll">
         <div className="trades-table" style={{ minWidth: 600 }}>
           <div className="table-header" style={{ gridTemplateColumns: cols }}>
+            {showCopy && <div />}
             <div>#</div>
             <div>Politician</div>
             <div>Trades</div>
@@ -188,20 +199,48 @@ export default function LeaderboardPage({
             ranked.map((row, i) => {
               const p = row.politician;
               const av = avatarBg(p.party);
+              const isCopied = copiedIds.has(p.id);
+              const isPending = showCopy ? !!(pendingCopyIds?.has(p.id)) : false;
               return (
                 <div
                   key={p.id}
-                  className="table-row"
+                  className={`table-row${
+                    isCopied ? " table-row--copy-lead" : ""
+                  }`}
                   style={{ gridTemplateColumns: cols }}
                   onClick={() => onSelectPolitician?.(p.id)}
                 >
+                  {showCopy && (
+                    <div className="row-copy-cell" onClick={(e) => e.stopPropagation()}>
+                      {!isCopied ? (
+                        <input
+                          type="checkbox"
+                          className="row-copy-checkbox"
+                          checked={isPending}
+                          onChange={(e) => {
+                            e.stopPropagation();
+                            onPendingToggle(p.id);
+                          }}
+                        />
+                      ) : null}
+                    </div>
+                  )}
                   <div className="pol-rank">{i + 1}</div>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
                     <div className="pol-avatar" style={{ background: av.bg, color: av.color, flexShrink: 0 }}>
                       {initials(p.name)}
                     </div>
                     <div style={{ minWidth: 0 }}>
-                      <div className="pol-name">{p.name}</div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                        <div className="pol-name">{p.name}</div>
+                        {isCopied && (
+                          <span className="copy-indicator" title="You are copying this politician">
+                            <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor">
+                              <path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zM4.5 7.5a.5.5 0 0 1 .5-.5h4.293L7.646 5.354a.5.5 0 1 1 .708-.708l2.5 2.5a.5.5 0 0 1 0 .708l-2.5 2.5a.5.5 0 0 1-.708-.708L9.293 8H5a.5.5 0 0 1-.5-.5z"/>
+                            </svg>
+                          </span>
+                        )}
+                      </div>
                       <div className="pol-meta">
                         {p.party?.replace("Republican", "R").replace("Democrat", "D")}
                         {p.chamber ? ` · ${p.chamber}` : ""}

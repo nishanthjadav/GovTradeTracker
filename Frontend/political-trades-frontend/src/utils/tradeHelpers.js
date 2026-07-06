@@ -57,6 +57,17 @@ export const applyFilters = (trades, filters) => {
         return aDate - bDate;
       case "date_desc":
         return bDate - aDate;
+      case "scraped_desc":
+      case "scraped_asc": {
+        const aScraped = parseDateValue(a.scrapedAt);
+        const bScraped = parseDateValue(b.scrapedAt);
+        // trades without a scrapedAt sink to the bottom in both directions —
+        // "oldest scraped" should still be a scraped trade, not an unscraped one
+        if (!aScraped && !bScraped) return 0;
+        if (!aScraped) return 1;
+        if (!bScraped) return -1;
+        return filters.sort === "scraped_asc" ? aScraped - bScraped : bScraped - aScraped;
+      }
       case "size_desc":
         return (b.sizeMin ?? 0) - (a.sizeMin ?? 0);
       case "size_asc":

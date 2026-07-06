@@ -36,3 +36,7 @@ export const triggerIngest        = ()     => api.post('/trades/ingest');
 export const fetchAnomalies = (limit = 50, minScore = 0.8) =>
   apiFetch(`/trades/anomalies?limit=${limit}&minScore=${minScore}`)
     .then((r) => (r.__notOk ? [] : r.json()));
+
+export const fetchPortfolioHistory = (range = "1D") =>
+  apiFetch(`/portfolio/history?range=${range}`)
+    .then((r) => (r.__notOk ? null : r.json()));

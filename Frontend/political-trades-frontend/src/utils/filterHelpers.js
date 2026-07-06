@@ -1,6 +1,8 @@
 export const SORT_OPTIONS = [
   { value: "date_desc", label: "Newest First" },
   { value: "date_asc", label: "Oldest First" },
+  { value: "scraped_desc", label: "Scraped Newest" },
+  { value: "scraped_asc", label: "Scraped Oldest" },
   { value: "size_desc", label: "Largest Trade" },
   { value: "size_asc", label: "Smallest Trade" },
   { value: "filed_asc", label: "Fastest Filed" },

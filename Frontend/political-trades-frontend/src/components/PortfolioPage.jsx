@@ -20,14 +20,6 @@ function avatarBg(party) {
   return { bg: "var(--color-bg-tertiary)", color: "var(--color-text-muted)" };
 }
 
-function isDemocrat(party) {
-  return !!party && party.toLowerCase().includes("democrat");
-}
-
-function isRepublican(party) {
-  return !!party && party.toLowerCase().includes("republican");
-}
-
 function useDebouncedCallback(fn, delay) {
   const timer = useRef(null);
   return useCallback((...args) => {
@@ -41,8 +33,11 @@ export default function PortfolioPage({
   onBack,
   politicians = [],
   copyConfigs: externalCopyConfigs,
+  activeProfile = "custom",
+  onApplyProfile,
+  onMarkCustom,
+  onToggleCopy,
   onSelectPolitician,
-  onRemoveCopyConfig,
   onUpdateCopyConfig,
 }) {
   const [summary, setSummary] = useState(null);
@@ -66,11 +61,37 @@ export default function PortfolioPage({
       .catch(() => {});
   }, [refreshKey]);
 
+  // ids the user is actively dragging. entries added on slider change and
+  // cleared after the debounced patch settles. mirror-effect skips these so
+  // the round-trip echo doesn't yank the slider back mid-drag.
+  const dirtySliderIdsRef = useRef(new Set());
+  // last-seen c.portfolioPercent per config id. lets us detect changes made
+  // by App (e.g. preset button rebalance) versus echoes of our own PATCH
+  // round-trip, and only mirror the former into sliderValues.
+  const lastSeenPercentRef = useRef({});
   useEffect(() => {
-    setSliderValues(prev => {
+    setSliderValues((prev) => {
       const next = { ...prev };
+      const seen = lastSeenPercentRef.current;
+      const dirty = dirtySliderIdsRef.current;
       for (const c of copying) {
-        if (next[c.id] == null) next[c.id] = Number(c.portfolioPercent ?? 5);
+        const incoming = Number(c.portfolioPercent ?? 5);
+        const lastSeen = seen[c.id];
+        // skip mirror while the user is actively editing this slider
+        if (dirty.has(c.id)) {
+          seen[c.id] = incoming;
+          continue;
+        }
+        if (lastSeen == null || lastSeen !== incoming) {
+          next[c.id] = incoming;
+        }
+        seen[c.id] = incoming;
+      }
+      for (const id of Object.keys(next)) {
+        if (!copying.find((c) => String(c.id) === id)) {
+          delete next[id];
+          delete seen[id];
+        }
       }
       return next;
     });
@@ -119,6 +140,8 @@ export default function PortfolioPage({
       body: JSON.stringify({ portfolioPercent: val })
     }).catch(() => {});
     onUpdateRef.current?.({ id: configId, portfolioPercent: val });
+    // debounce settled, clear dirty flag so mirror-effect can resume for this id
+    dirtySliderIdsRef.current.delete(configId);
   }, 400);
 
   const patchMaxFiledDays = useDebouncedCallback(async (configId, val) => {
@@ -134,8 +157,12 @@ export default function PortfolioPage({
     const currentVal = sliderValues[config.id] ?? Number(config.portfolioPercent ?? 5);
     const maxAllowed = Math.min(100, currentVal + remaining);
     const clamped = Math.min(val, maxAllowed);
+    dirtySliderIdsRef.current.add(config.id);
     setSliderValues(prev => ({ ...prev, [config.id]: clamped }));
     patchPercent(config.id, clamped);
+    // any manual slider touch invalidates the preset — from now on we rebalance
+    // proportionally rather than snapping back to even/dem75/etc.
+    if (activeProfile !== "custom") onMarkCustom?.();
   };
 
   const handleMaxFiledDaysChange = (config, rawVal) => {
@@ -163,9 +190,9 @@ export default function PortfolioPage({
     onUpdateCopyConfig?.({ id: config.id, active: newActive });
   };
 
-  const handleRemove = async (config) => {
-    await apiFetch(`/copy-configs/${config.id}`, { method: 'DELETE' }).catch(() => {});
-    onRemoveCopyConfig?.(config.id);
+  const handleRemove = (config) => {
+    // route through App's toggle so removal also rebalances the remaining allocations
+    onToggleCopy?.(config.politicianId);
   };
 
   const handleClearHistory = async () => {
@@ -183,40 +210,9 @@ export default function PortfolioPage({
     }
   };
 
-  const applyProfile = async (profile) => {
+  const applyProfile = (profile) => {
     if (enrichedCopying.length === 0) return;
-    const updates = computeProfileAllocations(enrichedCopying, profile);
-    const activeMap = computeProfileActive(enrichedCopying, profile);
-
-    setSliderValues((prev) => {
-      const next = { ...prev };
-      for (const { id, percent } of updates) next[id] = percent;
-      return next;
-    });
-
-    // always send portfolioPercent; only send `active` when it actually changed
-    const patches = updates.map(({ id, percent }) => {
-      const cfg = enrichedCopying.find((c) => c.id === id);
-      const desiredActive = activeMap[id];
-      const body = { portfolioPercent: percent };
-      if (cfg && desiredActive !== undefined && cfg.active !== desiredActive) {
-        body.active = desiredActive;
-      }
-      return { id, body, percent, desiredActive };
-    });
-
-    await Promise.all(patches.map(({ id, body }) =>
-      apiFetch(`/copy-configs/${id}`, {
-        method: 'PATCH',
-        body: JSON.stringify(body)
-      }).catch(() => {})
-    ));
-
-    for (const { id, body, percent, desiredActive } of patches) {
-      const update = { id, portfolioPercent: percent };
-      if (body.active !== undefined) update.active = desiredActive;
-      onUpdateRef.current?.(update);
-    }
+    onApplyProfile?.(enrichedCopying, profile);
   };
 
   const returnColor = (val) =>
@@ -280,8 +276,7 @@ export default function PortfolioPage({
       </div>
 
       <div className="portfolio-section">
-        <div className="portfolio-section-title">Net Profit / Loss</div>
-        <PnlChart trades={trades} />
+        <PnlChart refreshKey={refreshKey} />
       </div>
 
       <div className="portfolio-section">
@@ -353,21 +348,21 @@ export default function PortfolioPage({
 
             <div className="allocation-profiles">
               <span className="allocation-profiles-label">Quick allocate:</span>
-              <button className="allocation-profile-btn" onClick={() => applyProfile("even")}>
-                Even distribution
-              </button>
-              <button className="allocation-profile-btn" onClick={() => applyProfile("dem75")}>
-                75% Dem / 25% Rep
-              </button>
-              <button className="allocation-profile-btn" onClick={() => applyProfile("rep75")}>
-                75% Rep / 25% Dem
-              </button>
-              <button className="allocation-profile-btn" onClick={() => applyProfile("demOnly")}>
-                Democrats only
-              </button>
-              <button className="allocation-profile-btn" onClick={() => applyProfile("repOnly")}>
-                Republicans only
-              </button>
+              {[
+                { key: "even",    label: "Even distribution" },
+                { key: "dem75",   label: "75% Dem / 25% Rep" },
+                { key: "rep75",   label: "75% Rep / 25% Dem" },
+                { key: "demOnly", label: "Democrats only" },
+                { key: "repOnly", label: "Republicans only" },
+              ].map((p) => (
+                <button
+                  key={p.key}
+                  className={`allocation-profile-btn${activeProfile === p.key ? " active" : ""}`}
+                  onClick={() => applyProfile(p.key)}
+                >
+                  {p.label}
+                </button>
+              ))}
             </div>
           </div>
         )}
@@ -595,89 +590,3 @@ export default function PortfolioPage({
   );
 }
 
-function computeProfileAllocations(configs, profile) {
-  const total = 100;
-
-  if (profile === "even") {
-    return distribute(configs, total);
-  }
-
-  const dems = configs.filter((c) => isDemocrat(c.politician?.party));
-  const reps = configs.filter((c) => isRepublican(c.politician?.party));
-  const others = configs.filter((c) => !isDemocrat(c.politician?.party) && !isRepublican(c.politician?.party));
-
-  if (profile === "demOnly") {
-    if (dems.length === 0) return distribute(configs, total);
-    return [
-      ...distribute(dems, total),
-      ...reps.map((c) => ({ id: c.id, percent: 0 })),
-      ...others.map((c) => ({ id: c.id, percent: 0 })),
-    ];
-  }
-
-  if (profile === "repOnly") {
-    if (reps.length === 0) return distribute(configs, total);
-    return [
-      ...distribute(reps, total),
-      ...dems.map((c) => ({ id: c.id, percent: 0 })),
-      ...others.map((c) => ({ id: c.id, percent: 0 })),
-    ];
-  }
-
-  // dem75 / rep75
-  const heavySide = profile === "dem75" ? dems : reps;
-  const lightSide = profile === "dem75" ? reps : dems;
-
-  if (heavySide.length === 0 && lightSide.length === 0) {
-    return distribute(others, total);
-  }
-  if (heavySide.length === 0) {
-    return [
-      ...distribute(lightSide, total),
-      ...others.map((c) => ({ id: c.id, percent: 0 })),
-    ];
-  }
-  if (lightSide.length === 0) {
-    return [
-      ...distribute(heavySide, total),
-      ...others.map((c) => ({ id: c.id, percent: 0 })),
-    ];
-  }
-
-  return [
-    ...distribute(heavySide, 75),
-    ...distribute(lightSide, 25),
-    ...others.map((c) => ({ id: c.id, percent: 0 })),
-  ];
-}
-
-function distribute(items, budget) {
-  if (items.length === 0) return [];
-  const each = budget / items.length;
-  const rounded = items.map((c) => ({ id: c.id, percent: round1(each) }));
-  const sum = rounded.reduce((s, r) => s + r.percent, 0);
-  const delta = budget - sum;
-  if (delta !== 0 && rounded.length > 0) {
-    rounded[0].percent = round1(rounded[0].percent + delta);
-  }
-  return rounded;
-}
-
-function round1(n) {
-  return Math.round(n * 2) / 2;
-}
-
-function computeProfileActive(configs, profile) {
-  const result = {};
-  for (const c of configs) {
-    const party = c.politician?.party;
-    if (profile === "demOnly") {
-      result[c.id] = isDemocrat(party);
-    } else if (profile === "repOnly") {
-      result[c.id] = isRepublican(party);
-    } else {
-      result[c.id] = true;
-    }
-  }
-  return result;
-}

@@ -13,7 +13,8 @@ import FaqPage from "./components/FaqPage";
 import AnomaliesPage from "./components/AnomaliesPage";
 import { defaultFilters } from "./utils/filterHelpers";
 import { applyFilters } from "./utils/tradeHelpers";
-import { apiFetch } from "./api";
+import { computeAllocations, computeActiveFlags } from "./utils/allocationHelpers";
+import { apiFetch, fetchAnomalies } from "./api";
 import { useAuth } from "./contexts/AuthContext";
 
 const PAGE_SIZE = 25;
@@ -22,6 +23,8 @@ export default function App() {
   const { isGuest, signIn } = useAuth();
   const [politicians, setPoliticians] = useState([]);
   const [recentTrades, setRecentTrades] = useState([]);
+  const [anomalies, setAnomalies] = useState([]);
+  const [anomaliesLoading, setAnomaliesLoading] = useState(true);
   const [selectedPol, setSelectedPol] = useState(null);
   const [polTrades, setPolTrades] = useState([]);
   // Cache of full per-politician trade lists, keyed by politician id. Populated lazily when the
@@ -35,10 +38,25 @@ export default function App() {
   const [filters, setFilters] = useState(defaultFilters());
   const [currentPage, setCurrentPage] = useState(1);
   const [copyConfigs, setCopyConfigs] = useState([]);
+  // ref mirrors copyConfigs so batch handlers (handleSaveCopies loops through
+  // pending ids synchronously) can read the latest post-add state without
+  // waiting for react to flush.
+  const copyConfigsRef = useRef(copyConfigs);
+  useEffect(() => { copyConfigsRef.current = copyConfigs; }, [copyConfigs]);
   const [copyPanelOpen, setCopyPanelOpen] = useState(false);
   const [pendingCopyIds, setPendingCopyIds] = useState(new Set());
   const [portfolioRefreshKey, setPortfolioRefreshKey] = useState(0);
   const [showSignInPrompt, setShowSignInPrompt] = useState(false);
+  // remembered allocation profile — lives at app level so add/remove from any
+  // page (feed, leaderboard, anomalies) can rebalance even when PortfolioPage
+  // isn't mounted.
+  const [activeProfile, setActiveProfileState] = useState(() => {
+    try { return localStorage.getItem("allocProfile") || "custom"; } catch { return "custom"; }
+  });
+  const setActiveProfile = (p) => {
+    setActiveProfileState(p);
+    try { localStorage.setItem("allocProfile", p); } catch { /* storage disabled */ }
+  };
   const copyPanelRef = useRef(null);
 
   useEffect(() => {
@@ -59,7 +77,47 @@ export default function App() {
         setLoading(false);
       })
       .catch(() => setLoading(false));
+
+    // fetch anomalies in parallel with the initial bundle so switching to the
+    // anomalies tab is instant. don't block the main feed on it.
+    fetchAnomalies(300, 0.5)
+      .then((data) => setAnomalies(Array.isArray(data) ? data : []))
+      .catch(() => setAnomalies([]))
+      .finally(() => setAnomaliesLoading(false));
   }, []);
+
+  // one-shot post-load correction: if the stored allocations don't sum to 100
+  // (older accounts pre-dating the rebalance fix, or a stale write), snap them
+  // to the current profile once. Runs after both configs and politicians land.
+  const didInitialFixRef = useRef(false);
+  useEffect(() => {
+    if (didInitialFixRef.current) return;
+    if (loading) return;
+    if (copyConfigs.length === 0) return;
+    if (politicians.length === 0) return;
+    didInitialFixRef.current = true;
+    const total = copyConfigs.reduce((s, c) => s + Number(c.portfolioPercent ?? 0), 0);
+    if (Math.abs(total - 100) < 0.5) return;
+    const pById = new Map(politicians.map((p) => [p.id, p]));
+    const pcts = computeAllocations(copyConfigs, activeProfile, pById);
+    // inline the update — pushAllocations isn't declared yet at this point in the file
+    const updated = copyConfigs.map((c) => ({
+      ...c,
+      portfolioPercent: pcts[c.id] ?? Number(c.portfolioPercent ?? 0),
+    }));
+    copyConfigsRef.current = updated;
+    setCopyConfigs(updated);
+    for (const c of copyConfigs) {
+      if (typeof c.id !== "number") continue;
+      const p = pcts[c.id];
+      if (p == null) continue;
+      apiFetch(`/copy-configs/${c.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ portfolioPercent: p }),
+      }).catch(() => {});
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading, copyConfigs.length, politicians.length]);
 
   useEffect(() => {
     setFilters(defaultFilters());
@@ -212,16 +270,64 @@ export default function App() {
     return Array.from(seen.values());
   }, [copyConfigs]);
 
+  const politiciansById = useMemo(
+    () => new Map(politicians.map((p) => [p.id, p])),
+    [politicians]
+  );
+
+  // push a batch of {id, percent} PATCHes; server calls fire in parallel, local
+  // state updated optimistically so the UI never shows an intermediate 105%.
+  const pushAllocations = (updates) => {
+    const byId = new Map(updates.map((u) => [u.id, u]));
+    // apply optimistically and keep ref in sync
+    const next = copyConfigsRef.current.map((c) => {
+      const u = byId.get(c.id);
+      if (!u) return c;
+      return { ...c, portfolioPercent: u.percent, ...(u.active !== undefined ? { active: u.active } : {}) };
+    });
+    copyConfigsRef.current = next;
+    setCopyConfigs(next);
+    for (const u of updates) {
+      if (typeof u.id !== "number") continue;
+      const body = { portfolioPercent: u.percent };
+      if (u.active !== undefined) body.active = u.active;
+      apiFetch(`/copy-configs/${u.id}`, {
+        method: "PATCH",
+        body: JSON.stringify(body),
+      }).catch(() => {});
+    }
+  };
+
+  // rebalance a set of configs against the current profile and push results.
+  // used by PortfolioPage when the user clicks a profile button or drags a slider.
+  const applyProfileToConfigs = (configs, profile) => {
+    if (configs.length === 0) return;
+    setActiveProfile(profile);
+    const pcts = computeAllocations(configs, profile, politiciansById);
+    const flags = computeActiveFlags(configs, profile, politiciansById);
+    pushAllocations(configs.map((c) => ({
+      id: c.id,
+      percent: pcts[c.id] ?? Number(c.portfolioPercent ?? 0),
+      active: flags[c.id],
+    })));
+  };
+
   const handleCopyToggleById = (politicianId) => {
     if (isGuest) {
       setShowSignInPrompt(true);
       return;
     }
+    // read latest via ref so batch flows (handleSaveCopies iterating pending ids)
+    // see the results of the previous iteration's setCopyConfigs.
+    const currentConfigs = copyConfigsRef.current;
     const pol = politicians.find((p) => p.id === politicianId);
-    const existing = copyConfigs.find((c) => c.politicianId === politicianId);
+    const existing = currentConfigs.find((c) => c.politicianId === politicianId);
 
     if (existing) {
-      setCopyConfigs((prev) => prev.filter((c) => c.politicianId !== politicianId));
+      // REMOVE: drop the config, then rebalance what's left so total returns to 100%
+      const remaining = currentConfigs.filter((c) => c.politicianId !== politicianId);
+      copyConfigsRef.current = remaining;
+      setCopyConfigs(remaining);
       if (typeof existing.id === "number") {
         apiFetch(`/copy-configs/${existing.id}`, { method: "DELETE" })
           .then((r) => {
@@ -233,39 +339,94 @@ export default function App() {
           })
           .catch(() => {});
       }
-    } else {
-      const optimisticId = `optimistic-${politicianId}`;
-      const optimistic = {
-        id: optimisticId,
-        politicianId,
-        politicianName: pol?.name ?? politicianId,
-        portfolioPercent: 5,
-        active: true,
-      };
-      setCopyConfigs((prev) =>
-        prev.find((c) => c.politicianId === politicianId) ? prev : [...prev, optimistic]
-      );
-      apiFetch(`/copy-configs`, {
-        method: "POST",
-        body: JSON.stringify({ politicianId, portfolioPercent: 5 }),
-      })
-        .then(async (r) => {
-          if (!r.ok) {
-            setCopyConfigs((s) => s.filter((c) => c.id !== optimisticId));
-            return;
-          }
-          const saved = await r.json().catch(() => null);
-          if (!saved || saved.id == null) return;
-          setCopyConfigs((s) =>
-            s.map((c) =>
-              c.id === optimisticId
-                ? { ...saved, politicianName: pol?.name ?? politicianId }
-                : c
-            )
-          );
-        })
-        .catch(() => {});
+      if (remaining.length > 0) {
+        const pcts = computeAllocations(remaining, activeProfile, politiciansById);
+        const flags = computeActiveFlags(remaining, activeProfile, politiciansById);
+        pushAllocations(remaining.map((c) => ({
+          id: c.id,
+          percent: pcts[c.id] ?? Number(c.portfolioPercent ?? 0),
+          active: flags[c.id],
+        })));
+      }
+      return;
     }
+
+    // ADD: compute new allocations against (existing + new) BEFORE dispatching the POST
+    // so the newcomer starts at the right percentage — no 105% flash.
+    const optimisticId = `optimistic-${politicianId}`;
+    const newStub = {
+      id: optimisticId,
+      politicianId,
+      politicianName: pol?.name ?? politicianId,
+      portfolioPercent: 0,
+      active: true,
+      politician: pol,
+    };
+    const nextConfigs = [...currentConfigs, newStub];
+    const pcts = computeAllocations(nextConfigs, activeProfile, politiciansById);
+    const flags = computeActiveFlags(nextConfigs, activeProfile, politiciansById);
+    const newPercent = pcts[optimisticId] ?? 5;
+
+    const updatedList = nextConfigs.map((c) => ({
+      ...c,
+      portfolioPercent: pcts[c.id] ?? Number(c.portfolioPercent ?? 0),
+      ...(flags[c.id] !== undefined ? { active: flags[c.id] } : {}),
+    }));
+    // keep ref in sync immediately so the next iteration in handleSaveCopies
+    // sees the newcomer as an existing entry.
+    copyConfigsRef.current = updatedList;
+    setCopyConfigs(updatedList);
+
+    // PATCH existing rows to their new percentages (parallel)
+    for (const c of currentConfigs) {
+      if (typeof c.id !== "number") continue;
+      const p = pcts[c.id];
+      if (p == null) continue;
+      const body = { portfolioPercent: p };
+      if (flags[c.id] !== undefined) body.active = flags[c.id];
+      apiFetch(`/copy-configs/${c.id}`, {
+        method: "PATCH",
+        body: JSON.stringify(body),
+      }).catch(() => {});
+    }
+
+    // POST the new one with its target percentage
+    apiFetch(`/copy-configs`, {
+      method: "POST",
+      body: JSON.stringify({ politicianId, portfolioPercent: newPercent }),
+    })
+      .then(async (r) => {
+        if (!r.ok) {
+          setCopyConfigs((s) => s.filter((c) => c.id !== optimisticId));
+          copyConfigsRef.current = copyConfigsRef.current.filter((c) => c.id !== optimisticId);
+          return;
+        }
+        const saved = await r.json().catch(() => null);
+        if (!saved || saved.id == null) return;
+        // by the time POST resolves, the newcomer's optimistic percent may have
+        // changed due to intervening add/remove/preset actions. preserve the
+        // current live percent instead of the stale one from this closure.
+        const liveOptimistic = copyConfigsRef.current.find((c) => c.id === optimisticId);
+        const livePercent = liveOptimistic
+          ? Number(liveOptimistic.portfolioPercent ?? newPercent)
+          : newPercent;
+        const nextList = copyConfigsRef.current.map((c) =>
+          c.id === optimisticId
+            ? { ...saved, politicianName: pol?.name ?? politicianId, portfolioPercent: livePercent }
+            : c
+        );
+        copyConfigsRef.current = nextList;
+        setCopyConfigs(nextList);
+        // if the live percent differs from what we POSTed, PATCH the backend
+        // to match so it's not stuck at the initial value.
+        if (Math.abs(livePercent - newPercent) > 0.01) {
+          apiFetch(`/copy-configs/${saved.id}`, {
+            method: "PATCH",
+            body: JSON.stringify({ portfolioPercent: livePercent }),
+          }).catch(() => {});
+        }
+      })
+      .catch(() => {});
   };
 
   const handlePendingToggle = (politicianId) => {
@@ -398,6 +559,8 @@ export default function App() {
               politicians={politicians}
               trades={enrichedRecentTrades}
               copyConfigs={displayedCopyConfigs}
+              pendingCopyIds={pendingCopyIds}
+              onPendingToggle={handlePendingToggle}
               onSelectPolitician={selectPoliticianById}
               onBack={() => setCurrentView("feed")}
             />
@@ -405,7 +568,10 @@ export default function App() {
             <AnomaliesPage
               copyConfigs={displayedCopyConfigs}
               onSelectPolitician={selectPoliticianById}
-              onCopyToggle={handleCopyToggleById}
+              pendingCopyIds={pendingCopyIds}
+              onPendingToggle={handlePendingToggle}
+              anomalies={anomalies}
+              anomaliesLoading={anomaliesLoading}
             />
           ) : currentView === "about" ? (
             <AboutPage onBack={() => setCurrentView("feed")} />
@@ -417,10 +583,11 @@ export default function App() {
               onBack={() => setCurrentView("feed")}
               politicians={politicians}
               copyConfigs={displayedCopyConfigs}
+              activeProfile={activeProfile}
+              onApplyProfile={applyProfileToConfigs}
+              onMarkCustom={() => setActiveProfile("custom")}
+              onToggleCopy={handleCopyToggleById}
               onSelectPolitician={selectPoliticianById}
-              onRemoveCopyConfig={(id) =>
-                setCopyConfigs((prev) => prev.filter((c) => c.id !== id))
-              }
               onUpdateCopyConfig={(updated) =>
                 setCopyConfigs((prev) =>
                   prev.map((c) => (c.id === updated.id ? { ...c, ...updated } : c))
