@@ -14,9 +14,25 @@ function distribute(ids, budget) {
   const each = round1(budget / ids.length);
   const out = {};
   for (const id of ids) out[id] = each;
+  // spread the rounding remainder in ±0.5 steps across as many entries as
+  // needed, one step per entry, cycling. this avoids dumping the whole
+  // correction on a single entry (which could zero it — e.g. N=21 where
+  // round1(100/21)=5.0 overshoots by 5.0). no active entry is zeroed unless
+  // the budget genuinely can't give everyone at least a 0.5 step.
   const sum = ids.reduce((s, id) => s + out[id], 0);
-  const delta = budget - sum;
-  if (delta !== 0) out[ids[0]] = round1(out[ids[0]] + delta);
+  let delta = round1(budget - sum);
+  const step = delta > 0 ? 0.5 : -0.5;
+  let i = 0;
+  let guard = 0;
+  const maxIter = ids.length * Math.ceil(Math.abs(delta) / 0.5) + ids.length;
+  while (Math.abs(delta) >= 0.5 && guard++ < maxIter) {
+    const id = ids[i % ids.length];
+    // don't push any entry below 0 while correcting downward
+    if (step < 0 && out[id] < 0.5) { i++; continue; }
+    out[id] = round1(out[id] + step);
+    delta = round1(delta - step);
+    i++;
+  }
   return out;
 }
 
@@ -86,31 +102,40 @@ export function computeAllocations(configs, profile, politiciansById) {
     return forceSum100(share);
   }
 
-  // custom: preserve relative ratios of anyone with a non-zero percentage,
-  // and give newly added entries (percent == 0) a fair 100/N share. existing
-  // shares scale down proportionally to make room. this way clicking "even
-  // distribution" is still what handles a full re-slice; add-under-custom
-  // does the minimum-effort thing.
+  // custom: preserve relative ratios of existing entries, and give newly
+  // added entries a fair 100/N share; existing shares scale down proportionally
+  // to make room. this way clicking "even distribution" is still what handles a
+  // full re-slice; add-under-custom does the minimum-effort thing.
+  //
+  // "newcomer" is an entry that isn't persisted yet — App.jsx tags optimistic
+  // stubs with a non-numeric id (`optimistic-<politicianId>`). we key off that,
+  // NOT off percent == 0: a pre-existing (numeric-id) row sitting at 0% is a
+  // real, intentionally-zero entry (e.g. a paused copy) and must not be
+  // reclassified as a newcomer — doing so used to steal budget and strand a
+  // neighbor at 0%.
+  const isNewcomer = (c) => typeof c.id !== "number";
   const N = enriched.length;
-  const zeroCount = enriched.filter((c) => Number(c.portfolioPercent ?? 0) <= 0).length;
-  if (zeroCount === N) {
-    // nothing to preserve, fall back to even split
-    return forceSum100(distribute(enriched.map((c) => c.id), 100));
-  }
-  const nonZeroTotal = enriched.reduce(
+  const newcomers = enriched.filter(isNewcomer);
+  const existing = enriched.filter((c) => !isNewcomer(c));
+  const newcomerCount = newcomers.length;
+  const existingNonZeroTotal = existing.reduce(
     (s, c) => s + Math.max(0, Number(c.portfolioPercent ?? 0)), 0
   );
-  const newcomerShare = zeroCount > 0 ? (100 / N) * zeroCount : 0;
+  // if there's nothing meaningful to preserve (no newcomers and existing all
+  // zero, or everything is a newcomer), fall back to an even split.
+  if ((newcomerCount === 0 && existingNonZeroTotal <= 0) || newcomerCount === N) {
+    return forceSum100(distribute(enriched.map((c) => c.id), 100));
+  }
+  const newcomerShare = newcomerCount > 0 ? (100 / N) * newcomerCount : 0;
   const remainingBudget = 100 - newcomerShare;
-  const scale = nonZeroTotal > 0 ? remainingBudget / nonZeroTotal : 0;
+  const scale = existingNonZeroTotal > 0 ? remainingBudget / existingNonZeroTotal : 0;
   const out = {};
-  const zeroBudget = zeroCount > 0 ? newcomerShare / zeroCount : 0;
+  const newcomerBudget = newcomerCount > 0 ? newcomerShare / newcomerCount : 0;
   for (const c of enriched) {
-    const current = Number(c.portfolioPercent ?? 0);
-    if (current <= 0) {
-      out[c.id] = round1(zeroBudget);
+    if (isNewcomer(c)) {
+      out[c.id] = round1(newcomerBudget);
     } else {
-      out[c.id] = round1(current * scale);
+      out[c.id] = round1(Math.max(0, Number(c.portfolioPercent ?? 0)) * scale);
     }
   }
   return forceSum100(out);

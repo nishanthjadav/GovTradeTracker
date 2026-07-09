@@ -277,8 +277,13 @@ export default function App() {
 
   // push a batch of {id, percent} PATCHes; server calls fire in parallel, local
   // state updated optimistically so the UI never shows an intermediate 105%.
+  // any entry that resolves to 0% is auto-paused (active=false) so a zero-percent
+  // config can never fire a zero-notional order at ingest time.
   const pushAllocations = (updates) => {
-    const byId = new Map(updates.map((u) => [u.id, u]));
+    const normalized = updates.map((u) =>
+      u.percent <= 0 ? { ...u, active: false } : u
+    );
+    const byId = new Map(normalized.map((u) => [u.id, u]));
     // apply optimistically and keep ref in sync
     const next = copyConfigsRef.current.map((c) => {
       const u = byId.get(c.id);
@@ -287,7 +292,7 @@ export default function App() {
     });
     copyConfigsRef.current = next;
     setCopyConfigs(next);
-    for (const u of updates) {
+    for (const u of normalized) {
       if (typeof u.id !== "number") continue;
       const body = { portfolioPercent: u.percent };
       if (u.active !== undefined) body.active = u.active;
@@ -367,11 +372,22 @@ export default function App() {
     const flags = computeActiveFlags(nextConfigs, activeProfile, politiciansById);
     const newPercent = pcts[optimisticId] ?? 5;
 
-    const updatedList = nextConfigs.map((c) => ({
-      ...c,
-      portfolioPercent: pcts[c.id] ?? Number(c.portfolioPercent ?? 0),
-      ...(flags[c.id] !== undefined ? { active: flags[c.id] } : {}),
-    }));
+    // effective active flag: a config that resolves to 0% is auto-paused so it
+    // can't fire a zero-notional order. otherwise honor the profile's flag (if any).
+    const activeFor = (id) => {
+      const p = pcts[id];
+      if (p != null && p <= 0) return false;
+      return flags[id];
+    };
+
+    const updatedList = nextConfigs.map((c) => {
+      const act = activeFor(c.id);
+      return {
+        ...c,
+        portfolioPercent: pcts[c.id] ?? Number(c.portfolioPercent ?? 0),
+        ...(act !== undefined ? { active: act } : {}),
+      };
+    });
     // keep ref in sync immediately so the next iteration in handleSaveCopies
     // sees the newcomer as an existing entry.
     copyConfigsRef.current = updatedList;
@@ -383,17 +399,19 @@ export default function App() {
       const p = pcts[c.id];
       if (p == null) continue;
       const body = { portfolioPercent: p };
-      if (flags[c.id] !== undefined) body.active = flags[c.id];
+      const act = activeFor(c.id);
+      if (act !== undefined) body.active = act;
       apiFetch(`/copy-configs/${c.id}`, {
         method: "PATCH",
         body: JSON.stringify(body),
       }).catch(() => {});
     }
 
-    // POST the new one with its target percentage
+    // POST the new one with its target percentage. a 0% newcomer is created
+    // paused so it never fires a zero-notional order.
     apiFetch(`/copy-configs`, {
       method: "POST",
-      body: JSON.stringify({ politicianId, portfolioPercent: newPercent }),
+      body: JSON.stringify({ politicianId, portfolioPercent: newPercent, active: newPercent > 0 }),
     })
       .then(async (r) => {
         if (!r.ok) {
@@ -410,9 +428,10 @@ export default function App() {
         const livePercent = liveOptimistic
           ? Number(liveOptimistic.portfolioPercent ?? newPercent)
           : newPercent;
+        const liveActive = livePercent > 0;
         const nextList = copyConfigsRef.current.map((c) =>
           c.id === optimisticId
-            ? { ...saved, politicianName: pol?.name ?? politicianId, portfolioPercent: livePercent }
+            ? { ...saved, politicianName: pol?.name ?? politicianId, portfolioPercent: livePercent, active: liveActive }
             : c
         );
         copyConfigsRef.current = nextList;
@@ -422,7 +441,7 @@ export default function App() {
         if (Math.abs(livePercent - newPercent) > 0.01) {
           apiFetch(`/copy-configs/${saved.id}`, {
             method: "PATCH",
-            body: JSON.stringify({ portfolioPercent: livePercent }),
+            body: JSON.stringify({ portfolioPercent: livePercent, active: liveActive }),
           }).catch(() => {});
         }
       })
