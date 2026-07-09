@@ -30,9 +30,14 @@ public class CopyConfigController {
         User user = userService.requireByGoogleSub(oidc.getSubject());
         String politicianId = (String) body.get("politicianId");
         Object amtObj = body.get("portfolioPercent");
-        java.math.BigDecimal percent = amtObj != null ? new java.math.BigDecimal(amtObj.toString()) : new java.math.BigDecimal("5");
+        java.math.BigDecimal percent = clampPercent(amtObj != null ? new java.math.BigDecimal(amtObj.toString()) : new java.math.BigDecimal("5"));
         Object mfdObj = body.get("maxFiledDays");
         Integer maxFiledDays = parseMaxFiledDays(mfdObj);
+        // honor an explicit active flag (frontend creates a 0% newcomer paused);
+        // default to active when unspecified.
+        boolean active = body.get("active") != null
+                ? Boolean.valueOf(body.get("active").toString())
+                : true;
 
         // upsert to prevent strictmode/double-submit dupes
         CopyConfig existing = copyConfigRepository.findByUserIdAndPoliticianId(user.getId(), politicianId);
@@ -44,7 +49,7 @@ public class CopyConfigController {
         cfg.setUserId(user.getId());
         cfg.setPoliticianId(politicianId);
         cfg.setPortfolioPercent(percent);
-        cfg.setActive(true);
+        cfg.setActive(active);
         cfg.setMaxFiledDays(maxFiledDays);
 
         try {
@@ -93,7 +98,7 @@ public class CopyConfigController {
                 return ResponseEntity.status(403).<CopyConfig>build();
             }
             if (body.containsKey("portfolioPercent") && body.get("portfolioPercent") != null) {
-                cfg.setPortfolioPercent(new java.math.BigDecimal(body.get("portfolioPercent").toString()));
+                cfg.setPortfolioPercent(clampPercent(new java.math.BigDecimal(body.get("portfolioPercent").toString())));
             }
             if (body.containsKey("active") && body.get("active") != null) {
                 cfg.setActive(Boolean.valueOf(body.get("active").toString()));
@@ -119,8 +124,14 @@ public class CopyConfigController {
         }).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    private static Integer parseMaxFiledDays(Object raw) {
-        if (raw == null) return null;
+    // never persist a negative allocation. 0 is allowed (paused semantics),
+    // negatives are nonsense and would break the sum-to-100 invariant.
+    private static java.math.BigDecimal clampPercent(java.math.BigDecimal pct) {
+        if (pct == null) return new java.math.BigDecimal("5");
+        return pct.compareTo(java.math.BigDecimal.ZERO) < 0 ? java.math.BigDecimal.ZERO : pct;
+    }
+
+    private static Integer parseMaxFiledDays(Object raw) {        if (raw == null) return null;
         String s = raw.toString().trim();
         if (s.isEmpty() || s.equalsIgnoreCase("null")) return null;
         try {

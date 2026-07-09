@@ -124,6 +124,11 @@ public class TradeIngestionService {
                         continue;
                     }
                     BigDecimal pct = cfg.getPortfolioPercent() != null ? cfg.getPortfolioPercent() : new BigDecimal("5");
+                    if (pct.compareTo(BigDecimal.ZERO) <= 0) {
+                        log.info("Allocation is 0% for user {} politician {} — skipping buy on {}.",
+                                cfg.getUserId(), polId, trade.getTicker());
+                        continue;
+                    }
                     BigDecimal notional = equity.multiply(pct).divide(new BigDecimal("100"), 2, BigDecimal.ROUND_HALF_UP);
                     orderResult = alpacaService.placeMarketOrder(cfgUser, trade.getTicker(), "buy", notional);
                     dollarAmount = notional;
