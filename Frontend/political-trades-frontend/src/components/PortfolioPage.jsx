@@ -13,6 +13,19 @@ function initials(name) {
   return (parts[0][0] + (parts[parts.length - 1][0] || "")).toUpperCase();
 }
 
+// short badge text — "partially_filled" is too wide for the status cell, so we
+// abbreviate the long ones. the full status still drives the badge color class.
+function statusLabel(status) {
+  if (!status) return "—";
+  switch (status) {
+    case "partially_filled": return "PARTIAL";
+    case "pending_new":
+    case "accepted":
+    case "new": return "PENDING";
+    default: return status.toUpperCase();
+  }
+}
+
 function avatarBg(party) {
   if (!party) return { bg: "var(--color-bg-tertiary)", color: "var(--color-text-muted)" };
   if (party.toLowerCase().includes("republican")) return { bg: "var(--color-danger-bg)", color: "var(--color-danger)" };
@@ -501,6 +514,7 @@ export default function PortfolioPage({
                 <div>P&amp;L</div>
                 <div>Date</div>
                 <div>Status</div>
+                <div>Description</div>
               </div>
               {paginatedTrades.map(t => (
                 <div key={t.id} className="portfolio-table-row">
@@ -542,7 +556,10 @@ export default function PortfolioPage({
                     {t.executedAt ? new Date(t.executedAt).toLocaleDateString() : "—"}
                   </div>
                   <div>
-                    <span className={`portfolio-status-badge status-${t.status}`}>{t.status}</span>
+                    <span className={`portfolio-status-badge status-${t.status}`}>{statusLabel(t.status)}</span>
+                  </div>
+                  <div className="portfolio-desc-cell" title={t.description || ""}>
+                    {t.description || "—"}
                   </div>
                 </div>
               ))}

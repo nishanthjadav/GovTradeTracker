@@ -21,6 +21,7 @@ env/
 Backend/political-trades-backend/target/
 
 # Node / Frontend
+node_modules/
 Frontend/political-trades-frontend/node_modules/
 Frontend/political-trades-frontend/dist/
 Frontend/political-trades-frontend/.vite/

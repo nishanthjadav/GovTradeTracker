@@ -187,6 +187,15 @@ public class TradeIngestionService {
                     amountInvested = sharesQty.multiply(fillPrice).setScale(2, BigDecimal.ROUND_HALF_UP);
                 }
 
+                // record a human-readable description of what happened, so the
+                // trade history can explain non-'filled' outcomes without the
+                // user digging through logs. also log every fill (not just
+                // rejections) — previously partial fills left no trace anywhere.
+                String description = describeFill(fillStatus, filledQty, sharesQty, fillPrice, filled);
+                log.info("Copy {} {} for user {}: status={}, filledQty={}, fillPrice={}, orderId={} — {}",
+                        trade.getTradeType(), trade.getTicker(), cfg.getUserId(),
+                        fillStatus, filledQty, fillPrice, orderResult.orderId, description);
+
                 ExecutedTrade et = new ExecutedTrade();
                 et.setUserId(cfg.getUserId());
                 et.setCapitolTradesId(capitolTradesId);
@@ -199,6 +208,7 @@ public class TradeIngestionService {
                 et.setExecutedAt(LocalDateTime.now());
                 et.setAlpacaOrderId(orderResult.orderId);
                 et.setStatus(fillStatus);
+                et.setErrorMessage(description);
                 try { executedTradeRepository.save(et); }
                 catch (org.springframework.dao.DataIntegrityViolationException dup) {
                     log.warn("Race on ExecutedTrade for user {} capitol {} orderId={} — another worker beat us.",
@@ -238,5 +248,52 @@ public class TradeIngestionService {
         log.info("Sell copy {}: proportion={}, positionQty={}, sellQty={}",
                 sellTrade.getTicker(), proportion, positionQty, sellQty);
         return sellQty;
+    }
+
+    /**
+     * Builds a short, human-readable explanation of a fill outcome for the
+     * trade-history "Description" column. Returns null for a clean full fill —
+     * there's nothing to explain, and a null keeps the column blank.
+     * requestedQty is the qty we asked for on sells (null for notional buys).
+     */
+    private String describeFill(String status, BigDecimal filledQty, BigDecimal requestedQty,
+                                BigDecimal fillPrice, java.util.Map<String, Object> order) {
+        if (status == null) return "No status returned from broker";
+        switch (status) {
+            case "filled":
+                return null;
+            case "partially_filled": {
+                StringBuilder sb = new StringBuilder("Partially filled");
+                if (filledQty != null && requestedQty != null) {
+                    sb.append(": ").append(trimQty(filledQty)).append(" of ")
+                      .append(trimQty(requestedQty)).append(" shares");
+                } else if (filledQty != null) {
+                    sb.append(": ").append(trimQty(filledQty)).append(" shares filled");
+                }
+                if (fillPrice != null) sb.append(" @ $").append(fillPrice.toPlainString());
+                sb.append(" — remainder canceled (likely insufficient liquidity or day order expiry)");
+                return sb.toString();
+            }
+            case "pending":
+            case "new":
+            case "accepted":
+            case "pending_new":
+                return "Order still open at broker — not yet filled";
+            case "canceled":
+                return "Order canceled before fill";
+            case "expired":
+                return "Day order expired before fill";
+            case "rejected": {
+                Object reason = order != null ? order.get("reason") : null;
+                return reason != null ? "Rejected by broker: " + reason : "Rejected by broker";
+            }
+            default:
+                return "Broker status: " + status;
+        }
+    }
+
+    // strip trailing zeros so "3.00000000" reads as "3"
+    private String trimQty(BigDecimal q) {
+        return q.stripTrailingZeros().toPlainString();
     }
 }

@@ -438,12 +438,12 @@
 
 .portfolio-table-header,
 .portfolio-table-row {
-  min-width: 700px;
+  min-width: 860px;
 }
 
 .portfolio-table-header {
   display: grid;
-  grid-template-columns: 1.5fr 80px 70px 90px 90px 90px 110px 90px 80px;
+  grid-template-columns: 1fr 70px 60px 85px 85px 85px 105px 85px 90px 1.4fr;
   padding: var(--spacing-2) var(--spacing-4);
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-semibold);
@@ -457,7 +457,7 @@
 
 .portfolio-table-row {
   display: grid;
-  grid-template-columns: 1.5fr 80px 70px 90px 90px 90px 110px 90px 80px;
+  grid-template-columns: 1fr 70px 60px 85px 85px 85px 105px 85px 90px 1.4fr;
   padding: var(--spacing-3) var(--spacing-4);
   border-bottom: var(--border-width) solid var(--color-border-subtle);
   align-items: center;
@@ -481,6 +481,8 @@
   border-radius: var(--border-radius-sm);
   text-transform: uppercase;
   letter-spacing: 0.04em;
+  display: inline-block;
+  white-space: nowrap;
 }
 
 .status-pending {
@@ -495,10 +497,35 @@
   border: var(--border-width) solid var(--color-success);
 }
 
+/* alpaca returns "partially_filled" — treat it as a warning state, not a clean
+   fill, so the user notices only part of the order went through. */
+.status-partially_filled {
+  background: var(--color-bg-tertiary);
+  color: var(--color-warning);
+  border: var(--border-width) solid var(--color-warning);
+}
+
+/* rejected / canceled / expired / failed all read as a failure state */
+.status-rejected,
+.status-canceled,
+.status-expired,
 .status-failed {
   background: var(--color-danger-bg);
   color: var(--color-danger);
   border: var(--border-width) solid var(--color-danger);
+}
+
+/* detailed per-trade explanation; wraps to two lines then ellipsizes so a long
+   broker message never pushes the row height around unpredictably. */
+.portfolio-desc-cell {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  padding-right: var(--spacing-2);
 }
 
 .copy-card-avatar--clickable {

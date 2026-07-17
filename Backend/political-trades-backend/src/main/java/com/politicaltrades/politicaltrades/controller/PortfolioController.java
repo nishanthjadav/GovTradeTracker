@@ -75,6 +75,7 @@ public class PortfolioController {
             row.put("amountInvested", t.getAmountInvested());
             row.put("fillPrice", t.getFillPrice());
             row.put("status", t.getStatus());
+            row.put("description", t.getErrorMessage());
             row.put("executedAt", t.getExecutedAt() != null ? t.getExecutedAt().format(DateTimeFormatter.ISO_DATE_TIME) : null);
 
             BigDecimal currentPrice = priceByTicker.get(t.getTicker());
