@@ -1,7 +1,8 @@
 import { useAuth } from "../contexts/AuthContext";
+import BackendDown from "./BackendDown";
 
 export default function SignInGate({ children }) {
-  const { user, loading, isGuest, signIn, continueAsGuest } = useAuth();
+  const { user, loading, isGuest, backendDown, signIn, continueAsGuest } = useAuth();
 
   if (loading) {
     return (
@@ -12,6 +13,13 @@ export default function SignInGate({ children }) {
         Loading...
       </div>
     );
+  }
+
+  // Backend unreachable (network error / 5xx) — usually our Neon DB hitting its
+  // monthly compute limit. Show the apology page instead of a blank feed or a
+  // sign-in screen that would just fail on submit.
+  if (backendDown) {
+    return <BackendDown />;
   }
 
   if (!user && !isGuest) {

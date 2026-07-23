@@ -7,6 +7,10 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isGuest, setIsGuest] = useState(false);
+  // true when the backend is unreachable (network error / connection refused)
+  // or returning a server error (5xx) — e.g. our Neon DB has hit its monthly
+  // compute limit. A 401/403 is NOT "down" — it just means "not signed in".
+  const [backendDown, setBackendDown] = useState(false);
 
   const refresh = useCallback(async () => {
     try {
@@ -14,11 +18,18 @@ export function AuthProvider({ children }) {
       if (res.ok) {
         setUser(await res.json());
         setIsGuest(false);
+        setBackendDown(false);
+      } else if (res.status >= 500) {
+        // server up enough to respond, but erroring (DB down / compute limit)
+        setUser(null);
+        setBackendDown(true);
       } else {
         setUser(null);
       }
     } catch {
+      // fetch threw — backend is unreachable entirely
       setUser(null);
+      setBackendDown(true);
     } finally {
       setLoading(false);
     }
@@ -42,7 +53,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, isGuest, signIn, continueAsGuest, signOut, refresh }}>
+    <AuthContext.Provider value={{ user, loading, isGuest, backendDown, signIn, continueAsGuest, signOut, refresh }}>
       {children}
     </AuthContext.Provider>
   );
