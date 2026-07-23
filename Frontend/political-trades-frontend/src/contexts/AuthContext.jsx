@@ -18,7 +18,7 @@ export function AuthProvider({ children }) {
     // than reject — without this, `loading` never clears and the app is stuck
     // on the "Loading..." screen instead of showing the BackendDown page.
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 8000);
+    const timer = setTimeout(() => controller.abort(), 6000);
     try {
       const res = await apiFetch("/auth/me", { signal: controller.signal });
       if (res.ok) {
