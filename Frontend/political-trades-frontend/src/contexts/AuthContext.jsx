@@ -13,8 +13,14 @@ export function AuthProvider({ children }) {
   const [backendDown, setBackendDown] = useState(false);
 
   const refresh = useCallback(async () => {
+    // Race the probe against a timeout. When the backend is suspended (Render
+    // cold-fail / Neon compute limit) the request can hang indefinitely rather
+    // than reject — without this, `loading` never clears and the app is stuck
+    // on the "Loading..." screen instead of showing the BackendDown page.
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 8000);
     try {
-      const res = await apiFetch("/auth/me");
+      const res = await apiFetch("/auth/me", { signal: controller.signal });
       if (res.ok) {
         setUser(await res.json());
         setIsGuest(false);
@@ -27,10 +33,11 @@ export function AuthProvider({ children }) {
         setUser(null);
       }
     } catch {
-      // fetch threw — backend is unreachable entirely
+      // fetch threw or was aborted — backend is unreachable / not responding
       setUser(null);
       setBackendDown(true);
     } finally {
+      clearTimeout(timer);
       setLoading(false);
     }
   }, []);
