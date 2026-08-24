@@ -61,8 +61,8 @@ export default function App() {
 
   useEffect(() => {
     Promise.all([
-      apiFetch(`/politicians`).then((r) => r.json()),
-      apiFetch(`/trades/recent?limit=500`).then((r) => r.json()),
+      apiFetch(`/politicians`).then((r) => (r.ok ? r.json() : [])),
+      apiFetch(`/trades/recent?limit=500`).then((r) => (r.ok ? r.json() : [])),
       apiFetch(`/copy-configs`).then((r) => (r.ok ? r.json() : [])),
     ])
       .then(([pols, trades, configs]) => {

@@ -1,0 +1,759 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - banner [ref=e3]:
+      - banner [ref=e4]:
+        - paragraph [ref=e7]: ScraperAPI has acquired Traject Data
+        - link "Read the announcement" [ref=e11] [cursor=pointer]:
+          - /url: https://www.scraperapi.com/blog/scraperapi-traject-data-acquisition/
+      - generic [ref=e14]:
+        - link [ref=e18] [cursor=pointer]:
+          - /url: https://www.scraperapi.com
+          - img "ScraperAPI" [ref=e19]
+        - navigation "Menu" [ref=e23]:
+          - text:  
+          - generic "Menu Toggle" [ref=e24]:
+            - list [ref=e25]:
+              - listitem [ref=e26]:
+                - link "Pricing" [ref=e28] [cursor=pointer]:
+                  - /url: https://www.scraperapi.com/pricing/
+              - listitem [ref=e30]:
+                - generic [ref=e31]:
+                  - link "Solutions" [ref=e32] [cursor=pointer]:
+                    - /url: https://www.scraperapi.com/solutions/
+                  - button "Open Solutions" [ref=e34]
+                - generic: 
+              - listitem [ref=e39]:
+                - generic [ref=e40]:
+                  - link "Documentation" [ref=e41] [cursor=pointer]:
+                    - /url: https://docs.scraperapi.com
+                  - button "Open Documentation" [ref=e43]
+                - generic: 
+              - listitem [ref=e48]:
+                - generic [ref=e49]:
+                  - link "Resources" [ref=e50] [cursor=pointer]:
+                    - /url: "#"
+                  - button "Open Resources" [ref=e52]
+                - generic: 
+              - listitem [ref=e57]:
+                - link "Support" [ref=e59] [cursor=pointer]:
+                  - /url: https://www.scraperapi.com/support/
+        - generic [ref=e61]:
+          - link "Contact Sales" [ref=e65] [cursor=pointer]:
+            - /url: /contact-sales/
+          - link "Login" [ref=e71] [cursor=pointer]:
+            - /url: https://dashboard.scraperapi.com/login
+          - link "Start Trial" [ref=e77] [cursor=pointer]:
+            - /url: https://dashboard.scraperapi.com/signup
+  - generic [ref=e80]:
+    - generic [ref=e82]:
+      - heading "Start Scraping" [level=1] [ref=e85]
+      - paragraph [ref=e88]: Start collecting data with our 7-day trial and 5,000 API credits. No credit card required. Upgrade to enable more features and increase scraping volume.
+    - generic [ref=e94]:
+      - paragraph [ref=e97]: Monthly
+      - generic [ref=e101]:
+        - checkbox
+        - generic [ref=e102] [cursor=pointer]
+      - paragraph [ref=e105]: Yearly
+      - paragraph [ref=e108]: 10% off
+    - generic [ref=e114]:
+      - generic [ref=e116]:
+        - generic [ref=e118]:
+          - region "Carousel" [ref=e119]:
+            - generic [ref=e120]:
+              - group "1 / 7" [ref=e121]:
+                - generic [ref=e122]:
+                  - heading "Hobby" [level=4] [ref=e125]
+                  - paragraph [ref=e128]: For small projects and personal use.
+                  - paragraph [ref=e131]:
+                    - strong [ref=e132]: $49
+                    - text: /month
+                  - link "Start Trial" [ref=e136] [cursor=pointer]:
+                    - /url: /signup
+                  - list [ref=e141]:
+                    - listitem [ref=e142]:
+                      - generic [ref=e147]: 100,000 API Credits
+                    - listitem [ref=e148]:
+                      - generic [ref=e153]: 20 Concurrent Threads
+                    - listitem [ref=e154]:
+                      - generic [ref=e159]: "Geotargeting: US & EU only"
+                    - listitem [ref=e160]:
+                      - generic [ref=e165]: Ultra Premium
+                    - listitem [ref=e166]:
+                      - generic [ref=e171]: Full crawler access
+              - group "2 / 7" [ref=e172]:
+                - generic [ref=e173]:
+                  - heading "Startup" [level=4] [ref=e176]
+                  - paragraph [ref=e179]: For low-volume scraping workflows.
+                  - paragraph [ref=e182]:
+                    - strong [ref=e183]: $149
+                    - text: /month
+                  - link "Start Trial" [ref=e187] [cursor=pointer]:
+                    - /url: /signup
+                  - list [ref=e192]:
+                    - listitem [ref=e193]:
+                      - generic [ref=e198]: 1,000,000 API Credits
+                    - listitem [ref=e199]:
+                      - generic [ref=e204]: 50 Concurrent Threads
+                    - listitem [ref=e205]:
+                      - generic [ref=e210]: "Geotargeting: US & EU only"
+                    - listitem [ref=e211]:
+                      - generic [ref=e216]: Ultra Premium
+                    - listitem [ref=e217]:
+                      - generic [ref=e222]: Full crawler access
+              - group "3 / 7" [ref=e223]:
+                - generic [ref=e224]:
+                  - heading "Business" [level=4] [ref=e227]
+                  - paragraph [ref=e230]: For production-grade scraping at moderate scale.
+                  - paragraph [ref=e233]:
+                    - strong [ref=e234]: $299
+                    - text: /month
+                  - link "Start Trial" [ref=e238] [cursor=pointer]:
+                    - /url: /signup
+                  - list [ref=e243]:
+                    - listitem [ref=e244]:
+                      - generic [ref=e249]: 3,000,000 API Credits
+                    - listitem [ref=e250]:
+                      - generic [ref=e255]: 100 Concurrent Threads
+                    - listitem [ref=e256]:
+                      - generic [ref=e261]: "Geotargeting: Global"
+                    - listitem [ref=e262]:
+                      - generic [ref=e267]: Ultra Premium
+                    - listitem [ref=e268]:
+                      - generic [ref=e273]: Full crawler access
+                    - listitem [ref=e274]:
+                      - generic [ref=e279]: Unlimited analytics history
+              - group "4 / 7" [ref=e280]:
+                - generic [ref=e281]:
+                  - heading "Scaling" [level=4] [ref=e284]
+                  - paragraph [ref=e287]: Most popular
+                  - paragraph [ref=e290]: For scaling scraping operations.
+                  - paragraph [ref=e293]:
+                    - strong [ref=e294]: $475
+                    - text: /month
+                  - link "Start Trial" [ref=e298] [cursor=pointer]:
+                    - /url: /signup
+                  - list [ref=e303]:
+                    - listitem [ref=e304]:
+                      - generic [ref=e309]: 5,000,000 API Credits
+                    - listitem [ref=e310]:
+                      - generic [ref=e315]: 200 Concurrent Threads
+                    - listitem [ref=e316]:
+                      - generic [ref=e321]: "Geotargeting: Global"
+                    - listitem [ref=e322]:
+                      - generic [ref=e327]: Ultra Premium
+                    - listitem [ref=e328]:
+                      - generic [ref=e333]: Full crawler access
+                    - listitem [ref=e334]:
+                      - generic [ref=e339]: Unlimited analytics history
+                    - listitem [ref=e340]:
+                      - generic [ref=e345]: Pay as you go
+              - group "5 / 7" [ref=e346]:
+                - generic [ref=e347]:
+                  - heading "Professional" [level=4] [ref=e350]
+                  - paragraph [ref=e353]: For recurring, high-volume scraping.
+                  - paragraph [ref=e356]:
+                    - strong [ref=e357]: $975
+                    - text: /month
+                  - link "Start Trial" [ref=e361] [cursor=pointer]:
+                    - /url: /signup
+                  - paragraph [ref=e366]: LIMITED OFFER · +250K BONUS CREDITS
+                  - list [ref=e369]:
+                    - listitem [ref=e370]:
+                      - generic [ref=e375]: 10,500,000 API Credits
+                    - listitem [ref=e376]:
+                      - generic [ref=e381]: 300 Concurrent Threads
+                    - listitem [ref=e382]:
+                      - generic [ref=e387]: "Geotargeting: Global"
+                    - listitem [ref=e388]:
+                      - generic [ref=e393]: Priority support
+                    - listitem [ref=e394]:
+                      - generic [ref=e399]: Ultra Premium
+                    - listitem [ref=e400]:
+                      - generic [ref=e405]: Full crawler access
+                    - listitem [ref=e406]:
+                      - generic [ref=e411]: Unlimited analytics history
+                    - listitem [ref=e412]:
+                      - generic [ref=e417]: Pay as you go
+              - group [ref=e418]:
+                - generic [ref=e419]:
+                  - heading [level=4] [ref=e422]: Advanced
+                  - paragraph [ref=e425]: For continuous, multi-source data pipelines.
+                  - paragraph [ref=e428]:
+                    - strong [ref=e429]: $1,975
+                    - text: /month
+                  - link [ref=e433] [cursor=pointer]:
+                    - /url: /signup
+                    - generic [ref=e434]: Start Trial
+                  - paragraph [ref=e438]: LIMITED OFFER · +500K BONUS CREDITS
+                  - list [ref=e441]:
+                    - listitem [ref=e442]:
+                      - generic [ref=e447]: 21,500,000 API Credits
+                    - listitem [ref=e448]:
+                      - generic [ref=e453]: 500 Concurrent Threads
+                    - listitem [ref=e454]:
+                      - generic [ref=e459]: "Geotargeting: Global"
+                    - listitem [ref=e460]:
+                      - generic [ref=e465]: Priority routing
+                    - listitem [ref=e466]:
+                      - generic [ref=e471]: Ultra Premium
+                    - listitem [ref=e472]:
+                      - generic [ref=e477]: Full crawler access
+                    - listitem [ref=e478]:
+                      - generic [ref=e483]: Unlimited analytics history
+                    - listitem [ref=e484]:
+                      - generic [ref=e489]: Pay as you go
+              - group [ref=e490]:
+                - generic [ref=e491]:
+                  - heading [level=4] [ref=e494]: Enterprise
+                  - paragraph [ref=e497]: For complete control and flexibility with personalized pricing.
+                  - link [ref=e501] [cursor=pointer]:
+                    - /url: /contact-sales/
+                    - generic [ref=e502]: Contact Sales
+                  - list [ref=e506]:
+                    - listitem [ref=e507]:
+                      - generic [ref=e512]: 22,000,000 + API Credits
+                    - listitem [ref=e513]:
+                      - generic [ref=e518]: 500 + Concurrent Threads
+                    - listitem [ref=e519]:
+                      - generic [ref=e524]: Ultra Premium
+                    - listitem [ref=e525]:
+                      - generic [ref=e530]: Dedicated Support Team
+                    - listitem [ref=e531]:
+                      - generic [ref=e536]: Slack Support
+                    - listitem [ref=e537]:
+                      - generic [ref=e542]: Full crawler access
+                    - listitem [ref=e543]:
+                      - generic [ref=e548]: Unlimited analytics history
+                    - listitem [ref=e549]:
+                      - generic [ref=e554]: Pay as you go
+          - button "Previous slide" [disabled] [ref=e555] [cursor=pointer]:
+            - generic [ref=e556]: 
+          - button "Next slide" [ref=e557] [cursor=pointer]:
+            - generic [ref=e558]: 
+        - paragraph [ref=e561]:
+          - text: "Guide to scraping costs:"
+          - link "See the full list of domains" [ref=e562] [cursor=pointer]:
+            - /url: https://docs.scraperapi.com/getting-started/quick-start/credits-and-requests-costs
+          - text: .
+        - generic [ref=e563]:
+          - heading "ScraperAPI Core Features - Included With All Plans" [level=5] [ref=e566]
+          - generic [ref=e568]:
+            - list [ref=e571]:
+              - listitem [ref=e572]:
+                - generic [ref=e577]: JS Rendering
+              - listitem [ref=e578]:
+                - generic [ref=e583]: Premium Proxies
+              - listitem [ref=e584]:
+                - generic [ref=e589]: JSON Auto Parsing
+              - listitem [ref=e590]:
+                - generic [ref=e595]: Rotating Proxy Pools
+            - list [ref=e598]:
+              - listitem [ref=e599]:
+                - generic [ref=e604]: Custom Header Support
+              - listitem [ref=e605]:
+                - generic [ref=e610]: CAPTCHA & Anti-Bot Detection
+              - listitem [ref=e611]:
+                - generic [ref=e616]: Custom Session Support
+              - listitem [ref=e617]:
+                - generic [ref=e622]: Desktop & Mobile User Agents
+            - list [ref=e625]:
+              - listitem [ref=e626]:
+                - generic [ref=e631]: Automatic Retries
+              - listitem [ref=e632]:
+                - generic [ref=e637]: Unlimited Bandwidth
+              - listitem [ref=e638]:
+                - generic [ref=e643]: 99.9% Uptime Guarantee
+              - listitem [ref=e644]:
+                - generic [ref=e649]: Best-in-class Support
+      - text:  
+    - generic [ref=e651]:
+      - paragraph [ref=e655]: Accepted payment methods
+      - generic [ref=e656]:
+        - img "Mastercard" [ref=e659]
+        - img "paypal" [ref=e662]
+        - img "American Express" [ref=e665]
+        - img "Wire transfer" [ref=e668]
+        - img "Visa" [ref=e671]
+    - generic [ref=e679]:
+      - generic [ref=e680]:
+        - paragraph [ref=e687]: Overview
+        - list [ref=e690]:
+          - listitem [ref=e691]:
+            - generic [ref=e692]: API Credits
+          - listitem [ref=e693]:
+            - generic [ref=e694]: Concurrent Threads
+          - listitem [ref=e695]:
+            - generic [ref=e696]: Geotargeting
+          - listitem [ref=e697]:
+            - generic [ref=e698]: Analytics Dashboard
+        - paragraph [ref=e701]: Features
+        - list [ref=e704]:
+          - listitem [ref=e705]:
+            - generic [ref=e706]: JS Rendering
+          - listitem [ref=e707]:
+            - generic [ref=e708]: Premium residential & mobile IPs
+          - listitem [ref=e709]:
+            - generic [ref=e710]: Advanced bypassing
+          - listitem [ref=e711]:
+            - generic [ref=e712]: Parsing & Structured Data APIs
+          - listitem [ref=e713]:
+            - generic [ref=e714]: DataPipeline
+          - listitem [ref=e715]:
+            - generic [ref=e716]: Full Crawler Access
+          - listitem [ref=e717]:
+            - generic [ref=e718]: Pay as you go
+        - paragraph [ref=e721]: Support
+        - list [ref=e724]:
+          - listitem [ref=e725]:
+            - generic [ref=e726]: Priority Support
+          - listitem [ref=e727]:
+            - generic [ref=e728]: Dedicated Support Team
+          - listitem [ref=e729]:
+            - generic [ref=e730]: Slack Support
+      - generic [ref=e732]:
+        - region "Plans" [ref=e733]:
+          - generic [ref=e734]:
+            - group "1 / 7" [ref=e735]:
+              - generic [ref=e736]:
+                - generic [ref=e737]:
+                  - heading "Hobby" [level=4] [ref=e740]
+                  - paragraph [ref=e743]: For small projects and personal use.
+                  - paragraph [ref=e746]:
+                    - strong [ref=e747]: $49
+                    - text: /month
+                  - link "Start Trial" [ref=e751] [cursor=pointer]:
+                    - /url: /signup
+                - list [ref=e758]:
+                  - listitem [ref=e759]:
+                    - generic [ref=e760]: 100,000
+                  - listitem [ref=e761]:
+                    - generic [ref=e762]: "20"
+                  - listitem [ref=e763]:
+                    - generic [ref=e764]: US & EU (only regions)
+                  - listitem [ref=e765]:
+                    - generic [ref=e766]: Up to last 30 days
+                - list [ref=e771]:
+                  - listitem [ref=e772]
+                  - listitem [ref=e777]
+                  - listitem [ref=e782]
+                  - listitem [ref=e787]
+                  - listitem [ref=e792]
+                  - listitem [ref=e797]
+                  - listitem [ref=e802]
+                - list [ref=e809]:
+                  - listitem [ref=e810]
+                  - listitem [ref=e813]
+                  - listitem [ref=e816]
+            - group "2 / 7" [ref=e819]:
+              - generic [ref=e820]:
+                - generic [ref=e821]:
+                  - heading "Startup" [level=4] [ref=e824]
+                  - paragraph [ref=e827]: For low-volume scraping workflows.
+                  - paragraph [ref=e830]:
+                    - strong [ref=e831]: $149
+                    - text: /month
+                  - link "Start Trial" [ref=e835] [cursor=pointer]:
+                    - /url: /signup
+                - list [ref=e842]:
+                  - listitem [ref=e843]:
+                    - generic [ref=e844]: 1,000,000
+                  - listitem [ref=e845]:
+                    - generic [ref=e846]: "50"
+                  - listitem [ref=e847]:
+                    - generic [ref=e848]: US & EU (only regions)
+                  - listitem [ref=e849]:
+                    - generic [ref=e850]: Up to last 30 days
+                - list [ref=e855]:
+                  - listitem [ref=e856]
+                  - listitem [ref=e861]
+                  - listitem [ref=e866]
+                  - listitem [ref=e871]
+                  - listitem [ref=e876]
+                  - listitem [ref=e881]
+                  - listitem [ref=e886]
+                - list [ref=e893]:
+                  - listitem [ref=e894]
+                  - listitem [ref=e897]
+                  - listitem [ref=e900]
+            - group "3 / 7" [ref=e903]:
+              - generic [ref=e904]:
+                - generic [ref=e905]:
+                  - heading "Business" [level=4] [ref=e908]
+                  - paragraph [ref=e911]: For production-grade scraping at moderate scale.
+                  - paragraph [ref=e914]:
+                    - strong [ref=e915]: $299
+                    - text: /month
+                  - link "Start Trial" [ref=e919] [cursor=pointer]:
+                    - /url: /signup
+                - list [ref=e926]:
+                  - listitem [ref=e927]:
+                    - generic [ref=e928]: 3,000,000
+                  - listitem [ref=e929]:
+                    - generic [ref=e930]: "100"
+                  - listitem [ref=e931]:
+                    - generic [ref=e932]: Country-level
+                  - listitem [ref=e933]:
+                    - generic [ref=e934]: Unlimited
+                - list [ref=e939]:
+                  - listitem [ref=e940]
+                  - listitem [ref=e945]
+                  - listitem [ref=e950]
+                  - listitem [ref=e955]
+                  - listitem [ref=e960]
+                  - listitem [ref=e965]
+                  - listitem [ref=e970]
+                - list [ref=e977]:
+                  - listitem [ref=e978]
+                  - listitem [ref=e981]
+                  - listitem [ref=e984]
+            - group "4 / 7" [ref=e987]:
+              - generic [ref=e988]:
+                - generic [ref=e989]:
+                  - heading "Scaling" [level=4] [ref=e992]
+                  - paragraph [ref=e995]: Most popular
+                  - paragraph [ref=e998]: For scaling scraping operations.
+                  - paragraph [ref=e1001]:
+                    - strong [ref=e1002]: $475
+                    - text: /month
+                  - link "Start Trial" [ref=e1006] [cursor=pointer]:
+                    - /url: /signup
+                - list [ref=e1013]:
+                  - listitem [ref=e1014]:
+                    - generic [ref=e1015]: 5,000,000
+                  - listitem [ref=e1016]:
+                    - generic [ref=e1017]: "200"
+                  - listitem [ref=e1018]:
+                    - generic [ref=e1019]: Country-level
+                  - listitem [ref=e1020]:
+                    - generic [ref=e1021]: Unlimited
+                - list [ref=e1026]:
+                  - listitem [ref=e1027]
+                  - listitem [ref=e1032]
+                  - listitem [ref=e1037]
+                  - listitem [ref=e1042]
+                  - listitem [ref=e1047]
+                  - listitem [ref=e1052]
+                  - listitem [ref=e1057]
+                - list [ref=e1066]:
+                  - listitem [ref=e1067]
+                  - listitem [ref=e1070]
+                  - listitem [ref=e1073]
+            - group [ref=e1076]:
+              - generic [ref=e1077]:
+                - generic [ref=e1078]:
+                  - heading [level=4] [ref=e1081]: Professional
+                  - paragraph [ref=e1084]: For recurring, high-volume scraping.
+                  - paragraph [ref=e1087]:
+                    - strong [ref=e1088]: $975
+                    - text: /month
+                  - link [ref=e1092] [cursor=pointer]:
+                    - /url: /signup
+                    - generic [ref=e1093]: Start Trial
+                - list [ref=e1099]:
+                  - listitem [ref=e1100]:
+                    - generic [ref=e1101]: 10,500,000
+                  - listitem [ref=e1102]:
+                    - generic [ref=e1103]: "300"
+                  - listitem [ref=e1104]:
+                    - generic [ref=e1105]: Country-level
+                  - listitem [ref=e1106]:
+                    - generic [ref=e1107]: Unlimited
+                - list [ref=e1112]:
+                  - listitem [ref=e1113]
+                  - listitem [ref=e1118]
+                  - listitem [ref=e1123]
+                  - listitem [ref=e1128]
+                  - listitem [ref=e1133]
+                  - listitem [ref=e1138]
+                  - listitem [ref=e1143]
+                - list [ref=e1152]:
+                  - listitem [ref=e1153]
+                  - listitem [ref=e1158]
+                  - listitem [ref=e1161]
+            - group [ref=e1164]:
+              - generic [ref=e1165]:
+                - generic [ref=e1166]:
+                  - heading [level=4] [ref=e1169]: Advanced
+                  - paragraph [ref=e1172]: For continuous, multi-source data pipelines.
+                  - paragraph [ref=e1175]:
+                    - strong [ref=e1176]: $1,975
+                    - text: /month
+                  - link [ref=e1180] [cursor=pointer]:
+                    - /url: /signup
+                    - generic [ref=e1181]: Start Trial
+                - list [ref=e1187]:
+                  - listitem [ref=e1188]:
+                    - generic [ref=e1189]: 21,500,000
+                  - listitem [ref=e1190]:
+                    - generic [ref=e1191]: "500"
+                  - listitem [ref=e1192]:
+                    - generic [ref=e1193]: Country-level
+                  - listitem [ref=e1194]:
+                    - generic [ref=e1195]: Unlimited
+                - list [ref=e1200]:
+                  - listitem [ref=e1201]
+                  - listitem [ref=e1206]
+                  - listitem [ref=e1211]
+                  - listitem [ref=e1216]
+                  - listitem [ref=e1221]
+                  - listitem [ref=e1226]
+                  - listitem [ref=e1231]
+                - list [ref=e1240]:
+                  - listitem [ref=e1241]
+                  - listitem [ref=e1246]
+                  - listitem [ref=e1249]
+            - group [ref=e1252]:
+              - generic [ref=e1253]:
+                - generic [ref=e1254]:
+                  - heading [level=4] [ref=e1257]: Enterprise
+                  - paragraph [ref=e1260]: For complete control and flexibility with personalized pricing.
+                  - generic [ref=e1262]:
+                    - paragraph [ref=e1263]:
+                      - strong [ref=e1264]: Let’s talk
+                    - paragraph [ref=e1265]: / custom per month
+                  - link [ref=e1269] [cursor=pointer]:
+                    - /url: /contact-sales/
+                    - generic [ref=e1270]: Contact Sales
+                - list [ref=e1276]:
+                  - listitem [ref=e1277]:
+                    - generic [ref=e1278]: 22,000,000 +
+                  - listitem [ref=e1279]:
+                    - generic [ref=e1280]: 500 +
+                  - listitem [ref=e1281]:
+                    - generic [ref=e1282]: Country-level
+                  - listitem [ref=e1283]:
+                    - generic [ref=e1284]: Unlimited
+                - list [ref=e1289]:
+                  - listitem [ref=e1290]
+                  - listitem [ref=e1295]
+                  - listitem [ref=e1300]
+                  - listitem [ref=e1305]
+                  - listitem [ref=e1310]
+                  - listitem [ref=e1315]
+                  - listitem [ref=e1320]
+                - list [ref=e1329]:
+                  - listitem [ref=e1330]
+                  - listitem [ref=e1335]
+                  - listitem [ref=e1340]
+        - button "Previous slide" [disabled] [ref=e1345] [cursor=pointer]:
+          - generic [ref=e1346]: 
+        - button "Next slide" [ref=e1347] [cursor=pointer]:
+          - generic [ref=e1348]: 
+    - generic [ref=e1352]:
+      - generic [ref=e1353]:
+        - heading [level=2] [ref=e1356]:
+          - link "Need 22M+ Requests a Month?" [ref=e1357] [cursor=pointer]:
+            - /url: https://www.scraperapi.com/contact-sales/
+        - generic [ref=e1358]: Let our experts build a custom plan that fits your business needs.
+      - link "Book a call" [ref=e1366] [cursor=pointer]:
+        - /url: https://www.scraperapi.com/contact-sales/
+    - generic [ref=e1372]:
+      - heading "ScraperAPI Pricing FAQs" [level=2] [ref=e1375]
+      - generic [ref=e1378]:
+        - generic [ref=e1379]:
+          - button "Does ScraperAPI offer a free plan?" [expanded] [ref=e1380] [cursor=pointer]:
+            - generic [ref=e1381]:
+              - text: +
+              - generic [ref=e1382]: 
+            - text: Does ScraperAPI offer a free plan?
+          - region "Does ScraperAPI offer a free plan?" [ref=e1384]:
+            - paragraph [ref=e1385]:
+              - text: Yes, ScraperAPI offers a free plan where you can
+              - link "sign up here" [ref=e1386] [cursor=pointer]:
+                - /url: https://dashboard.scraperapi.com/signup
+              - text: and get 1,000 free API credits (with a maximum of 5 concurrent connections). If you need additional API credits for testing purposes, please
+              - link "contact support" [ref=e1387] [cursor=pointer]:
+                - /url: https://www.scraperapi.com/support/
+              - text: .
+        - button "Does one successful ScraperAPI request always equal one API credit?" [ref=e1389] [cursor=pointer]:
+          - generic [ref=e1390]:
+            - generic [ref=e1391]: +
+            - text: 
+          - text: Does one successful ScraperAPI request always equal one API credit?
+        - button "Are there specific websites or domains that cost more ScraperAPI credits to scrape?" [ref=e1394] [cursor=pointer]:
+          - generic [ref=e1395]:
+            - generic [ref=e1396]: +
+            - text: 
+          - text: Are there specific websites or domains that cost more ScraperAPI credits to scrape?
+        - button "How can I check my ScraperAPI request volume?" [ref=e1399] [cursor=pointer]:
+          - generic [ref=e1400]:
+            - generic [ref=e1401]: +
+            - text: 
+          - text: How can I check my ScraperAPI request volume?
+        - button "What happens if I exceed my ScraperAPI \"Concurrent Threads\" limit?" [ref=e1404] [cursor=pointer]:
+          - generic [ref=e1405]:
+            - generic [ref=e1406]: +
+            - text: 
+          - text: What happens if I exceed my ScraperAPI "Concurrent Threads" limit?
+        - button "What happens if I run out of ScraperAPI credits?" [ref=e1409] [cursor=pointer]:
+          - generic [ref=e1410]:
+            - generic [ref=e1411]: +
+            - text: 
+          - text: What happens if I run out of ScraperAPI credits?
+        - button "What is the difference between \"Pay-As-You-Go\" and upgrading my ScraperAPI plan if I run out of credits?" [ref=e1414] [cursor=pointer]:
+          - generic [ref=e1415]:
+            - generic [ref=e1416]: +
+            - text: 
+          - text: What is the difference between "Pay-As-You-Go" and upgrading my ScraperAPI plan if I run out of credits?
+        - button "Do my unused ScraperAPI credits roll over to the next billing cycle?" [ref=e1419] [cursor=pointer]:
+          - generic [ref=e1420]:
+            - generic [ref=e1421]: +
+            - text: 
+          - text: Do my unused ScraperAPI credits roll over to the next billing cycle?
+        - button "If I get a custom ScraperAPI Enterprise volume discount, does it apply to all types of requests?" [ref=e1424] [cursor=pointer]:
+          - generic [ref=e1425]:
+            - generic [ref=e1426]: +
+            - text: 
+          - text: If I get a custom ScraperAPI Enterprise volume discount, does it apply to all types of requests?
+        - button "How do I change my card details for ScraperAPI?" [ref=e1429] [cursor=pointer]:
+          - generic [ref=e1430]:
+            - generic [ref=e1431]: +
+            - text: 
+          - text: How do I change my card details for ScraperAPI?
+        - button "Can I cancel my ScraperAPI subscription anytime?" [ref=e1434] [cursor=pointer]:
+          - generic [ref=e1435]:
+            - generic [ref=e1436]: +
+            - text: 
+          - text: Can I cancel my ScraperAPI subscription anytime?
+        - button "Can I get a refund for my ScraperAPI plan?" [ref=e1439] [cursor=pointer]:
+          - generic [ref=e1440]:
+            - generic [ref=e1441]: +
+            - text: 
+          - text: Can I get a refund for my ScraperAPI plan?
+        - button "What if I have other questions about ScraperAPI?" [ref=e1444] [cursor=pointer]:
+          - generic [ref=e1445]:
+            - generic [ref=e1446]: +
+            - text: 
+          - text: What if I have other questions about ScraperAPI?
+  - contentinfo [ref=e1448]:
+    - contentinfo [ref=e1449]:
+      - generic [ref=e1454]:
+        - generic [ref=e1456]:
+          - link [ref=e1459] [cursor=pointer]:
+            - /url: https://www.scraperapi.com
+            - img "ScraperAPI" [ref=e1460]
+          - paragraph [ref=e1463]: After building numerous web scrapers and navigating the tedious processes of finding proxies, setting up headless browsers, and handling CAPTCHAs, we created ScraperAPI to simplify this for you. Our service handles all these complexities, allowing you to scrape any page with a simple API call.
+          - list [ref=e1466]:
+            - listitem [ref=e1467]:
+              - link "X-twitter" [ref=e1468] [cursor=pointer]:
+                - /url: https://x.com/ScraperAPI
+                - generic [ref=e1470]: 
+            - listitem [ref=e1471]:
+              - link "Linkedin" [ref=e1472] [cursor=pointer]:
+                - /url: https://www.linkedin.com/company/scraperapi/
+                - generic [ref=e1474]: 
+          - generic [ref=e1476]:
+            - paragraph [ref=e1477]:
+              - link "Terms of Use" [ref=e1478] [cursor=pointer]:
+                - /url: https://www.scraperapi.com/terms/
+            - paragraph [ref=e1479]:
+              - link "Privacy and Cookies Policy" [ref=e1480] [cursor=pointer]:
+                - /url: https://www.scraperapi.com/privacy/
+            - paragraph [ref=e1481]: Privacy Settings
+            - paragraph [ref=e1482]:
+              - text: ©
+              - link "ScraperAPI" [ref=e1483] [cursor=pointer]:
+                - /url: https://www.scraperapi.com/
+        - generic [ref=e1485]:
+          - paragraph [ref=e1488]: Product
+          - navigation "Menu" [ref=e1491]:
+            - list [ref=e1492]:
+              - listitem [ref=e1493]:
+                - link "Pricing" [ref=e1494] [cursor=pointer]:
+                  - /url: https://www.scraperapi.com/pricing/
+              - listitem [ref=e1495]:
+                - link "Documentation" [ref=e1496] [cursor=pointer]:
+                  - /url: https://docs.scraperapi.com
+              - listitem [ref=e1497]:
+                - link "Product FAQs" [ref=e1498] [cursor=pointer]:
+                  - /url: https://docs.scraperapi.com/v/faq
+          - paragraph [ref=e1501]: Company
+          - navigation "Menu" [ref=e1504]:
+            - list [ref=e1505]:
+              - listitem [ref=e1506]:
+                - link "About" [ref=e1507] [cursor=pointer]:
+                  - /url: https://www.scraperapi.com/about-us/
+              - listitem [ref=e1508]:
+                - link "Solutions" [ref=e1509] [cursor=pointer]:
+                  - /url: https://www.scraperapi.com/solutions/
+              - listitem [ref=e1510]:
+                - link "Affiliate Program" [ref=e1511] [cursor=pointer]:
+                  - /url: https://www.scraperapi.com/affiliates/
+              - listitem [ref=e1512]:
+                - link "Support" [ref=e1513] [cursor=pointer]:
+                  - /url: https://www.scraperapi.com/support/
+              - listitem [ref=e1514]:
+                - link "Case Studies" [ref=e1515] [cursor=pointer]:
+                  - /url: https://www.scraperapi.com/case-studies/
+        - generic [ref=e1517]:
+          - paragraph [ref=e1520]: Resources
+          - navigation "Menu" [ref=e1523]:
+            - list [ref=e1524]:
+              - listitem [ref=e1525]:
+                - link "Understand Web Scraping Pricing" [ref=e1526] [cursor=pointer]:
+                  - /url: https://www.scraperapi.com/blog/web-scraping-pricing-and-choosing-the-right-solution/
+              - listitem [ref=e1527]:
+                - link "How to Choose a Data Collection Tool" [ref=e1528] [cursor=pointer]:
+                  - /url: https://www.scraperapi.com/blog/how-to-choose-a-data-collection-tool/
+              - listitem [ref=e1529]:
+                - link "Enterprise Data Collection" [ref=e1530] [cursor=pointer]:
+                  - /url: https://www.scraperapi.com/solutions/data-acquisition-for-enterprise/
+              - listitem [ref=e1531]:
+                - link "Blog" [ref=e1532] [cursor=pointer]:
+                  - /url: https://www.scraperapi.com/blog/
+              - listitem [ref=e1533]:
+                - link "Learning Hub" [ref=e1534] [cursor=pointer]:
+                  - /url: https://www.scraperapi.com/web-scraping/
+              - listitem [ref=e1535]:
+                - link "Glossary" [ref=e1536] [cursor=pointer]:
+                  - /url: https://www.scraperapi.com/glossary/
+              - listitem [ref=e1537]:
+                - link "Developer Guides" [ref=e1538] [cursor=pointer]:
+                  - /url: https://www.scraperapi.com/guides/
+              - listitem [ref=e1539]:
+                - link "Free Downloads" [ref=e1540] [cursor=pointer]:
+                  - /url: https://www.scraperapi.com/resources/
+              - listitem [ref=e1541]:
+                - link "How We Compare" [ref=e1542] [cursor=pointer]:
+                  - /url: https://www.scraperapi.com/comparisons/
+        - generic [ref=e1544]:
+          - paragraph [ref=e1547]: Use Cases
+          - navigation "Menu" [ref=e1550]:
+            - list [ref=e1551]:
+              - listitem [ref=e1552]:
+                - link "SERP Data Collection" [ref=e1553] [cursor=pointer]:
+                  - /url: https://www.scraperapi.com/solutions/serp-data-collection/
+              - listitem [ref=e1554]:
+                - link "Ecommerce Data Collection" [ref=e1555] [cursor=pointer]:
+                  - /url: https://www.scraperapi.com/solutions/ecommerce-data-collection/
+              - listitem [ref=e1556]:
+                - link "Real Estate Data Collection" [ref=e1557] [cursor=pointer]:
+                  - /url: https://www.scraperapi.com/solutions/real-estate-data-collection/
+              - listitem [ref=e1558]:
+                - link "Market Research Data Collection" [ref=e1559] [cursor=pointer]:
+                  - /url: https://www.scraperapi.com/solutions/market-research-scraper/
+          - paragraph [ref=e1562]: By Target
+          - navigation "Menu" [ref=e1565]:
+            - list [ref=e1566]:
+              - listitem [ref=e1567]:
+                - link "Amazon Scraper" [ref=e1568] [cursor=pointer]:
+                  - /url: https://www.scraperapi.com/solutions/ecommerce-data-collection/amazon-scraper/
+              - listitem [ref=e1569]:
+                - link "Google Shopping Scraper" [ref=e1570] [cursor=pointer]:
+                  - /url: https://www.scraperapi.com/solutions/ecommerce-data-collection/google-shopping-scraper/
+              - listitem [ref=e1571]:
+                - link "Walmart Scraper" [ref=e1572] [cursor=pointer]:
+                  - /url: https://www.scraperapi.com/solutions/ecommerce-data-collection/walmart-scraper/
+              - listitem [ref=e1573]:
+                - link "eBay Scraper" [ref=e1574] [cursor=pointer]:
+                  - /url: https://www.scraperapi.com/solutions/ecommerce-data-collection/ebay-scraper/
+              - listitem [ref=e1575]:
+                - link "Etsy Scraper" [ref=e1576] [cursor=pointer]:
+                  - /url: https://www.scraperapi.com/solutions/ecommerce-data-collection/etsy-scraper/
+              - listitem [ref=e1577]:
+                - link "Home Depot Scraper" [ref=e1578] [cursor=pointer]:
+                  - /url: https://www.scraperapi.com/solutions/ecommerce-data-collection/homedepot-scraper/
+              - listitem [ref=e1579]:
+                - link "Target Scraper" [ref=e1580] [cursor=pointer]:
+                  - /url: https://www.scraperapi.com/solutions/ecommerce-data-collection/target-scraper/
+  - generic [ref=e1581]: desktop

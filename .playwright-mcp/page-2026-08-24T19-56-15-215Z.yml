@@ -1,0 +1,192 @@
+- generic [active] [ref=f24e1]:
+  - generic [ref=f24e3]:
+    - banner [ref=f24e4]:
+      - link [ref=f24e5] [cursor=pointer]:
+        - /url: https://site.financialmodelingprep.com/
+        - img "FMP" [ref=f24e6]
+      - generic [ref=f24e8]:
+        - generic [ref=f24e10] [cursor=pointer]:
+          - generic [ref=f24e11]: Datasets
+          - generic:
+            - generic:
+              - generic [ref=f24e15]:
+                - link "Real-time Market Data" [ref=f24e17]:
+                  - /url: /datasets/market-data-real-time
+                - link "Historical Market Data" [ref=f24e20]:
+                  - /url: /datasets/market-data-historic
+                - link "Financial Statements" [ref=f24e23]:
+                  - /url: /datasets/fundamental-financial-statements
+                - link "Index Market Data" [ref=f24e26]:
+                  - /url: /datasets/indexes
+                - link "Economics Data" [ref=f24e29]:
+                  - /url: /datasets/economics
+                - link "Company Profile" [ref=f24e32]:
+                  - /url: /datasets/company-profile
+                - link "Analyst Estimates" [ref=f24e35]:
+                  - /url: /datasets/analyst-estimates-targets
+                - link "Earnings Call Transcripts" [ref=f24e38]:
+                  - /url: /datasets/earnings-call-transcripts
+                - link "Search & Directory" [ref=f24e41]:
+                  - /url: /datasets/search-directory
+                - link "Market News" [ref=f24e44]:
+                  - /url: /datasets/market-news
+              - generic [ref=f24e46]:
+                - link "Market Calendar" [ref=f24e48]:
+                  - /url: /datasets/calendars
+                - link "Form 13F" [ref=f24e51]:
+                  - /url: /datasets/form-13f
+                - link "Advanced Market Metrics" [ref=f24e54]:
+                  - /url: /datasets/advanced
+                - link "Crypto Data" [ref=f24e57]:
+                  - /url: /datasets/crypto
+                - link "Forex Market Data" [ref=f24e60]:
+                  - /url: /datasets/forex
+                - link "Commodity Market Data" [ref=f24e63]:
+                  - /url: /datasets/commodity
+                - link "Insider & Congressional Trading" [ref=f24e66]:
+                  - /url: /datasets/ownership-senate-insider
+                - link "ESG Data" [ref=f24e69]:
+                  - /url: /datasets/esg
+                - link "ETF & Mutual Funds" [ref=f24e72]:
+                  - /url: /datasets/etf-mutual-funds
+                - link "Analyst Ratings & Price Targets" [ref=f24e75]:
+                  - /url: /datasets/analyst-ratings-tipranks
+        - generic [ref=f24e78] [cursor=pointer]:
+          - generic [ref=f24e79]: Documentation
+          - generic [ref=f24e83]:
+            - link "API Documentation" [ref=f24e85]:
+              - /url: /developer/docs
+            - link "API Viewer" [ref=f24e88]:
+              - /url: /playground
+            - link "Help Center" [ref=f24e91]:
+              - /url: /help-center
+            - link "API Status" [ref=f24e94]:
+              - /url: /developer/docs/status
+            - link "Changelog" [ref=f24e97]:
+              - /url: /developer/docs/changelog
+            - link "Cycle Times" [ref=f24e100]:
+              - /url: /developer/docs/cycle-times-stable
+            - generic [ref=f24e102]:
+              - text: Formula Methodologies
+              - generic:
+                - link "Financial Formulas" [ref=f24e103]:
+                  - /url: /developer/docs/formula
+                - link "Parsing Statements" [ref=f24e104]:
+                  - /url: /developer/docs/parsing-statements
+                - link "DCF Formula" [ref=f24e105]:
+                  - /url: /developer/docs/dcf-formula
+                - link "Piotroski Score" [ref=f24e106]:
+                  - /url: /developer/docs/piotroski-score
+                - link "Owner Earnings" [ref=f24e107]:
+                  - /url: /developer/docs/owner-earnings
+                - link "Recommendations Formula" [ref=f24e108]:
+                  - /url: /developer/docs/recommendations-formula
+            - generic [ref=f24e111]:
+              - text: Excel/Sheets Add-on
+              - generic:
+                - link "Documentation" [ref=f24e112]:
+                  - /url: /developer/docs/excel-add-on
+                - link "Function Explorer" [ref=f24e113]:
+                  - /url: /developer/docs/excel-add-on-explorer
+            - link "Third-Party Integrations" [ref=f24e117]:
+              - /url: /developer/docs/resources
+        - generic [ref=f24e120] [cursor=pointer]:
+          - generic [ref=f24e121]: Pricing
+          - generic [ref=f24e125]:
+            - link "Personal Use" [ref=f24e127]:
+              - /url: /developer/docs/pricing
+            - link "Commercial Use" [ref=f24e130]:
+              - /url: /developer/docs/pricing?planType=commercial
+      - generic [ref=f24e133]:
+        - link "Sign In" [ref=f24e134] [cursor=pointer]:
+          - /url: /login
+        - link "Sign Up" [ref=f24e135] [cursor=pointer]:
+          - /url: /register
+        - generic "Change language" [ref=f24e137] [cursor=pointer]
+        - checkbox [ref=f24e142] [cursor=pointer]
+    - generic [ref=f24e150]:
+      - paragraph [ref=f24e151]: Error
+      - paragraph [ref=f24e152]: "404"
+      - paragraph [ref=f24e153]: We can't find that page.
+      - paragraph [ref=f24e154]:
+        - text: Please visit our
+        - link "homepage" [ref=f24e155] [cursor=pointer]:
+          - /url: /
+    - generic [ref=f24e157]:
+      - generic [ref=f24e158]:
+        - generic [ref=f24e159]:
+          - link [ref=f24e160] [cursor=pointer]:
+            - /url: https://site.financialmodelingprep.com/
+            - img "FMP" [ref=f24e161]
+          - generic [ref=f24e162]:
+            - img "FMP SOC 2 Type 2 certified" [ref=f24e163]
+            - img "FMP FISD member" [ref=f24e164]
+        - generic [ref=f24e165]:
+          - generic [ref=f24e166]:
+            - paragraph [ref=f24e167]: API
+            - separator [ref=f24e168]
+            - link "Documentation" [ref=f24e169] [cursor=pointer]:
+              - /url: /developer/docs
+            - link "Pricing" [ref=f24e170] [cursor=pointer]:
+              - /url: /developer/docs/pricing
+            - link "API Viewer" [ref=f24e171] [cursor=pointer]:
+              - /url: /playground
+            - link "API Status" [ref=f24e172] [cursor=pointer]:
+              - /url: /developer/docs/status
+            - link "Changelog" [ref=f24e173] [cursor=pointer]:
+              - /url: /developer/docs/changelog
+            - link "FAQs" [ref=f24e174] [cursor=pointer]:
+              - /url: /faqs
+            - link "Cycle Times" [ref=f24e175] [cursor=pointer]:
+              - /url: /developer/docs/cycle-times
+            - link "Help Center" [ref=f24e176] [cursor=pointer]:
+              - /url: /help-center
+            - link "Legacy" [ref=f24e177] [cursor=pointer]:
+              - /url: /developer/docs/legacy-endpoints
+          - generic [ref=f24e178]:
+            - paragraph [ref=f24e179]: FMP
+            - separator [ref=f24e180]
+            - link "Insights" [ref=f24e181] [cursor=pointer]:
+              - /url: /insights
+            - link "Market News" [ref=f24e182] [cursor=pointer]:
+              - /url: /market-news
+            - link "Careers" [ref=f24e183] [cursor=pointer]:
+              - /url: /careers
+            - link "Affiliate Marketing" [ref=f24e184] [cursor=pointer]:
+              - /url: /affiliates
+            - link "Contact Us" [ref=f24e185] [cursor=pointer]:
+              - /url: /contact
+            - link "LinkedIn" [ref=f24e186] [cursor=pointer]:
+              - /url: https://www.linkedin.com/company/financial-modeling-prep/
+          - generic [ref=f24e187]:
+            - paragraph [ref=f24e188]: Stock Screener
+            - separator [ref=f24e189]
+            - link "Most Searched Stocks" [ref=f24e190] [cursor=pointer]:
+              - /url: /most-searched-stocks
+            - link "Foreign Exchange Rates" [ref=f24e191] [cursor=pointer]:
+              - /url: /currencies
+            - link "Cryptocurrencies" [ref=f24e192] [cursor=pointer]:
+              - /url: /cryptocurrencies
+            - link "Market Indexes" [ref=f24e193] [cursor=pointer]:
+              - /url: /market-indexes
+            - link "Market Top Gainers" [ref=f24e194] [cursor=pointer]:
+              - /url: /top-stock-gainers
+            - link "Market Top Losers" [ref=f24e195] [cursor=pointer]:
+              - /url: /top-stock-losers
+            - link "Market Highest Volume" [ref=f24e196] [cursor=pointer]:
+              - /url: /top-stock-actives
+            - link "Sector Performance" [ref=f24e197] [cursor=pointer]:
+              - /url: /sector-performance
+            - link "Search Stocks" [ref=f24e198] [cursor=pointer]:
+              - /url: /search
+          - generic [ref=f24e199]:
+            - paragraph [ref=f24e200]: Legal
+            - separator [ref=f24e201]
+            - link "Terms of Service" [ref=f24e202] [cursor=pointer]:
+              - /url: /terms-of-service
+            - link "Privacy Policy" [ref=f24e203] [cursor=pointer]:
+              - /url: /privacy-policy
+            - link "Trust Center" [ref=f24e204] [cursor=pointer]:
+              - /url: https://trust.financialmodelingprep.com/
+      - generic [ref=f24e205]: 2017-2026 © FMP
+  - alert [ref=f24e206]

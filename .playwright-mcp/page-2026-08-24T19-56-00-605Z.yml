@@ -1,0 +1,426 @@
+- generic [ref=f17e2]:
+  - generic [ref=f17e6]:
+    - generic [ref=f17e8]:
+      - text: BTC-USD
+      - strong [ref=f17e10]: "78703.93"
+      - generic [ref=f17e11]:
+        - generic [ref=f17e12]: 
+        - generic [ref=f17e14]: 1.25%
+        - text: (974.57)
+    - generic [ref=f17e16]:
+      - text: ETH-USD
+      - strong [ref=f17e18]: "2468.93"
+      - generic [ref=f17e19]:
+        - generic [ref=f17e20]: 
+        - generic [ref=f17e22]: 0.22%
+        - text: (5.54)
+    - generic [ref=f17e24]:
+      - text: EUR/USD
+      - strong [ref=f17e26]: "1.1663"
+      - generic [ref=f17e27]:
+        - generic [ref=f17e28]: 
+        - generic [ref=f17e30]: "-0.12%"
+        - text: (-0)
+    - generic [ref=f17e32]:
+      - text: GBP/USD
+      - strong [ref=f17e34]: "1.363"
+      - generic [ref=f17e35]:
+        - generic [ref=f17e36]: 
+        - generic [ref=f17e38]: "-0.12%"
+        - text: (-0)
+    - generic [ref=f17e40]:
+      - text: AAPL
+      - strong [ref=f17e42]: "310.565"
+      - generic [ref=f17e43]:
+        - generic [ref=f17e44]: 
+        - generic [ref=f17e46]: 0.39%
+        - text: (1.21)
+    - generic [ref=f17e48]:
+      - text: MSFT
+      - strong [ref=f17e50]: "487.99"
+      - generic [ref=f17e51]:
+        - generic [ref=f17e52]: 
+        - generic [ref=f17e54]: 0.98%
+        - text: (4.75)
+    - generic [ref=f17e56]:
+      - text: AMZN
+      - strong [ref=f17e58]: "262.1"
+      - generic [ref=f17e59]:
+        - generic [ref=f17e60]: 
+        - generic [ref=f17e62]: 1.34%
+        - text: (3.47)
+  - alert [ref=f17e63]:
+    - generic [ref=f17e64]:
+      - text: Global Filings, Transcripts, and Presentations data are available on Finnhub API. Check out
+      - link "here" [ref=f17e65] [cursor=pointer]:
+        - /url: /docs/api/earnings-call-transcripts-api
+  - navigation [ref=f17e66]:
+    - link "Finnhub Stock API logo" [ref=f17e67] [cursor=pointer]:
+      - /url: /
+      - img "Finnhub Stock API logo" [ref=f17e68]
+    - generic [ref=f17e69]:
+      - list [ref=f17e70]:
+        - listitem [ref=f17e71]:
+          - link "Finnhub Home" [ref=f17e72] [cursor=pointer]:
+            - /url: /
+            - text: Home
+        - listitem [ref=f17e73]:
+          - link "Documentation" [ref=f17e74] [cursor=pointer]:
+            - /url: /docs/api
+        - listitem [ref=f17e75]:
+          - link "Pricing" [expanded] [ref=f17e76] [cursor=pointer]:
+            - /url: "#"
+        - listitem [ref=f17e77]:
+          - link "Widget" [expanded] [ref=f17e78] [cursor=pointer]:
+            - /url: "#"
+        - listitem [ref=f17e79]:
+          - link "Excel & Google Spreadsheet" [ref=f17e80] [cursor=pointer]:
+            - /url: https://finsheet.io/
+        - listitem [ref=f17e82]:
+          - link "Filings Search API" [ref=f17e83] [cursor=pointer]:
+            - /url: /filings-search-api
+        - listitem [ref=f17e85]:
+          - link "Finnhub Connect" [ref=f17e86] [cursor=pointer]:
+            - /url: /finnhub-connect
+      - list [ref=f17e88]:
+        - listitem [ref=f17e89]:
+          - link "Register" [ref=f17e90] [cursor=pointer]:
+            - /url: /register
+        - listitem [ref=f17e91]:
+          - link "Login" [ref=f17e92] [cursor=pointer]:
+            - /url: /login
+  - generic [ref=f17e94]:
+    - table [ref=f17e95]:
+      - rowgroup [ref=f17e96]:
+        - row [ref=f17e97]:
+          - columnheader [ref=f17e98]
+          - columnheader "Free" [ref=f17e99]
+          - columnheader "All-In-One" [ref=f17e100]
+      - rowgroup [ref=f17e101]:
+        - row [ref=f17e102]:
+          - cell "Pricing" [ref=f17e103]
+          - cell [ref=f17e104]:
+            - paragraph [ref=f17e105]: $0/month
+            - link "Start Free" [ref=f17e106] [cursor=pointer]:
+              - /url: /register
+          - cell [ref=f17e107]:
+            - paragraph [ref=f17e108]: $3500/month
+            - link "Contact Us" [ref=f17e109] [cursor=pointer]:
+              - /url: mailto:support@finnhub.io
+        - row [ref=f17e110]:
+          - cell "Billing Frequency" [ref=f17e111]
+          - cell [ref=f17e112]
+          - cell "Annually" [ref=f17e115]
+        - row [ref=f17e116]:
+          - cell "License" [ref=f17e117]
+          - cell [ref=f17e118]:
+            - text: Personal Use.
+            - link "Terms" [ref=f17e119] [cursor=pointer]:
+              - /url: /terms-of-service
+            - text: apply
+          - cell [ref=f17e120]:
+            - text: Personal Use.
+            - link "Terms" [ref=f17e121] [cursor=pointer]:
+              - /url: /terms-of-service
+            - text: apply
+        - row [ref=f17e122]:
+          - cell "Limit" [ref=f17e123]
+          - cell "60 API calls/minute" [ref=f17e124]
+          - cell [ref=f17e125]:
+            - paragraph [ref=f17e126]: "Market data: 900 API calls/minute"
+            - paragraph [ref=f17e127]: "Fundamental: 300 API calls/minute"
+        - row [ref=f17e128]:
+          - cell "Fundamental Data" [ref=f17e129]
+        - row [ref=f17e130]:
+          - cell "Coverage" [ref=f17e131]
+          - cell "US" [ref=f17e132]
+          - cell "Global" [ref=f17e133]
+        - row [ref=f17e134]:
+          - cell "Company Profile" [ref=f17e135]
+          - cell "v2" [ref=f17e136]
+          - cell "v1 with more information" [ref=f17e137]
+        - row [ref=f17e138]:
+          - cell "Standardized Financial Statements" [ref=f17e139]
+          - cell [ref=f17e140]
+          - cell "30+ years annually and quarterly" [ref=f17e143]
+        - row [ref=f17e144]:
+          - cell "Financials As Reported" [ref=f17e145]
+          - cell [ref=f17e146]
+          - cell [ref=f17e149]
+        - row [ref=f17e152]:
+          - cell "Dividends" [ref=f17e153]
+          - cell [ref=f17e154]
+          - cell "30 years" [ref=f17e157]
+        - row [ref=f17e158]:
+          - cell "SEC filings" [ref=f17e159]
+          - cell [ref=f17e160]
+          - cell [ref=f17e163]
+        - row [ref=f17e166]:
+          - cell "Filings Sentiment" [ref=f17e167]
+          - cell [ref=f17e168]
+          - cell [ref=f17e171]
+        - row [ref=f17e174]:
+          - cell "Ownership" [ref=f17e175]
+          - cell [ref=f17e176]
+          - cell "Full list of shareholders" [ref=f17e179]
+        - row [ref=f17e180]:
+          - cell "Company News" [ref=f17e181]
+          - cell "1 year and real-time updates" [ref=f17e182]
+          - cell "20 years and real-time updates" [ref=f17e183]
+        - row [ref=f17e184]:
+          - cell "Key Metrics" [ref=f17e185]
+          - cell [ref=f17e186]
+          - cell [ref=f17e189]
+        - row [ref=f17e192]:
+          - cell "Press Releases" [ref=f17e193]
+          - cell [ref=f17e194]
+          - cell "20 years and real-time updates" [ref=f17e197]
+        - row [ref=f17e198]:
+          - cell "Company Executives" [ref=f17e199]
+          - cell [ref=f17e200]
+          - cell "Full list with compensation" [ref=f17e203]
+        - row [ref=f17e204]:
+          - cell "US Market Data" [ref=f17e205]
+        - row [ref=f17e206]:
+          - cell "Coverage" [ref=f17e207]
+          - cell "US" [ref=f17e208]
+          - cell "US" [ref=f17e209]
+        - row [ref=f17e210]:
+          - cell "OHLC" [ref=f17e211]
+          - cell [ref=f17e212]
+          - cell "30+ years" [ref=f17e215]
+        - row [ref=f17e216]:
+          - cell "Tick data" [ref=f17e217]
+          - cell [ref=f17e218]
+          - cell "30+ years" [ref=f17e221]
+        - row [ref=f17e222]:
+          - cell "Websocket" [ref=f17e223]
+          - cell "50 symbols" [ref=f17e224]
+          - cell "Unlimited symbols" [ref=f17e225]
+        - row [ref=f17e226]:
+          - cell "Survivorship-bias free" [ref=f17e227]
+          - cell [ref=f17e228]
+          - cell [ref=f17e231]
+        - row [ref=f17e234]:
+          - cell "Pattern Recognition Algorithm" [ref=f17e235]
+          - cell [ref=f17e236]
+          - cell [ref=f17e239]
+        - row [ref=f17e242]:
+          - cell "Support/Resistance Detection Algorithm" [ref=f17e243]
+          - cell [ref=f17e244]
+          - cell [ref=f17e247]
+        - row [ref=f17e250]:
+          - cell "International Market Data" [ref=f17e251]
+        - row [ref=f17e252]:
+          - cell "TSX, LSE, Euronext, Deutsche Börse *" [ref=f17e253]
+          - cell [ref=f17e254]
+          - cell "Tick-level data" [ref=f17e257]
+        - row [ref=f17e258]:
+          - cell "OHLC" [ref=f17e259]
+          - cell [ref=f17e260]
+          - cell "25+ years" [ref=f17e263]
+        - row [ref=f17e264]:
+          - cell "Estimates" [ref=f17e265]
+        - row [ref=f17e266]:
+          - cell "Coverage" [ref=f17e267]
+          - cell "US" [ref=f17e268]
+          - cell "Global" [ref=f17e269]
+        - row [ref=f17e270]:
+          - cell "Recommendation Trends" [ref=f17e271]
+          - cell [ref=f17e272]
+          - cell [ref=f17e275]
+        - row [ref=f17e278]:
+          - cell "Price Target" [ref=f17e279]
+          - cell [ref=f17e280]
+          - cell [ref=f17e283]
+        - row [ref=f17e286]:
+          - cell "EPS Surprises" [ref=f17e287]
+          - cell "4 quarters" [ref=f17e288]
+          - cell "20+ years" [ref=f17e289]
+        - row [ref=f17e290]:
+          - cell "Earnings Calendar" [ref=f17e291]
+          - cell "1 month and real-time updates (US)" [ref=f17e292]
+          - cell "20 years and real-time updates" [ref=f17e293]
+        - row [ref=f17e294]:
+          - cell "EPS Estimates" [ref=f17e295]
+          - cell [ref=f17e296]
+          - cell "20+ years historical & 5 years forward" [ref=f17e299]
+        - row [ref=f17e300]:
+          - cell "Revenue Estimates" [ref=f17e301]
+          - cell [ref=f17e302]
+          - cell "20+ years historical & 5 years forward" [ref=f17e305]
+        - row [ref=f17e306]:
+          - cell "EBITDA Estimates" [ref=f17e307]
+          - cell [ref=f17e308]
+          - cell "10+ years historical & 5 years forward" [ref=f17e311]
+        - row [ref=f17e312]:
+          - cell "EBIT Estimates" [ref=f17e313]
+          - cell [ref=f17e314]
+          - cell "10+ years historical & 5 years forward" [ref=f17e317]
+        - row [ref=f17e318]:
+          - cell "Net Income Estimates" [ref=f17e319]
+          - cell [ref=f17e320]
+          - cell "10+ years historical & 5 years forward" [ref=f17e323]
+        - row [ref=f17e324]:
+          - cell "Gross Income Estimates" [ref=f17e325]
+          - cell [ref=f17e326]
+          - cell "10+ years historical & 5 years forward" [ref=f17e329]
+        - row [ref=f17e330]:
+          - cell "Pre-tax Income Estimates" [ref=f17e331]
+          - cell [ref=f17e332]
+          - cell "10+ years historical & 5 years forward" [ref=f17e335]
+        - row [ref=f17e336]:
+          - cell "Dividend Per Share Estimates" [ref=f17e337]
+          - cell [ref=f17e338]
+          - cell "10+ years historical & 5 years forward" [ref=f17e341]
+        - row [ref=f17e342]:
+          - cell "FCF Estimates" [ref=f17e343]
+          - cell [ref=f17e344]
+          - cell "10+ years historical & 5 years forward" [ref=f17e347]
+        - row [ref=f17e348]:
+          - cell "Capex Estimates" [ref=f17e349]
+          - cell [ref=f17e350]
+          - cell "10+ years historical & 5 years forward" [ref=f17e353]
+        - row [ref=f17e354]:
+          - cell "OCF Estimates" [ref=f17e355]
+          - cell [ref=f17e356]
+          - cell "10+ years historical & 5 years forward" [ref=f17e359]
+        - row [ref=f17e360]:
+          - cell "Upgrade/Downgrade" [ref=f17e361]
+          - cell [ref=f17e362]
+          - cell "20 years and real-time updates" [ref=f17e365]
+        - row [ref=f17e366]:
+          - cell "ETFs and Indices" [ref=f17e367]
+        - row [ref=f17e368]:
+          - cell "Coverage" [ref=f17e369]
+          - cell "US" [ref=f17e370]
+          - cell "Global" [ref=f17e371]
+        - row [ref=f17e372]:
+          - cell "Indices Constituents" [ref=f17e373]
+          - cell [ref=f17e374]
+          - cell [ref=f17e377]
+        - row [ref=f17e380]:
+          - cell "Indices Historical Constituents" [ref=f17e381]
+          - cell [ref=f17e382]
+          - cell [ref=f17e385]
+        - row [ref=f17e388]:
+          - cell "ETFs Profile" [ref=f17e389]
+          - cell [ref=f17e390]
+          - cell [ref=f17e393]
+        - row [ref=f17e396]:
+          - cell "ETFs Holdings" [ref=f17e397]
+          - cell [ref=f17e398]
+          - cell [ref=f17e401]
+        - row [ref=f17e404]:
+          - cell "ETFs Industry Exposure" [ref=f17e405]
+          - cell [ref=f17e406]
+          - cell [ref=f17e409]
+        - row [ref=f17e412]:
+          - cell "ETFs Country Exposure" [ref=f17e413]
+          - cell [ref=f17e414]
+          - cell [ref=f17e417]
+        - row [ref=f17e420]:
+          - cell "Mutual Funds" [ref=f17e421]
+        - row [ref=f17e422]:
+          - cell "Coverage" [ref=f17e423]
+          - cell [ref=f17e424]
+          - cell "Global" [ref=f17e427]
+        - row [ref=f17e428]:
+          - cell "Mutual Funds Profile" [ref=f17e429]
+          - cell [ref=f17e430]
+          - cell [ref=f17e433]
+        - row [ref=f17e436]:
+          - cell "Mutual Funds Industry Exposure" [ref=f17e437]
+          - cell [ref=f17e438]
+          - cell [ref=f17e441]
+        - row [ref=f17e444]:
+          - cell "Mutual Funds Country Exposure" [ref=f17e445]
+          - cell [ref=f17e446]
+          - cell [ref=f17e449]
+        - row [ref=f17e452]:
+          - cell "Mutual Funds Holdings" [ref=f17e453]
+          - cell [ref=f17e454]
+          - cell [ref=f17e457]
+        - row [ref=f17e460]:
+          - cell "Alternative Data" [ref=f17e461]
+        - row [ref=f17e462]:
+          - cell "Covid-19" [ref=f17e463]
+          - cell [ref=f17e464]
+          - cell [ref=f17e467]
+        - row [ref=f17e470]:
+          - cell "Social Sentiment" [ref=f17e471]
+          - cell [ref=f17e472]
+          - cell [ref=f17e475]
+        - row [ref=f17e478]:
+          - cell "USPTO Patents" [ref=f17e479]
+          - cell [ref=f17e480]
+          - cell [ref=f17e483]
+        - row [ref=f17e486]:
+          - cell "Visa Application" [ref=f17e487]
+          - cell [ref=f17e488]
+          - cell [ref=f17e491]
+        - row [ref=f17e494]:
+          - cell "Senate Lobbying" [ref=f17e495]
+          - cell [ref=f17e496]
+          - cell [ref=f17e499]
+        - row [ref=f17e502]:
+          - cell "USA Spending" [ref=f17e503]
+          - cell [ref=f17e504]
+          - cell [ref=f17e507]
+        - row [ref=f17e510]:
+          - cell "Investment Themes" [ref=f17e511]
+          - cell [ref=f17e512]
+          - cell [ref=f17e515]
+        - row [ref=f17e518]:
+          - cell "Supply Chain" [ref=f17e519]
+          - cell [ref=f17e520]
+          - cell [ref=f17e523]
+        - row [ref=f17e526]:
+          - cell "ESG Scores" [ref=f17e527]
+          - cell [ref=f17e528]
+          - cell [ref=f17e531]
+        - row [ref=f17e534]:
+          - cell "Company Earnings Quality" [ref=f17e535]
+          - cell [ref=f17e536]
+          - cell [ref=f17e539]
+        - row [ref=f17e542]:
+          - cell "Earnings Call Transcripts **" [ref=f17e543]
+          - cell [ref=f17e544]
+          - cell [ref=f17e547]
+        - row [ref=f17e550]:
+          - cell "Global Bonds Data" [ref=f17e551]
+        - row [ref=f17e552]:
+          - cell "Global Bonds" [ref=f17e553]
+          - cell [ref=f17e554]
+          - cell [ref=f17e557]:
+            - paragraph [ref=f17e558]: US Government Bonds
+            - paragraph [ref=f17e559]: FINRA Trace Corporate Bonds
+            - paragraph [ref=f17e560]: International Bonds
+        - row [ref=f17e561]:
+          - cell "Bond Profile" [ref=f17e562]
+          - cell [ref=f17e563]
+          - cell [ref=f17e566]
+        - row [ref=f17e569]:
+          - cell "Bond Price" [ref=f17e570]
+          - cell [ref=f17e571]
+          - cell [ref=f17e574]
+        - row [ref=f17e577]:
+          - cell "Bond Tick Data" [ref=f17e578]
+          - cell [ref=f17e579]
+          - cell "FINRA Trace (BTDS & 144A)" [ref=f17e582]
+        - row [ref=f17e583]:
+          - cell "Economic Data" [ref=f17e584]
+        - row [ref=f17e585]:
+          - cell "Country's Metadata" [ref=f17e586]
+          - cell [ref=f17e587]
+          - cell [ref=f17e590]
+        - row [ref=f17e593]:
+          - cell "Economic Calendar" [ref=f17e594]
+          - cell [ref=f17e595]
+          - cell [ref=f17e598]
+        - row [ref=f17e601]:
+          - cell "Historical Economic Data" [ref=f17e602]
+          - cell [ref=f17e603]
+          - cell [ref=f17e606]
+    - paragraph [ref=f17e609]: "* LSE data is delayed by 15 minutes. Other international markets support end-of-day data only."
+    - paragraph [ref=f17e610]: "** All-in-One plan doesn't include access to Earnings call transcripts. Contact us if you want to add this data to your subscription."

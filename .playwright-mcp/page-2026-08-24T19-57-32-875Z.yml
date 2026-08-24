@@ -1,0 +1,1860 @@
+- generic [active] [ref=f46e1]:
+  - link "Skip to Main Content" [ref=f46e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - banner [ref=f46e3]:
+    - navigation [ref=f46e5]:
+      - link [ref=f46e6] [cursor=pointer]:
+        - /url: /
+        - img "Quiver Logo" [ref=f46e7]
+      - text:    
+      - link "Join Quiver" [ref=f46e9] [cursor=pointer]:
+        - /url: /register/
+      - generic [ref=f46e11]: 
+  - main [ref=f46e14]:
+    - generic [ref=f46e15]:
+      - generic [ref=f46e16]:
+        - heading "Congress Trading Dashboard" [level=1] [ref=f46e17]
+        - generic [ref=f46e18]:
+          - link "Sign The Petition" [ref=f46e19] [cursor=pointer]:
+            - /url: https://act.represent.us/letter/quiver-quant/
+          - link "Export Data" [ref=f46e20] [cursor=pointer]:
+            - /url: ../../export/
+      - paragraph [ref=f46e22]: The Stock Trading on Congressional Knowledge Act requires U.S. Senators and U.S. Representatives to publicly file and disclose any financial transaction within 45 days of its occurrence. We download those disclosures, parse them for stock trades, fetch the stock's performance in the time following the transaction, and calculate each politician's cumulative return from their trades.
+    - generic [ref=f46e23]:
+      - generic [ref=f46e24]:
+        - heading " Politician Search" [level=3] [ref=f46e25]:
+          - generic [ref=f46e26]: 
+          - text: Politician Search 
+        - generic [ref=f46e27]:
+          - paragraph [ref=f46e28]: "View Congress trading activity by:"
+          - generic [ref=f46e30]:
+            - textbox "Enter name..." [ref=f46e31]
+            - button "Search"
+      - generic [ref=f46e32]:
+        - heading " Stock Search" [level=3] [ref=f46e33]:
+          - generic [ref=f46e34]: 
+          - text: Stock Search 
+        - generic [ref=f46e35]:
+          - paragraph [ref=f46e36]: "View trading activity in Congress involving:"
+          - generic [ref=f46e38]:
+            - textbox "Enter ticker..." [ref=f46e39]
+            - button "Search"
+            - generic:
+              - list
+    - generic [ref=f46e40]:
+      - generic [ref=f46e41]:
+        - generic [ref=f46e42]:
+          - strong [ref=f46e43]: "New:"
+          - paragraph [ref=f46e44]: Track the returns and profits of stock portfolios held by U.S. politicians in Congress on our Politician Stock Portfolio Leaderboard. Available to Quiver Premium subscribers.
+        - link "View Politician Stock Portfolio Leaderboard" [ref=f46e45] [cursor=pointer]:
+          - /url: ../../politician-stock-portfolio-leaderboard/
+      - img "Politician Stock Portfolio Leaderboard Preview" [ref=f46e46]
+    - generic [ref=f46e47]:
+      - generic [ref=f46e48]:
+        - generic [ref=f46e49]:
+          - heading " Recent Trades - U.S. Congress" [level=3] [ref=f46e50]:
+            - generic [ref=f46e51]: 
+            - text: Recent Trades - U.S. Congress
+          - paragraph [ref=f46e52]: Click on a trade for more details
+        - paragraph [ref=f46e53]:
+          - generic [ref=f46e54]: 
+          - text: Estimated excess return of the underlying stock since the transaction
+      - table [ref=f46e56]:
+        - rowgroup [ref=f46e57]:
+          - row [ref=f46e58]:
+            - columnheader "Stock" [ref=f46e59]
+            - columnheader "Transaction" [ref=f46e60]
+            - columnheader "Politician" [ref=f46e61]
+            - columnheader "Filed" [ref=f46e62]
+            - columnheader "Traded" [ref=f46e63]
+            - columnheader "Description" [ref=f46e64]
+            - columnheader "" [ref=f46e65]
+        - rowgroup
+    - generic [ref=f46e70]:
+      - generic [ref=f46e72]:
+        - generic:
+          - heading [level=3]
+        - strong [ref=f46e74]
+      - generic [ref=f46e75]:
+        - generic [ref=f46e77]:
+          - heading "About" [level=2] [ref=f46e79]
+          - paragraph
+          - generic [ref=f46e80]:
+            - strong [ref=f46e82]: Backtest Start Date
+            - strong [ref=f46e84]: CAGR (Total)
+            - strong [ref=f46e86]: Return (30d)
+            - strong [ref=f46e88]: Return (1Y)
+          - link "View Strategy" [ref=f46e90] [cursor=pointer]:
+            - /url: /strategies/s/Congress%20Long-Short/
+        - generic [ref=f46e91]:
+          - generic [ref=f46e92]: 
+          - generic:
+            - list:
+              - listitem: 1M
+              - listitem: 3M
+              - listitem: 6M
+              - listitem: YTD
+              - listitem: 1Y
+              - listitem: 2Y
+              - listitem: 5Y
+              - listitem: MAX
+            - generic:
+              - generic:
+                - text: Start
+                - checkbox "Start" [checked]
+              - generic:
+                - text: Market
+                - checkbox "Market" [checked]
+          - text: 
+          - generic [ref=f46e97]:
+            - heading "Key Metrics" [level=5] [ref=f46e98]
+            - generic [ref=f46e99]: 
+          - generic [ref=f46e101]:
+            - generic [ref=f46e102]:
+              - generic [ref=f46e103]:
+                - heading "Return (1d)" [level=3] [ref=f46e105]
+                - heading "Return (30d)" [level=3] [ref=f46e107]
+              - generic [ref=f46e108]:
+                - heading "Return (1Y)" [level=3] [ref=f46e110]
+                - heading "CAGR (Total)" [level=3] [ref=f46e112]
+            - generic [ref=f46e113]:
+              - generic [ref=f46e114]:
+                - heading "Max Drawdown" [level=3] [ref=f46e116]
+                - heading "Beta" [level=3] [ref=f46e118]
+              - generic [ref=f46e119]:
+                - heading "Alpha" [level=3] [ref=f46e121]
+                - heading "Sharpe Ratio" [level=3] [ref=f46e123]
+            - generic:
+              - generic [ref=f46e124]:
+                - generic [ref=f46e125]:
+                  - heading "Win Rate" [level=3] [ref=f46e127]
+                  - heading "Average Win" [level=3] [ref=f46e129]
+                - generic [ref=f46e130]:
+                  - heading "Average Loss" [level=3] [ref=f46e132]
+                  - heading "Annual Volatility" [level=3] [ref=f46e134]
+              - generic [ref=f46e135]:
+                - generic [ref=f46e136]:
+                  - heading "Annual Std Dev" [level=3] [ref=f46e138]
+                  - heading "Information Ratio" [level=3] [ref=f46e140]
+                - generic [ref=f46e141]:
+                  - heading "Treynor Ratio" [level=3] [ref=f46e143]
+                  - heading "Total Trades" [level=3] [ref=f46e145]
+            - generic [ref=f46e146] [cursor=pointer]: Show More
+          - text:  
+          - paragraph [ref=f46e149]:
+            - link "Sign up for Quiver Premium" [ref=f46e150] [cursor=pointer]:
+              - /url: ../../pricing/
+            - text: to see live holdings and portfolio insights for the Congress Long-Short Strategy
+    - generic [ref=f46e154]:
+      - generic [ref=f46e155]:
+        - generic [ref=f46e157]:
+          - paragraph [ref=f46e158]:
+            - generic [ref=f46e159]: 
+            - text: Most Active Congressional Traders - Last Year
+          - paragraph [ref=f46e160]: Click on a politician for more details
+        - table [ref=f46e162]:
+          - rowgroup [ref=f46e163]:
+            - row [ref=f46e164]:
+              - columnheader "Name  " [ref=f46e165]:
+                - generic [ref=f46e166]:
+                  - text: Name
+                  - generic [ref=f46e167] [cursor=pointer]:
+                    - generic [ref=f46e168]: 
+                    - generic [ref=f46e169]: 
+              - columnheader "Trades  " [ref=f46e170]:
+                - generic [ref=f46e171]:
+                  - text: Trades
+                  - generic [ref=f46e172] [cursor=pointer]:
+                    - generic [ref=f46e173]: 
+                    - generic [ref=f46e174]: 
+              - columnheader "Estimated Trade Volume  " [ref=f46e175]:
+                - generic [ref=f46e176]:
+                  - text: Estimated Trade Volume
+                  - generic [ref=f46e177] [cursor=pointer]:
+                    - generic [ref=f46e178]: 
+                    - generic [ref=f46e179]: 
+          - rowgroup [ref=f46e180]:
+            - row [ref=f46e181]:
+              - cell [ref=f46e182]:
+                - link "Nancy Pelosi image Nancy Pelosi House - Democratic" [ref=f46e183] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Nancy Pelosi-P000197
+                  - img "Nancy Pelosi image" [ref=f46e185]
+                  - generic [ref=f46e186]:
+                    - strong [ref=f46e187]: Nancy Pelosi
+                    - generic [ref=f46e188]: House - Democratic
+              - cell [ref=f46e189]:
+                - link "27" [ref=f46e190] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Nancy Pelosi-P000197
+              - cell [ref=f46e191]:
+                - link "$61,150,000" [ref=f46e192] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Nancy Pelosi-P000197
+            - row [ref=f46e193]:
+              - cell [ref=f46e194]:
+                - link "Ro Khanna image Ro Khanna House - Democratic" [ref=f46e195] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Ro Khanna-K000389
+                  - img "Ro Khanna image" [ref=f46e197]
+                  - generic [ref=f46e198]:
+                    - strong [ref=f46e199]: Ro Khanna
+                    - generic [ref=f46e200]: House - Democratic
+              - cell [ref=f46e201]:
+                - link "4384" [ref=f46e202] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Ro Khanna-K000389
+              - cell [ref=f46e203]:
+                - link "$60,690,000" [ref=f46e204] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Ro Khanna-K000389
+            - row [ref=f46e205]:
+              - cell [ref=f46e206]:
+                - link "Michael T. McCaul image Michael T. McCaul House - Republican" [ref=f46e207] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Michael T. McCaul-M001157
+                  - img "Michael T. McCaul image" [ref=f46e209]
+                  - generic [ref=f46e210]:
+                    - strong [ref=f46e211]: Michael T. McCaul
+                    - generic [ref=f46e212]: House - Republican
+              - cell [ref=f46e213]:
+                - link "626" [ref=f46e214] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Michael T. McCaul-M001157
+              - cell [ref=f46e215]:
+                - link "$32,478,500" [ref=f46e216] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Michael T. McCaul-M001157
+            - row [ref=f46e217]:
+              - cell [ref=f46e218]:
+                - link "Tony Wied image Tony Wied House - Republican" [ref=f46e219] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Tony Wied-W000829
+                  - img "Tony Wied image" [ref=f46e221]
+                  - generic [ref=f46e222]:
+                    - strong [ref=f46e223]: Tony Wied
+                    - generic [ref=f46e224]: House - Republican
+              - cell [ref=f46e225]:
+                - link "19" [ref=f46e226] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Tony Wied-W000829
+              - cell [ref=f46e227]:
+                - link "$25,882,500" [ref=f46e228] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Tony Wied-W000829
+            - row [ref=f46e229]:
+              - cell [ref=f46e230]:
+                - link "Alan Armstrong image Alan Armstrong Senate - Republican" [ref=f46e231] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Alan Armstrong-A000383
+                  - img "Alan Armstrong image" [ref=f46e233]
+                  - generic [ref=f46e234]:
+                    - strong [ref=f46e235]: Alan Armstrong
+                    - generic [ref=f46e236]: Senate - Republican
+              - cell [ref=f46e237]:
+                - link "367" [ref=f46e238] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Alan Armstrong-A000383
+              - cell [ref=f46e239]:
+                - link "$21,346,500" [ref=f46e240] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Alan Armstrong-A000383
+            - row [ref=f46e241]:
+              - cell [ref=f46e242]:
+                - link "Chip Roy image Chip Roy House - Republican" [ref=f46e243] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Chip Roy-R000614
+                  - img "Chip Roy image" [ref=f46e245]
+                  - generic [ref=f46e246]:
+                    - strong [ref=f46e247]: Chip Roy
+                    - generic [ref=f46e248]: House - Republican
+              - cell [ref=f46e249]:
+                - link "3" [ref=f46e250] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Chip Roy-R000614
+              - cell [ref=f46e251]:
+                - link "$15,350,000" [ref=f46e252] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Chip Roy-R000614
+            - row [ref=f46e253]:
+              - cell [ref=f46e254]:
+                - link "Gilbert Ray Cisneros, Jr. image Gilbert Cisneros House - Democratic" [ref=f46e255] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Gilbert Ray Cisneros, Jr.-C001123
+                  - img "Gilbert Ray Cisneros, Jr. image" [ref=f46e257]
+                  - generic [ref=f46e258]:
+                    - strong [ref=f46e259]: Gilbert Cisneros
+                    - generic [ref=f46e260]: House - Democratic
+              - cell [ref=f46e261]:
+                - link "1071" [ref=f46e262] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Gilbert Ray Cisneros, Jr.-C001123
+              - cell [ref=f46e263]:
+                - link "$11,390,000" [ref=f46e264] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Gilbert Ray Cisneros, Jr.-C001123
+            - row [ref=f46e265]:
+              - cell [ref=f46e266]:
+                - link "Cleo Fields image Cleo Fields House - Democratic" [ref=f46e267] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Cleo Fields-F000110
+                  - img "Cleo Fields image" [ref=f46e269]
+                  - generic [ref=f46e270]:
+                    - strong [ref=f46e271]: Cleo Fields
+                    - generic [ref=f46e272]: House - Democratic
+              - cell [ref=f46e273]:
+                - link "90" [ref=f46e274] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Cleo Fields-F000110
+              - cell [ref=f46e275]:
+                - link "$5,512,500" [ref=f46e276] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Cleo Fields-F000110
+            - row [ref=f46e277]:
+              - cell [ref=f46e278]:
+                - link "Lisa C. McClain image Lisa Mcclain House - Republican" [ref=f46e279] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Lisa C. McClain-M001136
+                  - img "Lisa C. McClain image" [ref=f46e281]
+                  - generic [ref=f46e282]:
+                    - strong [ref=f46e283]: Lisa Mcclain
+                    - generic [ref=f46e284]: House - Republican
+              - cell [ref=f46e285]:
+                - link "566" [ref=f46e286] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Lisa C. McClain-M001136
+              - cell [ref=f46e287]:
+                - link "$4,864,500" [ref=f46e288] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Lisa C. McClain-M001136
+            - row [ref=f46e289]:
+              - cell [ref=f46e290]:
+                - link "Markwayne Mullin image Markwayne Mullin Senate - Republican" [ref=f46e291] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Markwayne Mullin-M001190
+                  - img "Markwayne Mullin image" [ref=f46e293]
+                  - generic [ref=f46e294]:
+                    - strong [ref=f46e295]: Markwayne Mullin
+                    - generic [ref=f46e296]: Senate - Republican
+              - cell [ref=f46e297]:
+                - link "110" [ref=f46e298] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Markwayne Mullin-M001190
+              - cell [ref=f46e299]:
+                - link "$4,785,500" [ref=f46e300] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Markwayne Mullin-M001190
+            - row [ref=f46e301]:
+              - cell [ref=f46e302]:
+                - link "Josh Gottheimer image Josh Gottheimer House - Democratic" [ref=f46e303] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Josh Gottheimer-G000583
+                  - img "Josh Gottheimer image" [ref=f46e305]
+                  - generic [ref=f46e306]:
+                    - strong [ref=f46e307]: Josh Gottheimer
+                    - generic [ref=f46e308]: House - Democratic
+              - cell [ref=f46e309]:
+                - link "137" [ref=f46e310] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Josh Gottheimer-G000583
+              - cell [ref=f46e311]:
+                - link "$4,368,000" [ref=f46e312] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Josh Gottheimer-G000583
+            - row [ref=f46e313]:
+              - cell [ref=f46e314]:
+                - link "Kevin Hern image Kevin Hern House - Republican" [ref=f46e315] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Kevin Hern-H001082
+                  - img "Kevin Hern image" [ref=f46e317]
+                  - generic [ref=f46e318]:
+                    - strong [ref=f46e319]: Kevin Hern
+                    - generic [ref=f46e320]: House - Republican
+              - cell [ref=f46e321]:
+                - link "48" [ref=f46e322] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Kevin Hern-H001082
+              - cell [ref=f46e323]:
+                - link "$4,219,500" [ref=f46e324] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Kevin Hern-H001082
+            - row [ref=f46e325]:
+              - cell [ref=f46e326]:
+                - link "David McCormick image David H. McCormick Senate - Republican" [ref=f46e327] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/David McCormick-M001243
+                  - img "David McCormick image" [ref=f46e329]
+                  - generic [ref=f46e330]:
+                    - strong [ref=f46e331]: David H. McCormick
+                    - generic [ref=f46e332]: Senate - Republican
+              - cell [ref=f46e333]:
+                - link "5" [ref=f46e334] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/David McCormick-M001243
+              - cell [ref=f46e335]:
+                - link "$3,257,500" [ref=f46e336] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/David McCormick-M001243
+            - row [ref=f46e337]:
+              - cell [ref=f46e338]:
+                - link "Tim Moore image Tim Moore House - Republican" [ref=f46e339] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Tim Moore-M001236
+                  - img "Tim Moore image" [ref=f46e341]
+                  - generic [ref=f46e342]:
+                    - strong [ref=f46e343]: Tim Moore
+                    - generic [ref=f46e344]: House - Republican
+              - cell [ref=f46e345]:
+                - link "70" [ref=f46e346] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Tim Moore-M001236
+              - cell [ref=f46e347]:
+                - link "$3,255,500" [ref=f46e348] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Tim Moore-M001236
+            - row [ref=f46e349]:
+              - cell [ref=f46e350]:
+                - link "April McClain Delaney image April Mcclain Delaney House - Democratic" [ref=f46e351] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/April McClain Delaney-M001232
+                  - img "April McClain Delaney image" [ref=f46e353]
+                  - generic [ref=f46e354]:
+                    - strong [ref=f46e355]: April Mcclain Delaney
+                    - generic [ref=f46e356]: House - Democratic
+              - cell [ref=f46e357]:
+                - link "285" [ref=f46e358] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/April McClain Delaney-M001232
+              - cell [ref=f46e359]:
+                - link "$2,941,500" [ref=f46e360] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/April McClain Delaney-M001232
+            - row [ref=f46e361]:
+              - cell [ref=f46e362]:
+                - link "Julie Johnson image Julie Johnson House - Democratic" [ref=f46e363] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Julie Johnson-J000310
+                  - img "Julie Johnson image" [ref=f46e365]
+                  - generic [ref=f46e366]:
+                    - strong [ref=f46e367]: Julie Johnson
+                    - generic [ref=f46e368]: House - Democratic
+              - cell [ref=f46e369]:
+                - link "234" [ref=f46e370] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Julie Johnson-J000310
+              - cell [ref=f46e371]:
+                - link "$1,872,000" [ref=f46e372] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Julie Johnson-J000310
+            - row [ref=f46e373]:
+              - cell [ref=f46e374]:
+                - link "John Boozman image John Boozman Senate - Republican" [ref=f46e375] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/John Boozman-B001236
+                  - img "John Boozman image" [ref=f46e377]
+                  - generic [ref=f46e378]:
+                    - strong [ref=f46e379]: John Boozman
+                    - generic [ref=f46e380]: Senate - Republican
+              - cell [ref=f46e381]:
+                - link "186" [ref=f46e382] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/John Boozman-B001236
+              - cell [ref=f46e383]:
+                - link "$1,867,000" [ref=f46e384] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/John Boozman-B001236
+            - row [ref=f46e385]:
+              - cell [ref=f46e386]:
+                - link "Jonathan L. Jackson image Jonathan Jackson House - Democratic" [ref=f46e387] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Jonathan L. Jackson-J000309
+                  - img "Jonathan L. Jackson image" [ref=f46e389]
+                  - generic [ref=f46e390]:
+                    - strong [ref=f46e391]: Jonathan Jackson
+                    - generic [ref=f46e392]: House - Democratic
+              - cell [ref=f46e393]:
+                - link "57" [ref=f46e394] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Jonathan L. Jackson-J000309
+              - cell [ref=f46e395]:
+                - link "$1,634,000" [ref=f46e396] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Jonathan L. Jackson-J000309
+            - row [ref=f46e397]:
+              - cell [ref=f46e398]:
+                - link "David Taylor image David J. Taylor House - Republican" [ref=f46e399] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/David Taylor-T000490
+                  - img "David Taylor image" [ref=f46e401]
+                  - generic [ref=f46e402]:
+                    - strong [ref=f46e403]: David J. Taylor
+                    - generic [ref=f46e404]: House - Republican
+              - cell [ref=f46e405]:
+                - link "170" [ref=f46e406] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/David Taylor-T000490
+              - cell [ref=f46e407]:
+                - link "$1,531,500" [ref=f46e408] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/David Taylor-T000490
+            - row [ref=f46e409]:
+              - cell [ref=f46e410]:
+                - link "Sara Jacobs image Sara Jacobs House - Democratic" [ref=f46e411] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Sara Jacobs-J000305
+                  - img "Sara Jacobs image" [ref=f46e413]
+                  - generic [ref=f46e414]:
+                    - strong [ref=f46e415]: Sara Jacobs
+                    - generic [ref=f46e416]: House - Democratic
+              - cell [ref=f46e417]:
+                - link "2" [ref=f46e418] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Sara Jacobs-J000305
+              - cell [ref=f46e419]:
+                - link "$1,500,000" [ref=f46e420] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Sara Jacobs-J000305
+            - row [ref=f46e421]:
+              - cell [ref=f46e422]:
+                - link "Rick W. Allen image Richard W. Allen House - Republican" [ref=f46e423] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Rick W. Allen-A000372
+                  - img "Rick W. Allen image" [ref=f46e425]
+                  - generic [ref=f46e426]:
+                    - strong [ref=f46e427]: Richard W. Allen
+                    - generic [ref=f46e428]: House - Republican
+              - cell [ref=f46e429]:
+                - link "30" [ref=f46e430] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Rick W. Allen-A000372
+              - cell [ref=f46e431]:
+                - link "$1,494,500" [ref=f46e432] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Rick W. Allen-A000372
+            - row [ref=f46e433]:
+              - cell [ref=f46e434]:
+                - link "Val T. Hoyle image Valerie Hoyle House - Democratic" [ref=f46e435] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Val T. Hoyle-H001094
+                  - img "Val T. Hoyle image" [ref=f46e437]
+                  - generic [ref=f46e438]:
+                    - strong [ref=f46e439]: Valerie Hoyle
+                    - generic [ref=f46e440]: House - Democratic
+              - cell [ref=f46e441]:
+                - link "160" [ref=f46e442] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Val T. Hoyle-H001094
+              - cell [ref=f46e443]:
+                - link "$1,494,000" [ref=f46e444] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Val T. Hoyle-H001094
+            - row [ref=f46e445]:
+              - cell [ref=f46e446]:
+                - link "Maria Elvira Salazar image Maria Elvira Salazar House - Republican" [ref=f46e447] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Maria Elvira Salazar-S000168
+                  - img "Maria Elvira Salazar image" [ref=f46e449]
+                  - generic [ref=f46e450]:
+                    - strong [ref=f46e451]: Maria Elvira Salazar
+                    - generic [ref=f46e452]: House - Republican
+              - cell [ref=f46e453]:
+                - link "66" [ref=f46e454] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Maria Elvira Salazar-S000168
+              - cell [ref=f46e455]:
+                - link "$1,379,000" [ref=f46e456] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Maria Elvira Salazar-S000168
+            - row [ref=f46e457]:
+              - cell [ref=f46e458]:
+                - link "Tina Smith image Tina Smith Senate - Democratic" [ref=f46e459] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Tina Smith-S001203
+                  - img "Tina Smith image" [ref=f46e461]
+                  - generic [ref=f46e462]:
+                    - strong [ref=f46e463]: Tina Smith
+                    - generic [ref=f46e464]: Senate - Democratic
+              - cell [ref=f46e465]:
+                - link "8" [ref=f46e466] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Tina Smith-S001203
+              - cell [ref=f46e467]:
+                - link "$1,300,000" [ref=f46e468] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Tina Smith-S001203
+            - row [ref=f46e469]:
+              - cell [ref=f46e470]:
+                - link "Diana Harshbarger image Diana Harshbarger House - Republican" [ref=f46e471] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Diana Harshbarger-H001086
+                  - img "Diana Harshbarger image" [ref=f46e473]
+                  - generic [ref=f46e474]:
+                    - strong [ref=f46e475]: Diana Harshbarger
+                    - generic [ref=f46e476]: House - Republican
+              - cell [ref=f46e477]:
+                - link "8" [ref=f46e478] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Diana Harshbarger-H001086
+              - cell [ref=f46e479]:
+                - link "$1,157,500" [ref=f46e480] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Diana Harshbarger-H001086
+            - row [ref=f46e481]:
+              - cell [ref=f46e482]:
+                - link "Jared Moskowitz image Jared Moskowitz House - Democratic" [ref=f46e483] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Jared Moskowitz-M001217
+                  - img "Jared Moskowitz image" [ref=f46e485]
+                  - generic [ref=f46e486]:
+                    - strong [ref=f46e487]: Jared Moskowitz
+                    - generic [ref=f46e488]: House - Democratic
+              - cell [ref=f46e489]:
+                - link "108" [ref=f46e490] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Jared Moskowitz-M001217
+              - cell [ref=f46e491]:
+                - link "$1,133,500" [ref=f46e492] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Jared Moskowitz-M001217
+            - row [ref=f46e493]:
+              - cell [ref=f46e494]:
+                - link "John W. Hickenlooper image John Hickenlooper Senate - Democratic" [ref=f46e495] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/John W. Hickenlooper-H000273
+                  - img "John W. Hickenlooper image" [ref=f46e497]
+                  - generic [ref=f46e498]:
+                    - strong [ref=f46e499]: John Hickenlooper
+                    - generic [ref=f46e500]: Senate - Democratic
+              - cell [ref=f46e501]:
+                - link "10" [ref=f46e502] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/John W. Hickenlooper-H000273
+              - cell [ref=f46e503]:
+                - link "$1,107,500" [ref=f46e504] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/John W. Hickenlooper-H000273
+            - row [ref=f46e505]:
+              - cell [ref=f46e506]:
+                - link "Sheldon Whitehouse image Sheldon Whitehouse Senate - Democratic" [ref=f46e507] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Sheldon Whitehouse-W000802
+                  - img "Sheldon Whitehouse image" [ref=f46e509]
+                  - generic [ref=f46e510]:
+                    - strong [ref=f46e511]: Sheldon Whitehouse
+                    - generic [ref=f46e512]: Senate - Democratic
+              - cell [ref=f46e513]:
+                - link "39" [ref=f46e514] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Sheldon Whitehouse-W000802
+              - cell [ref=f46e515]:
+                - link "$1,038,000" [ref=f46e516] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Sheldon Whitehouse-W000802
+            - row [ref=f46e517]:
+              - cell [ref=f46e518]:
+                - link "Thomas H. Kean, Jr. image Thomas H. Kean Jr House - Republican" [ref=f46e519] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Thomas H. Kean, Jr.-K000398
+                  - img "Thomas H. Kean, Jr. image" [ref=f46e521]
+                  - generic [ref=f46e522]:
+                    - strong [ref=f46e523]: Thomas H. Kean Jr
+                    - generic [ref=f46e524]: House - Republican
+              - cell [ref=f46e525]:
+                - link "67" [ref=f46e526] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Thomas H. Kean, Jr.-K000398
+              - cell [ref=f46e527]:
+                - link "$879,000" [ref=f46e528] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Thomas H. Kean, Jr.-K000398
+            - row [ref=f46e529]:
+              - cell [ref=f46e530]:
+                - link "Byron Donalds image Byron Donalds House - Republican" [ref=f46e531] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Byron Donalds-D000032
+                  - img "Byron Donalds image" [ref=f46e533]
+                  - generic [ref=f46e534]:
+                    - strong [ref=f46e535]: Byron Donalds
+                    - generic [ref=f46e536]: House - Republican
+              - cell [ref=f46e537]:
+                - link "74" [ref=f46e538] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Byron Donalds-D000032
+              - cell [ref=f46e539]:
+                - link "$726,000" [ref=f46e540] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Byron Donalds-D000032
+            - row [ref=f46e541]:
+              - cell [ref=f46e542]:
+                - link "Richard McCormick image Richard Dean Dr Mccormick House - Republican" [ref=f46e543] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Richard McCormick-M001218
+                  - img "Richard McCormick image" [ref=f46e545]
+                  - generic [ref=f46e546]:
+                    - strong [ref=f46e547]: Richard Dean Dr Mccormick
+                    - generic [ref=f46e548]: House - Republican
+              - cell [ref=f46e549]:
+                - link "90" [ref=f46e550] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Richard McCormick-M001218
+              - cell [ref=f46e551]:
+                - link "$720,000" [ref=f46e552] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Richard McCormick-M001218
+            - row [ref=f46e553]:
+              - cell [ref=f46e554]:
+                - link "Tommy Tuberville image Tommy Tuberville Senate - Republican" [ref=f46e555] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Tommy Tuberville-T000278
+                  - img "Tommy Tuberville image" [ref=f46e557]
+                  - generic [ref=f46e558]:
+                    - strong [ref=f46e559]: Tommy Tuberville
+                    - generic [ref=f46e560]: Senate - Republican
+              - cell [ref=f46e561]:
+                - link "21" [ref=f46e562] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Tommy Tuberville-T000278
+              - cell [ref=f46e563]:
+                - link "$651,500" [ref=f46e564] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Tommy Tuberville-T000278
+            - row [ref=f46e565]:
+              - cell [ref=f46e566]:
+                - link "Julia Letlow image Julia Letlow House - Republican" [ref=f46e567] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Julia Letlow-L000595
+                  - img "Julia Letlow image" [ref=f46e569]
+                  - generic [ref=f46e570]:
+                    - strong [ref=f46e571]: Julia Letlow
+                    - generic [ref=f46e572]: House - Republican
+              - cell [ref=f46e573]:
+                - link "74" [ref=f46e574] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Julia Letlow-L000595
+              - cell [ref=f46e575]:
+                - link "$592,000" [ref=f46e576] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Julia Letlow-L000595
+            - row [ref=f46e577]:
+              - cell [ref=f46e578]:
+                - link "Marjorie Taylor Greene image Marjorie Taylor Greene House - Republican" [ref=f46e579] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Marjorie Taylor Greene-G000596
+                  - img "Marjorie Taylor Greene image" [ref=f46e581]
+                  - generic [ref=f46e582]:
+                    - strong [ref=f46e583]: Marjorie Taylor Greene
+                    - generic [ref=f46e584]: House - Republican
+              - cell [ref=f46e585]:
+                - link "50" [ref=f46e586] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Marjorie Taylor Greene-G000596
+              - cell [ref=f46e587]:
+                - link "$547,000" [ref=f46e588] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Marjorie Taylor Greene-G000596
+            - row [ref=f46e589]:
+              - cell [ref=f46e590]:
+                - link "Lloyd Smucker image Lloyd K. Smucker House - Republican" [ref=f46e591] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Lloyd Smucker-S001199
+                  - img "Lloyd Smucker image" [ref=f46e593]
+                  - generic [ref=f46e594]:
+                    - strong [ref=f46e595]: Lloyd K. Smucker
+                    - generic [ref=f46e596]: House - Republican
+              - cell [ref=f46e597]:
+                - link "8" [ref=f46e598] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Lloyd Smucker-S001199
+              - cell [ref=f46e599]:
+                - link "$489,500" [ref=f46e600] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Lloyd Smucker-S001199
+            - row [ref=f46e601]:
+              - cell [ref=f46e602]:
+                - link "Lindsey Graham image Lindsey Graham Senate - Republican" [ref=f46e603] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Lindsey Graham-G000359
+                  - img "Lindsey Graham image" [ref=f46e605]
+                  - generic [ref=f46e606]:
+                    - strong [ref=f46e607]: Lindsey Graham
+                    - generic [ref=f46e608]: Senate - Republican
+              - cell [ref=f46e609]:
+                - link "5" [ref=f46e610] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Lindsey Graham-G000359
+              - cell [ref=f46e611]:
+                - link "$447,500" [ref=f46e612] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Lindsey Graham-G000359
+            - row [ref=f46e613]:
+              - cell [ref=f46e614]:
+                - link "Shelley Moore Capito image Shelley Moore Capito Senate - Republican" [ref=f46e615] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Shelley Moore Capito-C001047
+                  - img "Shelley Moore Capito image" [ref=f46e617]
+                  - generic [ref=f46e618]:
+                    - strong [ref=f46e619]: Shelley Moore Capito
+                    - generic [ref=f46e620]: Senate - Republican
+              - cell [ref=f46e621]:
+                - link "38" [ref=f46e622] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Shelley Moore Capito-C001047
+              - cell [ref=f46e623]:
+                - link "$426,500" [ref=f46e624] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Shelley Moore Capito-C001047
+            - row [ref=f46e625]:
+              - cell [ref=f46e626]:
+                - link "Dan Newhouse image Dan Newhouse House - Republican" [ref=f46e627] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Dan Newhouse-N000189
+                  - img "Dan Newhouse image" [ref=f46e629]
+                  - generic [ref=f46e630]:
+                    - strong [ref=f46e631]: Dan Newhouse
+                    - generic [ref=f46e632]: House - Republican
+              - cell [ref=f46e633]:
+                - link "49" [ref=f46e634] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Dan Newhouse-N000189
+              - cell [ref=f46e635]:
+                - link "$392,000" [ref=f46e636] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Dan Newhouse-N000189
+            - row [ref=f46e637]:
+              - cell [ref=f46e638]:
+                - link "James C. Justice image James Conley Justice II Senate - Republican" [ref=f46e639] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/James C. Justice-J000312
+                  - img "James C. Justice image" [ref=f46e641]
+                  - generic [ref=f46e642]:
+                    - strong [ref=f46e643]: James Conley Justice II
+                    - generic [ref=f46e644]: Senate - Republican
+              - cell [ref=f46e645]:
+                - link "1" [ref=f46e646] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/James C. Justice-J000312
+              - cell [ref=f46e647]:
+                - link "$375,000" [ref=f46e648] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/James C. Justice-J000312
+            - row [ref=f46e649]:
+              - cell [ref=f46e650]:
+                - link "Debbie Dingell image Debbie Dingell House - Democratic" [ref=f46e651] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Debbie Dingell-D000624
+                  - img "Debbie Dingell image" [ref=f46e653]
+                  - generic [ref=f46e654]:
+                    - strong [ref=f46e655]: Debbie Dingell
+                    - generic [ref=f46e656]: House - Democratic
+              - cell [ref=f46e657]:
+                - link "13" [ref=f46e658] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Debbie Dingell-D000624
+              - cell [ref=f46e659]:
+                - link "$311,500" [ref=f46e660] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Debbie Dingell-D000624
+            - row [ref=f46e661]:
+              - cell [ref=f46e662]:
+                - link "Scott Franklin image Scott Scott Franklin House - Republican" [ref=f46e663] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Scott Franklin-F000472
+                  - img "Scott Franklin image" [ref=f46e665]
+                  - generic [ref=f46e666]:
+                    - strong [ref=f46e667]: Scott Scott Franklin
+                    - generic [ref=f46e668]: House - Republican
+              - cell [ref=f46e669]:
+                - link "9" [ref=f46e670] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Scott Franklin-F000472
+              - cell [ref=f46e671]:
+                - link "$273,000" [ref=f46e672] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Scott Franklin-F000472
+            - row [ref=f46e673]:
+              - cell [ref=f46e674]:
+                - link "Sheri Biggs image Sheri Biggs House - Republican" [ref=f46e675] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Sheri Biggs-B001325
+                  - img "Sheri Biggs image" [ref=f46e677]
+                  - generic [ref=f46e678]:
+                    - strong [ref=f46e679]: Sheri Biggs
+                    - generic [ref=f46e680]: House - Republican
+              - cell [ref=f46e681]:
+                - link "4" [ref=f46e682] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Sheri Biggs-B001325
+              - cell [ref=f46e683]:
+                - link "$266,000" [ref=f46e684] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Sheri Biggs-B001325
+            - row [ref=f46e685]:
+              - cell [ref=f46e686]:
+                - link "Steve Cohen image Steve Cohen House - Democratic" [ref=f46e687] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Steve Cohen-C001068
+                  - img "Steve Cohen image" [ref=f46e689]
+                  - generic [ref=f46e690]:
+                    - strong [ref=f46e691]: Steve Cohen
+                    - generic [ref=f46e692]: House - Democratic
+              - cell [ref=f46e693]:
+                - link "8" [ref=f46e694] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Steve Cohen-C001068
+              - cell [ref=f46e695]:
+                - link "$253,500" [ref=f46e696] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Steve Cohen-C001068
+            - row [ref=f46e697]:
+              - cell [ref=f46e698]:
+                - link "J. French Hill image James French Hill House - Republican" [ref=f46e699] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/J. French Hill-H001072
+                  - img "J. French Hill image" [ref=f46e701]
+                  - generic [ref=f46e702]:
+                    - strong [ref=f46e703]: James French Hill
+                    - generic [ref=f46e704]: House - Republican
+              - cell [ref=f46e705]:
+                - link "4" [ref=f46e706] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/J. French Hill-H001072
+              - cell [ref=f46e707]:
+                - link "$248,000" [ref=f46e708] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/J. French Hill-H001072
+            - row [ref=f46e709]:
+              - cell [ref=f46e710]:
+                - link "Virginia Foxx image Virginia Foxx House - Republican" [ref=f46e711] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Virginia Foxx-F000450
+                  - img "Virginia Foxx image" [ref=f46e713]
+                  - generic [ref=f46e714]:
+                    - strong [ref=f46e715]: Virginia Foxx
+                    - generic [ref=f46e716]: House - Republican
+              - cell [ref=f46e717]:
+                - link "13" [ref=f46e718] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Virginia Foxx-F000450
+              - cell [ref=f46e719]:
+                - link "$244,500" [ref=f46e720] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Virginia Foxx-F000450
+            - row [ref=f46e721]:
+              - cell [ref=f46e722]:
+                - link "Kelly Morrison image Kelly Louise Morrison House - Democratic" [ref=f46e723] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Kelly Morrison-M001234
+                  - img "Kelly Morrison image" [ref=f46e725]
+                  - generic [ref=f46e726]:
+                    - strong [ref=f46e727]: Kelly Louise Morrison
+                    - generic [ref=f46e728]: House - Democratic
+              - cell [ref=f46e729]:
+                - link "12" [ref=f46e730] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Kelly Morrison-M001234
+              - cell [ref=f46e731]:
+                - link "$243,000" [ref=f46e732] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Kelly Morrison-M001234
+            - row [ref=f46e733]:
+              - cell [ref=f46e734]:
+                - link "August Pfluger image August Lee Pfluger Ii House - Republican" [ref=f46e735] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/August Pfluger-P000048
+                  - img "August Pfluger image" [ref=f46e737]
+                  - generic [ref=f46e738]:
+                    - strong [ref=f46e739]: August Lee Pfluger Ii
+                    - generic [ref=f46e740]: House - Republican
+              - cell [ref=f46e741]:
+                - link "11" [ref=f46e742] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/August Pfluger-P000048
+              - cell [ref=f46e743]:
+                - link "$235,000" [ref=f46e744] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/August Pfluger-P000048
+            - row [ref=f46e745]:
+              - cell [ref=f46e746]:
+                - link "Rick Larsen image Rick Larsen House - Democratic" [ref=f46e747] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Rick Larsen-L000560
+                  - img "Rick Larsen image" [ref=f46e749]
+                  - generic [ref=f46e750]:
+                    - strong [ref=f46e751]: Rick Larsen
+                    - generic [ref=f46e752]: House - Democratic
+              - cell [ref=f46e753]:
+                - link "27" [ref=f46e754] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Rick Larsen-L000560
+              - cell [ref=f46e755]:
+                - link "$216,000" [ref=f46e756] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Rick Larsen-L000560
+            - row [ref=f46e757]:
+              - cell [ref=f46e758]:
+                - link "Brian Babin image Brian Babin House - Republican" [ref=f46e759] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Brian Babin-B001291
+                  - img "Brian Babin image" [ref=f46e761]
+                  - generic [ref=f46e762]:
+                    - strong [ref=f46e763]: Brian Babin
+                    - generic [ref=f46e764]: House - Republican
+              - cell [ref=f46e765]:
+                - link "12" [ref=f46e766] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Brian Babin-B001291
+              - cell [ref=f46e767]:
+                - link "$212,000" [ref=f46e768] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Brian Babin-B001291
+            - row [ref=f46e769]:
+              - cell [ref=f46e770]:
+                - link "Shri Thanedar image Shri Thanedar House - Democratic" [ref=f46e771] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Shri Thanedar-T000488
+                  - img "Shri Thanedar image" [ref=f46e773]
+                  - generic [ref=f46e774]:
+                    - strong [ref=f46e775]: Shri Thanedar
+                    - generic [ref=f46e776]: House - Democratic
+              - cell [ref=f46e777]:
+                - link "2" [ref=f46e778] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Shri Thanedar-T000488
+              - cell [ref=f46e779]:
+                - link "$207,500" [ref=f46e780] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Shri Thanedar-T000488
+            - row [ref=f46e781]:
+              - cell [ref=f46e782]:
+                - link "Greg Stanton image Greg Stanton House - Democratic" [ref=f46e783] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Greg Stanton-S001211
+                  - img "Greg Stanton image" [ref=f46e785]
+                  - generic [ref=f46e786]:
+                    - strong [ref=f46e787]: Greg Stanton
+                    - generic [ref=f46e788]: House - Democratic
+              - cell [ref=f46e789]:
+                - link "2" [ref=f46e790] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Greg Stanton-S001211
+              - cell [ref=f46e791]:
+                - link "$207,500" [ref=f46e792] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Greg Stanton-S001211
+            - row [ref=f46e793]:
+              - cell [ref=f46e794]:
+                - link "Robert Bresnahan image Rob Bresnahan House - Republican" [ref=f46e795] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Robert Bresnahan-B001327
+                  - img "Robert Bresnahan image" [ref=f46e797]
+                  - generic [ref=f46e798]:
+                    - strong [ref=f46e799]: Rob Bresnahan
+                    - generic [ref=f46e800]: House - Republican
+              - cell [ref=f46e801]:
+                - link "9" [ref=f46e802] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Robert Bresnahan-B001327
+              - cell [ref=f46e803]:
+                - link "$188,000" [ref=f46e804] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Robert Bresnahan-B001327
+            - row [ref=f46e805]:
+              - cell [ref=f46e806]:
+                - link "Max L. Miller image Max Miller House - Republican" [ref=f46e807] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Max L. Miller-M001222
+                  - img "Max L. Miller image" [ref=f46e809]
+                  - generic [ref=f46e810]:
+                    - strong [ref=f46e811]: Max Miller
+                    - generic [ref=f46e812]: House - Republican
+              - cell [ref=f46e813]:
+                - link "18" [ref=f46e814] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Max L. Miller-M001222
+              - cell [ref=f46e815]:
+                - link "$185,500" [ref=f46e816] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Max L. Miller-M001222
+            - row [ref=f46e817]:
+              - cell [ref=f46e818]:
+                - link "Christian Menefee image Christian D. Menefee House - Democratic" [ref=f46e819] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Christian Menefee-M001245
+                  - img "Christian Menefee image" [ref=f46e821]
+                  - generic [ref=f46e822]:
+                    - strong [ref=f46e823]: Christian D. Menefee
+                    - generic [ref=f46e824]: House - Democratic
+              - cell [ref=f46e825]:
+                - link "7" [ref=f46e826] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Christian Menefee-M001245
+              - cell [ref=f46e827]:
+                - link "$178,500" [ref=f46e828] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Christian Menefee-M001245
+            - row [ref=f46e829]:
+              - cell [ref=f46e830]:
+                - link "Michael A. Rulli image Michael Rulli House - Republican" [ref=f46e831] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Michael A. Rulli-R000619
+                  - img "Michael A. Rulli image" [ref=f46e833]
+                  - generic [ref=f46e834]:
+                    - strong [ref=f46e835]: Michael Rulli
+                    - generic [ref=f46e836]: House - Republican
+              - cell [ref=f46e837]:
+                - link "22" [ref=f46e838] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Michael A. Rulli-R000619
+              - cell [ref=f46e839]:
+                - link "$176,000" [ref=f46e840] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Michael A. Rulli-R000619
+            - row [ref=f46e841]:
+              - cell [ref=f46e842]:
+                - link " Bernardo Moreno Senate - Republican" [ref=f46e843] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Bernie Moreno-M001242
+                  - generic [ref=f46e844]: 
+                  - generic [ref=f46e846]:
+                    - strong [ref=f46e847]: Bernardo Moreno
+                    - generic [ref=f46e848]: Senate - Republican
+              - cell [ref=f46e849]:
+                - link "1" [ref=f46e850] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Bernie Moreno-M001242
+              - cell [ref=f46e851]:
+                - link "$175,000" [ref=f46e852] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Bernie Moreno-M001242
+            - row [ref=f46e853]:
+              - cell [ref=f46e854]:
+                - link "Jennifer L. McClellan image Jennifer Mcclellan House - Democratic" [ref=f46e855] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Jennifer L. McClellan-M001227
+                  - img "Jennifer L. McClellan image" [ref=f46e857]
+                  - generic [ref=f46e858]:
+                    - strong [ref=f46e859]: Jennifer Mcclellan
+                    - generic [ref=f46e860]: House - Democratic
+              - cell [ref=f46e861]:
+                - link "1" [ref=f46e862] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Jennifer L. McClellan-M001227
+              - cell [ref=f46e863]:
+                - link "$175,000" [ref=f46e864] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Jennifer L. McClellan-M001227
+            - row [ref=f46e865]:
+              - cell [ref=f46e866]:
+                - link "Ted Cruz image Ted Cruz Senate - Republican" [ref=f46e867] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Ted Cruz-C001098
+                  - img "Ted Cruz image" [ref=f46e869]
+                  - generic [ref=f46e870]:
+                    - strong [ref=f46e871]: Ted Cruz
+                    - generic [ref=f46e872]: Senate - Republican
+              - cell [ref=f46e873]:
+                - link "1" [ref=f46e874] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Ted Cruz-C001098
+              - cell [ref=f46e875]:
+                - link "$175,000" [ref=f46e876] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Ted Cruz-C001098
+            - row [ref=f46e877]:
+              - cell [ref=f46e878]:
+                - link "Gary C. Peters image Gary Peters Senate - Democratic" [ref=f46e879] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Gary C. Peters-P000595
+                  - img "Gary C. Peters image" [ref=f46e881]
+                  - generic [ref=f46e882]:
+                    - strong [ref=f46e883]: Gary Peters
+                    - generic [ref=f46e884]: Senate - Democratic
+              - cell [ref=f46e885]:
+                - link "9" [ref=f46e886] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Gary C. Peters-P000595
+              - cell [ref=f46e887]:
+                - link "$170,000" [ref=f46e888] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Gary C. Peters-P000595
+            - row [ref=f46e889]:
+              - cell [ref=f46e890]:
+                - link "Dwight Evans image Dwight Evans House - Democratic" [ref=f46e891] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Dwight Evans-E000296
+                  - img "Dwight Evans image" [ref=f46e893]
+                  - generic [ref=f46e894]:
+                    - strong [ref=f46e895]: Dwight Evans
+                    - generic [ref=f46e896]: House - Democratic
+              - cell [ref=f46e897]:
+                - link "16" [ref=f46e898] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Dwight Evans-E000296
+              - cell [ref=f46e899]:
+                - link "$169,000" [ref=f46e900] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Dwight Evans-E000296
+            - row [ref=f46e901]:
+              - cell [ref=f46e902]:
+                - link "Thomas R. Suozzi image Thomas Suozzi House - Democratic" [ref=f46e903] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Thomas R. Suozzi-S001201
+                  - img "Thomas R. Suozzi image" [ref=f46e905]
+                  - generic [ref=f46e906]:
+                    - strong [ref=f46e907]: Thomas Suozzi
+                    - generic [ref=f46e908]: House - Democratic
+              - cell [ref=f46e909]:
+                - link "8" [ref=f46e910] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Thomas R. Suozzi-S001201
+              - cell [ref=f46e911]:
+                - link "$162,000" [ref=f46e912] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Thomas R. Suozzi-S001201
+            - row [ref=f46e913]:
+              - cell [ref=f46e914]:
+                - link "William R. Timmons IV image William R. Timmons Iv House - Republican" [ref=f46e915] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/William R. Timmons IV-T000480
+                  - img "William R. Timmons IV image" [ref=f46e917]
+                  - generic [ref=f46e918]:
+                    - strong [ref=f46e919]: William R. Timmons Iv
+                    - generic [ref=f46e920]: House - Republican
+              - cell [ref=f46e921]:
+                - link "2" [ref=f46e922] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/William R. Timmons IV-T000480
+              - cell [ref=f46e923]:
+                - link "$150,000" [ref=f46e924] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/William R. Timmons IV-T000480
+            - row [ref=f46e925]:
+              - cell [ref=f46e926]:
+                - link "Lloyd Doggett image Lloyd Doggett House - Democratic" [ref=f46e927] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Lloyd Doggett-D000399
+                  - img "Lloyd Doggett image" [ref=f46e929]
+                  - generic [ref=f46e930]:
+                    - strong [ref=f46e931]: Lloyd Doggett
+                    - generic [ref=f46e932]: House - Democratic
+              - cell [ref=f46e933]:
+                - link "17" [ref=f46e934] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Lloyd Doggett-D000399
+              - cell [ref=f46e935]:
+                - link "$136,000" [ref=f46e936] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Lloyd Doggett-D000399
+            - row [ref=f46e937]:
+              - cell [ref=f46e938]:
+                - link "Neal P. Dunn image Facs Dunn Neal Patrick Md House - Republican" [ref=f46e939] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Neal P. Dunn-D000628
+                  - img "Neal P. Dunn image" [ref=f46e941]
+                  - generic [ref=f46e942]:
+                    - strong [ref=f46e943]: Facs Dunn Neal Patrick Md
+                    - generic [ref=f46e944]: House - Republican
+              - cell [ref=f46e945]:
+                - link "5" [ref=f46e946] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Neal P. Dunn-D000628
+              - cell [ref=f46e947]:
+                - link "$131,500" [ref=f46e948] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Neal P. Dunn-D000628
+            - row [ref=f46e949]:
+              - cell [ref=f46e950]:
+                - link "Jake Auchincloss image Jake Auchincloss House - Democratic" [ref=f46e951] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Jake Auchincloss-A000148
+                  - img "Jake Auchincloss image" [ref=f46e953]
+                  - generic [ref=f46e954]:
+                    - strong [ref=f46e955]: Jake Auchincloss
+                    - generic [ref=f46e956]: House - Democratic
+              - cell [ref=f46e957]:
+                - link "4" [ref=f46e958] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Jake Auchincloss-A000148
+              - cell [ref=f46e959]:
+                - link "$130,000" [ref=f46e960] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Jake Auchincloss-A000148
+            - row [ref=f46e961]:
+              - cell [ref=f46e962]:
+                - link "Matthew Van Epps image Matthew Robert Van Epps House - Republican" [ref=f46e963] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Matthew Van Epps-V000139
+                  - img "Matthew Van Epps image" [ref=f46e965]
+                  - generic [ref=f46e966]:
+                    - strong [ref=f46e967]: Matthew Robert Van Epps
+                    - generic [ref=f46e968]: House - Republican
+              - cell [ref=f46e969]:
+                - link "13" [ref=f46e970] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Matthew Van Epps-V000139
+              - cell [ref=f46e971]:
+                - link "$128,500" [ref=f46e972] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Matthew Van Epps-V000139
+            - row [ref=f46e973]:
+              - cell [ref=f46e974]:
+                - link "Jerry Moran image Jerry Moran Senate - Republican" [ref=f46e975] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Jerry Moran-M000934
+                  - img "Jerry Moran image" [ref=f46e977]
+                  - generic [ref=f46e978]:
+                    - strong [ref=f46e979]: Jerry Moran
+                    - generic [ref=f46e980]: Senate - Republican
+              - cell [ref=f46e981]:
+                - link "10" [ref=f46e982] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Jerry Moran-M000934
+              - cell [ref=f46e983]:
+                - link "$104,500" [ref=f46e984] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Jerry Moran-M000934
+            - row [ref=f46e985]:
+              - cell [ref=f46e986]:
+                - link "Rudy Yakym III image Rudy C. Yakym Iii House - Republican" [ref=f46e987] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Rudy Yakym III-Y000067
+                  - img "Rudy Yakym III image" [ref=f46e989]
+                  - generic [ref=f46e990]:
+                    - strong [ref=f46e991]: Rudy C. Yakym Iii
+                    - generic [ref=f46e992]: House - Republican
+              - cell [ref=f46e993]:
+                - link "3" [ref=f46e994] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Rudy Yakym III-Y000067
+              - cell [ref=f46e995]:
+                - link "$97,500" [ref=f46e996] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Rudy Yakym III-Y000067
+            - row [ref=f46e997]:
+              - cell [ref=f46e998]:
+                - link "Angus S. King Jr. image Angus King Senate - Independent" [ref=f46e999] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Angus S. King Jr.-K000383
+                  - img "Angus S. King Jr. image" [ref=f46e1001]
+                  - generic [ref=f46e1002]:
+                    - strong [ref=f46e1003]: Angus King
+                    - generic [ref=f46e1004]: Senate - Independent
+              - cell [ref=f46e1005]:
+                - link "12" [ref=f46e1006] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Angus S. King Jr.-K000383
+              - cell [ref=f46e1007]:
+                - link "$96,000" [ref=f46e1008] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Angus S. King Jr.-K000383
+            - row [ref=f46e1009]:
+              - cell [ref=f46e1010]:
+                - link "Mike Kelly image Mike Kelly House - Republican" [ref=f46e1011] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Mike Kelly-K000376
+                  - img "Mike Kelly image" [ref=f46e1013]
+                  - generic [ref=f46e1014]:
+                    - strong [ref=f46e1015]: Mike Kelly
+                    - generic [ref=f46e1016]: House - Republican
+              - cell [ref=f46e1017]:
+                - link "5" [ref=f46e1018] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Mike Kelly-K000376
+              - cell [ref=f46e1019]:
+                - link "$89,000" [ref=f46e1020] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Mike Kelly-K000376
+            - row [ref=f46e1021]:
+              - cell [ref=f46e1022]:
+                - link "Lizzie Fletcher image Elizabeth Fletcher House - Democratic" [ref=f46e1023] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Lizzie Fletcher-F000468
+                  - img "Lizzie Fletcher image" [ref=f46e1025]
+                  - generic [ref=f46e1026]:
+                    - strong [ref=f46e1027]: Elizabeth Fletcher
+                    - generic [ref=f46e1028]: House - Democratic
+              - cell [ref=f46e1029]:
+                - link "11" [ref=f46e1030] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Lizzie Fletcher-F000468
+              - cell [ref=f46e1031]:
+                - link "$88,000" [ref=f46e1032] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Lizzie Fletcher-F000468
+            - row [ref=f46e1033]:
+              - cell [ref=f46e1034]:
+                - link "John McGuire image John Mcguire House - Republican" [ref=f46e1035] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/John McGuire-M001239
+                  - img "John McGuire image" [ref=f46e1037]
+                  - generic [ref=f46e1038]:
+                    - strong [ref=f46e1039]: John Mcguire
+                    - generic [ref=f46e1040]: House - Republican
+              - cell [ref=f46e1041]:
+                - link "11" [ref=f46e1042] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/John McGuire-M001239
+              - cell [ref=f46e1043]:
+                - link "$88,000" [ref=f46e1044] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/John McGuire-M001239
+            - row [ref=f46e1045]:
+              - cell [ref=f46e1046]:
+                - link "Daniel Meuser image Daniel Meuser House - Republican" [ref=f46e1047] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Daniel Meuser-M001204
+                  - img "Daniel Meuser image" [ref=f46e1049]
+                  - generic [ref=f46e1050]:
+                    - strong [ref=f46e1051]: Daniel Meuser
+                    - generic [ref=f46e1052]: House - Republican
+              - cell [ref=f46e1053]:
+                - link "7" [ref=f46e1054] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Daniel Meuser-M001204
+              - cell [ref=f46e1055]:
+                - link "$80,500" [ref=f46e1056] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Daniel Meuser-M001204
+            - row [ref=f46e1057]:
+              - cell [ref=f46e1058]:
+                - link "Michael Guest image Michael Patrick Guest House - Republican" [ref=f46e1059] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Michael Guest-G000591
+                  - img "Michael Guest image" [ref=f46e1061]
+                  - generic [ref=f46e1062]:
+                    - strong [ref=f46e1063]: Michael Patrick Guest
+                    - generic [ref=f46e1064]: House - Republican
+              - cell [ref=f46e1065]:
+                - link "10" [ref=f46e1066] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Michael Guest-G000591
+              - cell [ref=f46e1067]:
+                - link "$80,000" [ref=f46e1068] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Michael Guest-G000591
+            - row [ref=f46e1069]:
+              - cell [ref=f46e1070]:
+                - link "Jim Jordan image James D Jordan House - Republican" [ref=f46e1071] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Jim Jordan-J000289
+                  - img "Jim Jordan image" [ref=f46e1073]
+                  - generic [ref=f46e1074]:
+                    - strong [ref=f46e1075]: James D Jordan
+                    - generic [ref=f46e1076]: House - Republican
+              - cell [ref=f46e1077]:
+                - link "1" [ref=f46e1078] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Jim Jordan-J000289
+              - cell [ref=f46e1079]:
+                - link "$75,000" [ref=f46e1080] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Jim Jordan-J000289
+            - row [ref=f46e1081]:
+              - cell [ref=f46e1082]:
+                - link "James A. Himes image James A. Himes House - Democratic" [ref=f46e1083] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/James A. Himes-H001047
+                  - img "James A. Himes image" [ref=f46e1085]
+                  - generic [ref=f46e1086]:
+                    - strong [ref=f46e1087]: James A. Himes
+                    - generic [ref=f46e1088]: House - Democratic
+              - cell [ref=f46e1089]:
+                - link "3" [ref=f46e1090] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/James A. Himes-H001047
+              - cell [ref=f46e1091]:
+                - link "$73,000" [ref=f46e1092] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/James A. Himes-H001047
+            - row [ref=f46e1093]:
+              - cell [ref=f46e1094]:
+                - link "Laurel M. Lee image Laurel Lee House - Republican" [ref=f46e1095] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Laurel M. Lee-L000597
+                  - img "Laurel M. Lee image" [ref=f46e1097]
+                  - generic [ref=f46e1098]:
+                    - strong [ref=f46e1099]: Laurel Lee
+                    - generic [ref=f46e1100]: House - Republican
+              - cell [ref=f46e1101]:
+                - link "6" [ref=f46e1102] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Laurel M. Lee-L000597
+              - cell [ref=f46e1103]:
+                - link "$72,500" [ref=f46e1104] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Laurel M. Lee-L000597
+            - row [ref=f46e1105]:
+              - cell [ref=f46e1106]:
+                - link "Katherine M. Clark image Katherine M. Clark House - Democratic" [ref=f46e1107] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Katherine M. Clark-C001101
+                  - img "Katherine M. Clark image" [ref=f46e1109]
+                  - generic [ref=f46e1110]:
+                    - strong [ref=f46e1111]: Katherine M. Clark
+                    - generic [ref=f46e1112]: House - Democratic
+              - cell [ref=f46e1113]:
+                - link "2" [ref=f46e1114] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Katherine M. Clark-C001101
+              - cell [ref=f46e1115]:
+                - link "$65,000" [ref=f46e1116] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Katherine M. Clark-C001101
+            - row [ref=f46e1117]:
+              - cell [ref=f46e1118]:
+                - link "Robert E. Latta image Robert E. Latta House - Republican" [ref=f46e1119] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Robert E. Latta-L000566
+                  - img "Robert E. Latta image" [ref=f46e1121]
+                  - generic [ref=f46e1122]:
+                    - strong [ref=f46e1123]: Robert E. Latta
+                    - generic [ref=f46e1124]: House - Republican
+              - cell [ref=f46e1125]:
+                - link "5" [ref=f46e1126] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Robert E. Latta-L000566
+              - cell [ref=f46e1127]:
+                - link "$64,500" [ref=f46e1128] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Robert E. Latta-L000566
+            - row [ref=f46e1129]:
+              - cell [ref=f46e1130]:
+                - link "John Fetterman image John Fetterman Senate - Democratic" [ref=f46e1131] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/John Fetterman-F000479
+                  - img "John Fetterman image" [ref=f46e1133]
+                  - generic [ref=f46e1134]:
+                    - strong [ref=f46e1135]: John Fetterman
+                    - generic [ref=f46e1136]: Senate - Democratic
+              - cell [ref=f46e1137]:
+                - link "8" [ref=f46e1138] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/John Fetterman-F000479
+              - cell [ref=f46e1139]:
+                - link "$64,000" [ref=f46e1140] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/John Fetterman-F000479
+            - row [ref=f46e1141]:
+              - cell [ref=f46e1142]:
+                - link "Charles J. \"Chuck\" Fleischmann image Charles J. \"Chuck\" Fleischmann House - Republican" [ref=f46e1143] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Charles J. "Chuck" Fleischmann-F000459
+                  - img "Charles J. \"Chuck\" Fleischmann image" [ref=f46e1145]
+                  - generic [ref=f46e1146]:
+                    - strong [ref=f46e1147]: Charles J. "Chuck" Fleischmann
+                    - generic [ref=f46e1148]: House - Republican
+              - cell [ref=f46e1149]:
+                - link "8" [ref=f46e1150] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Charles J. "Chuck" Fleischmann-F000459
+              - cell [ref=f46e1151]:
+                - link "$64,000" [ref=f46e1152] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Charles J. "Chuck" Fleischmann-F000459
+            - row [ref=f46e1153]:
+              - cell [ref=f46e1154]:
+                - link "Roger Williams image Roger Williams House - Republican" [ref=f46e1155] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Roger Williams-W000816
+                  - img "Roger Williams image" [ref=f46e1157]
+                  - generic [ref=f46e1158]:
+                    - strong [ref=f46e1159]: Roger Williams
+                    - generic [ref=f46e1160]: House - Republican
+              - cell [ref=f46e1161]:
+                - link "4" [ref=f46e1162] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Roger Williams-W000816
+              - cell [ref=f46e1163]:
+                - link "$56,500" [ref=f46e1164] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Roger Williams-W000816
+            - row [ref=f46e1165]:
+              - cell [ref=f46e1166]:
+                - link "Katie Boyd Britt image Katie Britt Senate - Republican" [ref=f46e1167] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Katie Boyd Britt-B001319
+                  - img "Katie Boyd Britt image" [ref=f46e1169]
+                  - generic [ref=f46e1170]:
+                    - strong [ref=f46e1171]: Katie Britt
+                    - generic [ref=f46e1172]: Senate - Republican
+              - cell [ref=f46e1173]:
+                - link "7" [ref=f46e1174] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Katie Boyd Britt-B001319
+              - cell [ref=f46e1175]:
+                - link "$56,000" [ref=f46e1176] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Katie Boyd Britt-B001319
+            - row [ref=f46e1177]:
+              - cell [ref=f46e1178]:
+                - link "Mark Alford image Mark Alford House - Republican" [ref=f46e1179] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Mark Alford-A000379
+                  - img "Mark Alford image" [ref=f46e1181]
+                  - generic [ref=f46e1182]:
+                    - strong [ref=f46e1183]: Mark Alford
+                    - generic [ref=f46e1184]: House - Republican
+              - cell [ref=f46e1185]:
+                - link "7" [ref=f46e1186] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Mark Alford-A000379
+              - cell [ref=f46e1187]:
+                - link "$56,000" [ref=f46e1188] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Mark Alford-A000379
+            - row [ref=f46e1189]:
+              - cell [ref=f46e1190]:
+                - link "Dan Crenshaw image Daniel Crenshaw House - Republican" [ref=f46e1191] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Dan Crenshaw-C001120
+                  - img "Dan Crenshaw image" [ref=f46e1193]
+                  - generic [ref=f46e1194]:
+                    - strong [ref=f46e1195]: Daniel Crenshaw
+                    - generic [ref=f46e1196]: House - Republican
+              - cell [ref=f46e1197]:
+                - link "7" [ref=f46e1198] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Dan Crenshaw-C001120
+              - cell [ref=f46e1199]:
+                - link "$56,000" [ref=f46e1200] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Dan Crenshaw-C001120
+            - row [ref=f46e1201]:
+              - cell [ref=f46e1202]:
+                - link "W. Gregory Steube image Greg Steube House - Republican" [ref=f46e1203] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/W. Gregory Steube-S001214
+                  - img "W. Gregory Steube image" [ref=f46e1205]
+                  - generic [ref=f46e1206]:
+                    - strong [ref=f46e1207]: Greg Steube
+                    - generic [ref=f46e1208]: House - Republican
+              - cell [ref=f46e1209]:
+                - link "2" [ref=f46e1210] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/W. Gregory Steube-S001214
+              - cell [ref=f46e1211]:
+                - link "$40,500" [ref=f46e1212] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/W. Gregory Steube-S001214
+            - row [ref=f46e1213]:
+              - cell [ref=f46e1214]:
+                - link "Scott DesJarlais image Scott Desjarlais House - Republican" [ref=f46e1215] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Scott DesJarlais-D000616
+                  - img "Scott DesJarlais image" [ref=f46e1217]
+                  - generic [ref=f46e1218]:
+                    - strong [ref=f46e1219]: Scott Desjarlais
+                    - generic [ref=f46e1220]: House - Republican
+              - cell [ref=f46e1221]:
+                - link "2" [ref=f46e1222] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Scott DesJarlais-D000616
+              - cell [ref=f46e1223]:
+                - link "$40,500" [ref=f46e1224] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Scott DesJarlais-D000616
+            - row [ref=f46e1225]:
+              - cell [ref=f46e1226]:
+                - link "Terri A. Sewell image Terri A. Sewell House - Democratic" [ref=f46e1227] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Terri A. Sewell-S001185
+                  - img "Terri A. Sewell image" [ref=f46e1229]
+                  - generic [ref=f46e1230]:
+                    - strong [ref=f46e1231]: Terri A. Sewell
+                    - generic [ref=f46e1232]: House - Democratic
+              - cell [ref=f46e1233]:
+                - link "2" [ref=f46e1234] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Terri A. Sewell-S001185
+              - cell [ref=f46e1235]:
+                - link "$40,500" [ref=f46e1236] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Terri A. Sewell-S001185
+            - row [ref=f46e1237]:
+              - cell [ref=f46e1238]:
+                - link "Tim Walberg image Tim Walberg House - Republican" [ref=f46e1239] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Tim Walberg-W000798
+                  - img "Tim Walberg image" [ref=f46e1241]
+                  - generic [ref=f46e1242]:
+                    - strong [ref=f46e1243]: Tim Walberg
+                    - generic [ref=f46e1244]: House - Republican
+              - cell [ref=f46e1245]:
+                - link "2" [ref=f46e1246] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Tim Walberg-W000798
+              - cell [ref=f46e1247]:
+                - link "$40,500" [ref=f46e1248] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Tim Walberg-W000798
+            - row [ref=f46e1249]:
+              - cell [ref=f46e1250]:
+                - link "Mitch McConnell image A. Mitchell Jr. McConnell Senate - Republican" [ref=f46e1251] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Mitch McConnell-M000355
+                  - img "Mitch McConnell image" [ref=f46e1253]
+                  - generic [ref=f46e1254]:
+                    - strong [ref=f46e1255]: A. Mitchell Jr. McConnell
+                    - generic [ref=f46e1256]: Senate - Republican
+              - cell [ref=f46e1257]:
+                - link "5" [ref=f46e1258] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Mitch McConnell-M000355
+              - cell [ref=f46e1259]:
+                - link "$40,000" [ref=f46e1260] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Mitch McConnell-M000355
+            - row [ref=f46e1261]:
+              - cell [ref=f46e1262]:
+                - link "Ed Case image Ed Case House - Democratic" [ref=f46e1263] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Ed Case-C001055
+                  - img "Ed Case image" [ref=f46e1265]
+                  - generic [ref=f46e1266]:
+                    - strong [ref=f46e1267]: Ed Case
+                    - generic [ref=f46e1268]: House - Democratic
+              - cell [ref=f46e1269]:
+                - link "5" [ref=f46e1270] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Ed Case-C001055
+              - cell [ref=f46e1271]:
+                - link "$40,000" [ref=f46e1272] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Ed Case-C001055
+            - row [ref=f46e1273]:
+              - cell [ref=f46e1274]:
+                - link "Brandon Gill image Brandon Gill House - Republican" [ref=f46e1275] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Brandon Gill-G000603
+                  - img "Brandon Gill image" [ref=f46e1277]
+                  - generic [ref=f46e1278]:
+                    - strong [ref=f46e1279]: Brandon Gill
+                    - generic [ref=f46e1280]: House - Republican
+              - cell [ref=f46e1281]:
+                - link "1" [ref=f46e1282] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Brandon Gill-G000603
+              - cell [ref=f46e1283]:
+                - link "$32,500" [ref=f46e1284] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Brandon Gill-G000603
+            - row [ref=f46e1285]:
+              - cell [ref=f46e1286]:
+                - link "Adam B. Schiff image Adam B. Schiff Senate - Democratic" [ref=f46e1287] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Adam B. Schiff-S001150
+                  - img "Adam B. Schiff image" [ref=f46e1289]
+                  - generic [ref=f46e1290]:
+                    - strong [ref=f46e1291]: Adam B. Schiff
+                    - generic [ref=f46e1292]: Senate - Democratic
+              - cell [ref=f46e1293]:
+                - link "1" [ref=f46e1294] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Adam B. Schiff-S001150
+              - cell [ref=f46e1295]:
+                - link "$32,500" [ref=f46e1296] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Adam B. Schiff-S001150
+            - row [ref=f46e1297]:
+              - cell [ref=f46e1298]:
+                - link "John James image John James House - Republican" [ref=f46e1299] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/John James-J000307
+                  - img "John James image" [ref=f46e1301]
+                  - generic [ref=f46e1302]:
+                    - strong [ref=f46e1303]: John James
+                    - generic [ref=f46e1304]: House - Republican
+              - cell [ref=f46e1305]:
+                - link "1" [ref=f46e1306] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/John James-J000307
+              - cell [ref=f46e1307]:
+                - link "$32,500" [ref=f46e1308] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/John James-J000307
+            - row [ref=f46e1309]:
+              - cell [ref=f46e1310]:
+                - link "Sam Liccardo image Sam T. Liccardo House - Democratic" [ref=f46e1311] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Sam Liccardo-L000607
+                  - img "Sam Liccardo image" [ref=f46e1313]
+                  - generic [ref=f46e1314]:
+                    - strong [ref=f46e1315]: Sam T. Liccardo
+                    - generic [ref=f46e1316]: House - Democratic
+              - cell [ref=f46e1317]:
+                - link "1" [ref=f46e1318] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Sam Liccardo-L000607
+              - cell [ref=f46e1319]:
+                - link "$32,500" [ref=f46e1320] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Sam Liccardo-L000607
+            - row [ref=f46e1321]:
+              - cell [ref=f46e1322]:
+                - link "Pete Stauber image Peter Allen Stauber House - Republican" [ref=f46e1323] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Pete Stauber-S001212
+                  - img "Pete Stauber image" [ref=f46e1325]
+                  - generic [ref=f46e1326]:
+                    - strong [ref=f46e1327]: Peter Allen Stauber
+                    - generic [ref=f46e1328]: House - Republican
+              - cell [ref=f46e1329]:
+                - link "1" [ref=f46e1330] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Pete Stauber-S001212
+              - cell [ref=f46e1331]:
+                - link "$32,500" [ref=f46e1332] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Pete Stauber-S001212
+            - row [ref=f46e1333]:
+              - cell [ref=f46e1334]:
+                - link "Eleanor Holmes Norton image Eleanor Holmes Norton House - Democratic" [ref=f46e1335] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Eleanor Holmes Norton-N000147
+                  - img "Eleanor Holmes Norton image" [ref=f46e1337]
+                  - generic [ref=f46e1338]:
+                    - strong [ref=f46e1339]: Eleanor Holmes Norton
+                    - generic [ref=f46e1340]: House - Democratic
+              - cell [ref=f46e1341]:
+                - link "1" [ref=f46e1342] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Eleanor Holmes Norton-N000147
+              - cell [ref=f46e1343]:
+                - link "$32,500" [ref=f46e1344] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Eleanor Holmes Norton-N000147
+            - row [ref=f46e1345]:
+              - cell [ref=f46e1346]:
+                - link "John McGuire image John J Mr Mcguire Iii House - Republican" [ref=f46e1347] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/John McGuire-M001239
+                  - img "John McGuire image" [ref=f46e1349]
+                  - generic [ref=f46e1350]:
+                    - strong [ref=f46e1351]: John J Mr Mcguire Iii
+                    - generic [ref=f46e1352]: House - Republican
+              - cell [ref=f46e1353]:
+                - link "4" [ref=f46e1354] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/John McGuire-M001239
+              - cell [ref=f46e1355]:
+                - link "$32,000" [ref=f46e1356] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/John McGuire-M001239
+            - row [ref=f46e1357]:
+              - cell [ref=f46e1358]:
+                - link "Laura Friedman image Laura Friedman House - Democratic" [ref=f46e1359] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Laura Friedman-F000483
+                  - img "Laura Friedman image" [ref=f46e1361]
+                  - generic [ref=f46e1362]:
+                    - strong [ref=f46e1363]: Laura Friedman
+                    - generic [ref=f46e1364]: House - Democratic
+              - cell [ref=f46e1365]:
+                - link "4" [ref=f46e1366] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Laura Friedman-F000483
+              - cell [ref=f46e1367]:
+                - link "$32,000" [ref=f46e1368] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Laura Friedman-F000483
+            - row [ref=f46e1369]:
+              - cell [ref=f46e1370]:
+                - link "Susie Lee image Susie Lee House - Democratic" [ref=f46e1371] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Susie Lee-L000590
+                  - img "Susie Lee image" [ref=f46e1373]
+                  - generic [ref=f46e1374]:
+                    - strong [ref=f46e1375]: Susie Lee
+                    - generic [ref=f46e1376]: House - Democratic
+              - cell [ref=f46e1377]:
+                - link "3" [ref=f46e1378] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Susie Lee-L000590
+              - cell [ref=f46e1379]:
+                - link "$24,000" [ref=f46e1380] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Susie Lee-L000590
+            - row [ref=f46e1381]:
+              - cell [ref=f46e1382]:
+                - link "Austin Scott image Austin Scott House - Republican" [ref=f46e1383] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Austin Scott-S001189
+                  - img "Austin Scott image" [ref=f46e1385]
+                  - generic [ref=f46e1386]:
+                    - strong [ref=f46e1387]: Austin Scott
+                    - generic [ref=f46e1388]: House - Republican
+              - cell [ref=f46e1389]:
+                - link "2" [ref=f46e1390] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Austin Scott-S001189
+              - cell [ref=f46e1391]:
+                - link "$16,000" [ref=f46e1392] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Austin Scott-S001189
+            - row [ref=f46e1393]:
+              - cell [ref=f46e1394]:
+                - link "Jim Banks image James E. Banks Senate - Republican" [ref=f46e1395] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Jim Banks-B001299
+                  - img "Jim Banks image" [ref=f46e1397]
+                  - generic [ref=f46e1398]:
+                    - strong [ref=f46e1399]: James E. Banks
+                    - generic [ref=f46e1400]: Senate - Republican
+              - cell [ref=f46e1401]:
+                - link "2" [ref=f46e1402] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Jim Banks-B001299
+              - cell [ref=f46e1403]:
+                - link "$16,000" [ref=f46e1404] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Jim Banks-B001299
+            - row [ref=f46e1405]:
+              - cell [ref=f46e1406]:
+                - link "Pete Sessions image Pete Sessions House - Republican" [ref=f46e1407] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Pete Sessions-S000250
+                  - img "Pete Sessions image" [ref=f46e1409]
+                  - generic [ref=f46e1410]:
+                    - strong [ref=f46e1411]: Pete Sessions
+                    - generic [ref=f46e1412]: House - Republican
+              - cell [ref=f46e1413]:
+                - link "2" [ref=f46e1414] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Pete Sessions-S000250
+              - cell [ref=f46e1415]:
+                - link "$16,000" [ref=f46e1416] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Pete Sessions-S000250
+            - row [ref=f46e1417]:
+              - cell [ref=f46e1418]:
+                - link "David Rouzer image David Rouzer House - Republican" [ref=f46e1419] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/David Rouzer-R000603
+                  - img "David Rouzer image" [ref=f46e1421]
+                  - generic [ref=f46e1422]:
+                    - strong [ref=f46e1423]: David Rouzer
+                    - generic [ref=f46e1424]: House - Republican
+              - cell [ref=f46e1425]:
+                - link "2" [ref=f46e1426] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/David Rouzer-R000603
+              - cell [ref=f46e1427]:
+                - link "$16,000" [ref=f46e1428] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/David Rouzer-R000603
+            - row [ref=f46e1429]:
+              - cell [ref=f46e1430]:
+                - link "Cliff Bentz image Cliff Bentz House - Republican" [ref=f46e1431] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Cliff Bentz-B000668
+                  - img "Cliff Bentz image" [ref=f46e1433]
+                  - generic [ref=f46e1434]:
+                    - strong [ref=f46e1435]: Cliff Bentz
+                    - generic [ref=f46e1436]: House - Republican
+              - cell [ref=f46e1437]:
+                - link "1" [ref=f46e1438] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Cliff Bentz-B000668
+              - cell [ref=f46e1439]:
+                - link "$8,000" [ref=f46e1440] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Cliff Bentz-B000668
+            - row [ref=f46e1441]:
+              - cell [ref=f46e1442]:
+                - link "Warren Davidson image Warren Davidson House - Republican" [ref=f46e1443] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Warren Davidson-D000626
+                  - img "Warren Davidson image" [ref=f46e1445]
+                  - generic [ref=f46e1446]:
+                    - strong [ref=f46e1447]: Warren Davidson
+                    - generic [ref=f46e1448]: House - Republican
+              - cell [ref=f46e1449]:
+                - link "1" [ref=f46e1450] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Warren Davidson-D000626
+              - cell [ref=f46e1451]:
+                - link "$8,000" [ref=f46e1452] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Warren Davidson-D000626
+            - row [ref=f46e1453]:
+              - cell [ref=f46e1454]:
+                - link "Linda T. Sánchez image Linda T. Sanchez House - Democratic" [ref=f46e1455] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Linda T. Sánchez-S001156
+                  - img "Linda T. Sánchez image" [ref=f46e1457]
+                  - generic [ref=f46e1458]:
+                    - strong [ref=f46e1459]: Linda T. Sanchez
+                    - generic [ref=f46e1460]: House - Democratic
+              - cell [ref=f46e1461]:
+                - link "1" [ref=f46e1462] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Linda T. Sánchez-S001156
+              - cell [ref=f46e1463]:
+                - link "$8,000" [ref=f46e1464] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Linda T. Sánchez-S001156
+            - row [ref=f46e1465]:
+              - cell [ref=f46e1466]:
+                - link "Robert J. Wittman image Robert J. Wittman House - Republican" [ref=f46e1467] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Robert J. Wittman-W000804
+                  - img "Robert J. Wittman image" [ref=f46e1469]
+                  - generic [ref=f46e1470]:
+                    - strong [ref=f46e1471]: Robert J. Wittman
+                    - generic [ref=f46e1472]: House - Republican
+              - cell [ref=f46e1473]:
+                - link "1" [ref=f46e1474] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Robert J. Wittman-W000804
+              - cell [ref=f46e1475]:
+                - link "$8,000" [ref=f46e1476] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Robert J. Wittman-W000804
+            - row [ref=f46e1477]:
+              - cell [ref=f46e1478]:
+                - link "Debbie Wasserman Schultz image Debbie Wasserman Schultz House - Democratic" [ref=f46e1479] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Debbie Wasserman Schultz-W000797
+                  - img "Debbie Wasserman Schultz image" [ref=f46e1481]
+                  - generic [ref=f46e1482]:
+                    - strong [ref=f46e1483]: Debbie Wasserman Schultz
+                    - generic [ref=f46e1484]: House - Democratic
+              - cell [ref=f46e1485]:
+                - link "6" [ref=f46e1486] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Debbie Wasserman Schultz-W000797
+              - cell [ref=f46e1487]:
+                - link "$0" [ref=f46e1488] [cursor=pointer]:
+                  - /url: ../congresstrading/politician/Debbie Wasserman Schultz-W000797
+      - generic [ref=f46e1489]:
+        - generic [ref=f46e1491]:
+          - paragraph [ref=f46e1492]:
+            - generic [ref=f46e1493]: 
+            - text: Highest Net Worth Congressmembers
+          - paragraph [ref=f46e1494]: Click on a politician for more net worth details
+        - table [ref=f46e1496]:
+          - rowgroup [ref=f46e1497]:
+            - row [ref=f46e1498]:
+              - columnheader [ref=f46e1499]:
+                - generic:  
+              - columnheader "Politician   " [ref=f46e1500]:
+                - generic [ref=f46e1501]:
+                  - generic [ref=f46e1502]:
+                    - generic [ref=f46e1503]: Politician
+                    - generic [ref=f46e1504] [cursor=pointer]: 
+                    - text: Enter name
+                  - generic [ref=f46e1505] [cursor=pointer]:
+                    - generic [ref=f46e1506]: 
+                    - generic [ref=f46e1507]: 
+              - columnheader "Current Net Worth  " [ref=f46e1508]:
+                - generic [ref=f46e1509]:
+                  - generic [ref=f46e1510]: Current Net Worth
+                  - generic [ref=f46e1511] [cursor=pointer]:
+                    - generic [ref=f46e1512]: 
+                    - generic [ref=f46e1513]: 
+          - rowgroup
+      - generic [ref=f46e1517]:
+        - generic [ref=f46e1518]: "*"
+        - paragraph [ref=f46e1519]: Note that these are only rough estimates, and the data may be inaccurate or incomplete. This estimate does not include the value of the individual's primary residence, or any outstanding liabilities. Estimates of the value of publicly traded holdings are updated on an hourly basis. Estimates of the value of private holdings are only updated on an annual basis.
+    - paragraph [ref=f46e1521]:
+      - text: This data is parsed from congressional disclosures by Quiver Quantitative. Sign up for the
+      - link "Quiver Quantitative API" [ref=f46e1522] [cursor=pointer]:
+        - /url: https://api.quiverquant.com
+      - text: for access to data on congressional stock transactions.
+  - contentinfo [ref=f46e1523]:
+    - generic [ref=f46e1524]:
+      - generic [ref=f46e1525]:
+        - link [ref=f46e1526] [cursor=pointer]:
+          - /url: /
+          - img "Quiver Footer Logo" [ref=f46e1527]
+          - superscript [ref=f46e1528]: ™
+        - generic [ref=f46e1529]:
+          - generic [ref=f46e1530]:
+            - link "Quiver Twitter link" [ref=f46e1531] [cursor=pointer]:
+              - /url: https://twitter.com/QuiverQuant
+              - img [ref=f46e1532]: 
+            - link "Quiver Instagram link" [ref=f46e1534] [cursor=pointer]:
+              - /url: https://www.instagram.com/quiverquantitative/
+              - generic [ref=f46e1535]: 
+            - link "Quiver Tiktok link" [ref=f46e1536] [cursor=pointer]:
+              - /url: https://www.tiktok.com/@quiverquant
+              - generic [ref=f46e1537]: 
+            - link "Quiver Reddit link" [ref=f46e1538] [cursor=pointer]:
+              - /url: https://www.reddit.com/r/quiverquantitative/
+              - generic [ref=f46e1539]: 
+            - link "Quiver Youtube link" [ref=f46e1540] [cursor=pointer]:
+              - /url: https://www.youtube.com/@quiverquant
+              - generic [ref=f46e1541]: 
+          - generic [ref=f46e1542]:
+            - link "Quiver iOS App Store link" [ref=f46e1543] [cursor=pointer]:
+              - /url: https://apps.apple.com/us/app/quiver-quantitative/id1568546369
+              - generic [ref=f46e1544]: 
+            - link "Quiver Google Play Store link" [ref=f46e1545] [cursor=pointer]:
+              - /url: https://play.google.com/store/apps/details?id=com.cheesecake.quiverquantapp&hl=en_US
+              - generic [ref=f46e1546]: 
+          - link [ref=f46e1548] [cursor=pointer]:
+            - /url: https://news.google.com/publications/CAAqBwgKMOO2yQswo9LgAw
+            - img "Google News Logo" [ref=f46e1549]
+      - generic [ref=f46e1550]:
+        - generic [ref=f46e1551]:
+          - list [ref=f46e1552]:
+            - listitem [ref=f46e1553]: Resources
+            - listitem [ref=f46e1554]:
+              - link "Home" [ref=f46e1555] [cursor=pointer]:
+                - /url: /
+            - listitem [ref=f46e1556]:
+              - link "Tutorial" [ref=f46e1557] [cursor=pointer]:
+                - /url: /tutorial/
+            - listitem [ref=f46e1558]:
+              - link "About Us" [ref=f46e1559] [cursor=pointer]:
+                - /url: /aboutus/
+            - listitem [ref=f46e1560]:
+              - link "Quiver News" [ref=f46e1561] [cursor=pointer]:
+                - /url: /news/
+            - listitem [ref=f46e1562]:
+              - link "Merch" [ref=f46e1563] [cursor=pointer]:
+                - /url: https://quiver-quantitative.printify.me/products
+            - listitem [ref=f46e1564]:
+              - link "Advertise" [ref=f46e1565] [cursor=pointer]:
+                - /url: /advertise-with-us/
+          - list [ref=f46e1566]:
+            - listitem [ref=f46e1567]: Premium
+            - listitem [ref=f46e1568]:
+              - link "Pricing" [ref=f46e1569] [cursor=pointer]:
+                - /url: /pricing/
+            - listitem [ref=f46e1570]:
+              - link "Alerts" [ref=f46e1571] [cursor=pointer]:
+                - /url: /alerts/
+            - listitem [ref=f46e1572]:
+              - link "Strategies" [ref=f46e1573] [cursor=pointer]:
+                - /url: /strategies/
+            - listitem [ref=f46e1574]:
+              - link "Stock Screener" [ref=f46e1575] [cursor=pointer]:
+                - /url: /stockscreener/
+            - listitem [ref=f46e1576]:
+              - link "Congress Backtester" [ref=f46e1577] [cursor=pointer]:
+                - /url: /congressbacktester/
+            - listitem [ref=f46e1578]:
+              - link "Institutional Backtester" [ref=f46e1579] [cursor=pointer]:
+                - /url: /institutionalbacktester/
+            - listitem [ref=f46e1580]:
+              - link "Quiver Videos" [ref=f46e1581] [cursor=pointer]:
+                - /url: /videos/
+        - list [ref=f46e1582]:
+          - listitem [ref=f46e1583]: Account
+          - listitem [ref=f46e1584]:
+            - link [ref=f46e1585] [cursor=pointer]:
+              - /url: /register/
+              - img "Sign Up icon" [ref=f46e1586]
+              - text: Sign Up
+          - listitem [ref=f46e1587]:
+            - link [ref=f46e1588] [cursor=pointer]:
+              - /url: /login/
+              - img "Sign In icon" [ref=f46e1589]
+              - text: Sign In
+      - generic [ref=f46e1591]:
+        - strong [ref=f46e1592]: Brokerage Partners
+        - list [ref=f46e1593]:
+          - listitem [ref=f46e1594]:
+            - link [ref=f46e1595] [cursor=pointer]:
+              - /url: https://www.interactivebrokers.com/mkt/?src=quiverPW1&url=%2Fen%2Fwhyib%2Foverview.php
+              - img "Interactive Brokers Link" [ref=f46e1596]
+          - listitem [ref=f46e1597]:
+            - link [ref=f46e1598] [cursor=pointer]:
+              - /url: https://hubs.ly/Q034D6qf0
+              - img "Lightspeed Link" [ref=f46e1599]
+      - generic [ref=f46e1601]:
+        - text: "Powered by:"
+        - link [ref=f46e1602] [cursor=pointer]:
+          - /url: https://api.quiverquant.com/
+          - img "Quiver Logo" [ref=f46e1603]
+          - text: QUIVER
+          - strong [ref=f46e1604]: API
+      - generic [ref=f46e1605]:
+        - generic [ref=f46e1606]: Copyright © 2020-2026 Quiver Quantitative, Inc. All rights reserved.
+        - list [ref=f46e1607]:
+          - listitem [ref=f46e1608]:
+            - link "Privacy Policy" [ref=f46e1609] [cursor=pointer]:
+              - /url: https://www.quiverquant.com/privacypolicy/
+            - text: "-"
+          - listitem [ref=f46e1610]:
+            - link "Terms of Service" [ref=f46e1611] [cursor=pointer]:
+              - /url: https://www.quiverquant.com/termsofservice/
+            - text: "-"
+          - listitem [ref=f46e1612]:
+            - link "Disclaimers" [ref=f46e1613] [cursor=pointer]:
+              - /url: https://www.quiverquant.com/disclaimers/

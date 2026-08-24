@@ -1,0 +1,343 @@
+- generic [active] [ref=f33e1]:
+  - generic [ref=f33e3]:
+    - banner [ref=f33e4]:
+      - link [ref=f33e5] [cursor=pointer]:
+        - /url: https://site.financialmodelingprep.com/
+        - img "FMP" [ref=f33e6]
+      - generic [ref=f33e8]:
+        - generic [ref=f33e10] [cursor=pointer]:
+          - generic [ref=f33e11]: Datasets
+          - generic:
+            - generic:
+              - generic [ref=f33e15]:
+                - link "Real-time Market Data" [ref=f33e17]:
+                  - /url: /datasets/market-data-real-time
+                - link "Historical Market Data" [ref=f33e20]:
+                  - /url: /datasets/market-data-historic
+                - link "Financial Statements" [ref=f33e23]:
+                  - /url: /datasets/fundamental-financial-statements
+                - link "Index Market Data" [ref=f33e26]:
+                  - /url: /datasets/indexes
+                - link "Economics Data" [ref=f33e29]:
+                  - /url: /datasets/economics
+                - link "Company Profile" [ref=f33e32]:
+                  - /url: /datasets/company-profile
+                - link "Analyst Estimates" [ref=f33e35]:
+                  - /url: /datasets/analyst-estimates-targets
+                - link "Earnings Call Transcripts" [ref=f33e38]:
+                  - /url: /datasets/earnings-call-transcripts
+                - link "Search & Directory" [ref=f33e41]:
+                  - /url: /datasets/search-directory
+                - link "Market News" [ref=f33e44]:
+                  - /url: /datasets/market-news
+              - generic [ref=f33e46]:
+                - link "Market Calendar" [ref=f33e48]:
+                  - /url: /datasets/calendars
+                - link "Form 13F" [ref=f33e51]:
+                  - /url: /datasets/form-13f
+                - link "Advanced Market Metrics" [ref=f33e54]:
+                  - /url: /datasets/advanced
+                - link "Crypto Data" [ref=f33e57]:
+                  - /url: /datasets/crypto
+                - link "Forex Market Data" [ref=f33e60]:
+                  - /url: /datasets/forex
+                - link "Commodity Market Data" [ref=f33e63]:
+                  - /url: /datasets/commodity
+                - link "Insider & Congressional Trading" [ref=f33e66]:
+                  - /url: /datasets/ownership-senate-insider
+                - link "ESG Data" [ref=f33e69]:
+                  - /url: /datasets/esg
+                - link "ETF & Mutual Funds" [ref=f33e72]:
+                  - /url: /datasets/etf-mutual-funds
+                - link "Analyst Ratings & Price Targets" [ref=f33e75]:
+                  - /url: /datasets/analyst-ratings-tipranks
+        - generic [ref=f33e78] [cursor=pointer]:
+          - generic [ref=f33e79]: Documentation
+          - generic [ref=f33e83]:
+            - link "API Documentation" [ref=f33e85]:
+              - /url: /developer/docs
+            - link "API Viewer" [ref=f33e88]:
+              - /url: /playground
+            - link "Help Center" [ref=f33e91]:
+              - /url: /help-center
+            - link "API Status" [ref=f33e94]:
+              - /url: /developer/docs/status
+            - link "Changelog" [ref=f33e97]:
+              - /url: /developer/docs/changelog
+            - link "Cycle Times" [ref=f33e100]:
+              - /url: /developer/docs/cycle-times-stable
+            - generic [ref=f33e102]:
+              - text: Formula Methodologies
+              - generic:
+                - link "Financial Formulas" [ref=f33e103]:
+                  - /url: /developer/docs/formula
+                - link "Parsing Statements" [ref=f33e104]:
+                  - /url: /developer/docs/parsing-statements
+                - link "DCF Formula" [ref=f33e105]:
+                  - /url: /developer/docs/dcf-formula
+                - link "Piotroski Score" [ref=f33e106]:
+                  - /url: /developer/docs/piotroski-score
+                - link "Owner Earnings" [ref=f33e107]:
+                  - /url: /developer/docs/owner-earnings
+                - link "Recommendations Formula" [ref=f33e108]:
+                  - /url: /developer/docs/recommendations-formula
+            - generic [ref=f33e111]:
+              - text: Excel/Sheets Add-on
+              - generic:
+                - link "Documentation" [ref=f33e112]:
+                  - /url: /developer/docs/excel-add-on
+                - link "Function Explorer" [ref=f33e113]:
+                  - /url: /developer/docs/excel-add-on-explorer
+            - link "Third-Party Integrations" [ref=f33e117]:
+              - /url: /developer/docs/resources
+        - generic [ref=f33e120] [cursor=pointer]:
+          - generic [ref=f33e121]: Pricing
+          - generic [ref=f33e125]:
+            - link "Personal Use" [ref=f33e127]:
+              - /url: /developer/docs/pricing
+            - link "Commercial Use" [ref=f33e130]:
+              - /url: /developer/docs/pricing?planType=commercial
+      - generic [ref=f33e133]:
+        - link "Sign In" [ref=f33e134] [cursor=pointer]:
+          - /url: /login
+        - link "Sign Up" [ref=f33e135] [cursor=pointer]:
+          - /url: /register
+        - generic "Change language" [ref=f33e137] [cursor=pointer]
+        - checkbox [ref=f33e142] [cursor=pointer]
+    - generic [ref=f33e149]:
+      - generic [ref=f33e151]:
+        - generic [ref=f33e152]:
+          - link "Home >" [ref=f33e153] [cursor=pointer]:
+            - /url: /
+          - link "API Documentation >" [ref=f33e154] [cursor=pointer]:
+            - /url: /developer/docs/stable
+          - link "Senate Trading Activity API" [ref=f33e155] [cursor=pointer]:
+            - /url: /developer/docs/stable/senate-trading
+        - heading "Senate Trading Activity API" [level=1] [ref=f33e157]
+        - paragraph [ref=f33e158]: Monitor the trading activity of US Senators with the FMP Senate Trading Activity API. Access detailed information on trades made by Senators, including trade dates, assets, amounts, and potential conflicts of interest.
+        - button "Explore Endpoint" [ref=f33e160] [cursor=pointer]
+      - generic [ref=f33e161]:
+        - heading "About Senate Trading Activity API" [level=2] [ref=f33e162]
+        - generic [ref=f33e163]:
+          - paragraph [ref=f33e164]: "The FMP Senate Trading Activity API provides comprehensive data on the trading activities of US Senators, as required by the STOCK Act of 2012. This API is essential for:"
+          - list [ref=f33e165]:
+            - listitem [ref=f33e166]:
+              - strong [ref=f33e167]: Transparency & Accountability
+              - text: ": Access a detailed list of trades made by US Senators, including the date, asset, amount traded, and price per share. This transparency helps ensure accountability and provides insights into the financial activities of elected officials."
+            - listitem [ref=f33e168]:
+              - strong [ref=f33e169]: Conflict of Interest Identification
+              - text: ": Use the data to identify potential conflicts of interest by analyzing trades made by Senators in companies or sectors where they may have legislative influence. This information is crucial for investors who want to ensure ethical investment practices."
+            - listitem [ref=f33e170]:
+              - strong [ref=f33e171]: Informed Investment Decisions
+              - text: ": Investors can track the trading activities of Senators to gain insights into market trends or to flag any trades that might indicate a significant market move. Knowing when and what Senators are trading can provide a unique perspective on market sentiment."
+          - paragraph [ref=f33e172]: This API is a powerful tool for investors, analysts, and anyone interested in monitoring the financial activities of US Senators and ensuring transparency in government.
+          - paragraph [ref=f33e173]: "Example Use CaseEthical Investing: An investor focused on ethical investing might use the Senate Trading Activity API to avoid investing in companies where Senators have made trades, especially if those trades could be seen as conflicts of interest. By doing so, the investor aligns their portfolio with ethical standards."
+        - alert [ref=f33e175] [cursor=pointer]:
+          - generic [ref=f33e180]:
+            - generic "Click here to try endpoint!" [ref=f33e181]:
+              - paragraph [ref=f33e182]: "Endpoint:"
+              - paragraph [ref=f33e183]:
+                - text: https://financialmodelingprep.com/stable/senate-trades?
+                - emphasis [ref=f33e184]: symbol
+                - text: =AAPL
+            - button "Copy URL" [ref=f33e185]
+        - paragraph [ref=f33e188]: Senate Trading Activity API Parameters
+        - generic [ref=f33e189]:
+          - generic [ref=f33e190]:
+            - paragraph [ref=f33e192]: Query Parameter
+            - paragraph [ref=f33e194]: Type
+            - paragraph [ref=f33e196]: Example
+          - generic [ref=f33e197]:
+            - paragraph [ref=f33e199]: symbol*
+            - paragraph [ref=f33e201]: string
+            - paragraph [ref=f33e203]: AAPL
+          - generic [ref=f33e204]:
+            - paragraph [ref=f33e206]: page
+            - paragraph [ref=f33e208]: number
+            - paragraph [ref=f33e210]: "0"
+          - generic [ref=f33e211]:
+            - paragraph [ref=f33e213]: limit
+            - paragraph [ref=f33e215]: number
+            - paragraph [ref=f33e217]: "100"
+          - paragraph [ref=f33e218]: (*) Required | Maximum 250 records per request | Page maxed at 100
+        - generic [ref=f33e219]:
+          - generic [ref=f33e220]:
+            - heading "Response" [level=4] [ref=f33e221]
+            - generic [ref=f33e222]:
+              - button "Code" [ref=f33e223] [cursor=pointer]
+              - button "Export" [ref=f33e226] [cursor=pointer]
+          - generic [ref=f33e231]:
+            - generic [ref=f33e232]:
+              - code [ref=f33e233]: 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20
+              - code [ref=f33e234]: "[ { \"symbol\": \"AAPL\", \"senateID\": \"W000802\", \"disclosureDate\": \"2026-07-08\", \"transactionDate\": \"2026-06-24\", \"firstName\": \"Sheldon\", \"lastName\": \"Whitehouse\", \"office\": \"Sheldon Whitehouse\", \"district\": \"RI\", \"owner\": \"Spouse\", \"assetDescription\": \"Apple Inc\", \"assetType\": \"Stock\", \"type\": \"Sale\", \"amount\": \"$15,001 - $50,000\", \"capitalGainsOver200USD\": \"False\", \"comment\": \"\", \"link\": \"https://efdsearch.senate.gov/search/view/ptr/5d9b1b8e-2ae1-442b-860c-e79b8a701dc6/\" } ]"
+            - button [ref=f33e235]
+      - generic [ref=f33e239]:
+        - heading "How it works" [level=3] [ref=f33e240]
+        - generic [ref=f33e241]:
+          - generic [ref=f33e242]:
+            - img "How-it-works Signup" [ref=f33e244]
+            - paragraph [ref=f33e245]: "Get Started: Sign Up Today!"
+            - paragraph [ref=f33e246]: Begin your data journey by signing up and accessing our API endpoints. Get instant access to a vast array of financial data to power your applications and analyses.
+          - generic [ref=f33e247]:
+            - img "How-it-works Free plan" [ref=f33e249]
+            - paragraph [ref=f33e250]: "Dive into Data: Free Plan Access"
+            - paragraph [ref=f33e251]: Explore our free data plan and access a wide range of financial data through our API endpoints. Start integrating real-time data into your applications and projects.
+          - generic [ref=f33e252]:
+            - img "How-it-works Upgrade-Premium" [ref=f33e254]
+            - paragraph [ref=f33e255]: "Unlock Premium Data: Upgrade Now!"
+            - paragraph [ref=f33e256]: Upgrade to our premium plan for exclusive access to advanced financial datasets via our API endpoints. Take your analyses to the next level and gain a competitive edge in the market.
+      - generic [ref=f33e257]:
+        - heading "Related Senate Trading Activity APIs" [level=3] [ref=f33e258]
+        - generic [ref=f33e259]:
+          - generic [ref=f33e260]:
+            - img "link-image" [ref=f33e261]
+            - generic [ref=f33e262]:
+              - link "House Trades By Name" [ref=f33e263] [cursor=pointer]:
+                - /url: /developer/docs/stable/house-trading-by-name
+              - paragraph [ref=f33e264]:
+                - text: Search U.S. House stock trades by the member's name.
+                - link "Read more" [ref=f33e265] [cursor=pointer]:
+                  - /url: /developer/docs/stable/house-trading-by-name
+          - generic [ref=f33e266]:
+            - img "link-image" [ref=f33e267]
+            - generic [ref=f33e268]:
+              - link "Senate Trades By ID" [ref=f33e269] [cursor=pointer]:
+                - /url: /developer/docs/stable/senate-trading-by-id
+              - paragraph [ref=f33e270]:
+                - text: Look up U.S. Senate stock trades by a member's Senate ID.
+                - link "Read more" [ref=f33e271] [cursor=pointer]:
+                  - /url: /developer/docs/stable/senate-trading-by-id
+          - generic [ref=f33e272]:
+            - img "link-image" [ref=f33e273]
+            - generic [ref=f33e274]:
+              - link "Latest Senate Financial Disclosures" [ref=f33e275] [cursor=pointer]:
+                - /url: /developer/docs/stable/senate-latest
+              - paragraph [ref=f33e276]:
+                - text: Access the latest financial disclosures from U.S. Senate members with the FMP Latest Senate Financial Disclosures API. Track recent trades, asset ownership, and transaction details for enhanced transp...
+                - link "Read more" [ref=f33e277] [cursor=pointer]:
+                  - /url: /developer/docs/stable/senate-latest
+          - generic [ref=f33e278]:
+            - img "link-image" [ref=f33e279]
+            - generic [ref=f33e280]:
+              - link "Senate Trades By Name" [ref=f33e281] [cursor=pointer]:
+                - /url: /developer/docs/stable/senate-trading-by-name
+              - paragraph [ref=f33e282]:
+                - text: Search U.S. Senate stock trades by the member's name.
+                - link "Read more" [ref=f33e283] [cursor=pointer]:
+                  - /url: /developer/docs/stable/senate-trading-by-name
+          - generic [ref=f33e284]:
+            - img "link-image" [ref=f33e285]
+            - generic [ref=f33e286]:
+              - link "Latest House Financial Disclosures" [ref=f33e287] [cursor=pointer]:
+                - /url: /developer/docs/stable/house-latest
+              - paragraph [ref=f33e288]:
+                - text: Access real-time financial disclosures from U.S. House members with the FMP Latest House Financial Disclosures API. Track recent trades, asset ownership, and financial holdings for enhanced visibility...
+                - link "Read more" [ref=f33e289] [cursor=pointer]:
+                  - /url: /developer/docs/stable/house-latest
+      - generic [ref=f33e291]:
+        - heading "Senate Trading Activity API FAQs" [level=3] [ref=f33e292]
+        - generic [ref=f33e293]:
+          - paragraph [ref=f33e294] [cursor=pointer]: +How is industry value calculated in the Industry Performance Summary API?
+          - paragraph: Industry value reflects the total financial worth of companies operating within a particular industry sector.
+        - generic [ref=f33e295]:
+          - paragraph [ref=f33e296] [cursor=pointer]: +What information does the Industry Performance Summary API provide?
+          - paragraph: It provides a summary of the financial performance of various industries, including industry titles and total industry value for a specified period.
+        - generic [ref=f33e297]:
+          - paragraph [ref=f33e298] [cursor=pointer]: +Is the Industry Performance Summary data provided in real-time?
+          - paragraph: No, the data is based on quarterly filings and is updated in accordance with those periods.
+        - generic [ref=f33e299]:
+          - paragraph [ref=f33e300] [cursor=pointer]: +Can I track industry performance over multiple quarters using the Industry Performance Summary API?
+          - paragraph: Yes, you can retrieve data for multiple quarters to track industry trends over time.
+        - generic [ref=f33e301]:
+          - paragraph [ref=f33e302] [cursor=pointer]: +Does the Industry Performance Summary API cover all industries?
+          - paragraph: The API provides performance data for a wide range of industries, as defined by the institutional reports.
+        - generic [ref=f33e303]:
+          - paragraph [ref=f33e304] [cursor=pointer]: +Can I use this API to compare different industries?
+          - paragraph: Yes, the API allows you to compare performance metrics between different industries to identify trends and opportunities.
+        - generic [ref=f33e305]:
+          - paragraph [ref=f33e306] [cursor=pointer]: +How can the Industry Performance Summary API help in portfolio management?
+          - paragraph: By understanding which industries are performing well, you can make informed decisions about which sectors to invest in or reduce exposure to.
+      - generic [ref=f33e308]:
+        - generic [ref=f33e309]:
+          - heading "Unlock Premium Financial Insights Today!" [level=3] [ref=f33e310]
+          - paragraph [ref=f33e311]: Join FMP now to access real-time data, in-depth analysis, and personalized insights tailored to your financial goals. Stay ahead of the game and make informed decisions with our comprehensive tools and dedicated support. Sign up today and take the first step towards financial success!
+        - link "Start Your Journey Now!" [ref=f33e312] [cursor=pointer]:
+          - /url: /register
+    - generic [ref=f33e314]:
+      - generic [ref=f33e315]:
+        - generic [ref=f33e316]:
+          - link [ref=f33e317] [cursor=pointer]:
+            - /url: https://site.financialmodelingprep.com/
+            - img "FMP" [ref=f33e318]
+          - generic [ref=f33e319]:
+            - img "FMP SOC 2 Type 2 certified" [ref=f33e320]
+            - img "FMP FISD member" [ref=f33e321]
+        - generic [ref=f33e322]:
+          - generic [ref=f33e323]:
+            - paragraph [ref=f33e324]: API
+            - separator [ref=f33e325]
+            - link "Documentation" [ref=f33e326] [cursor=pointer]:
+              - /url: /developer/docs
+            - link "Pricing" [ref=f33e327] [cursor=pointer]:
+              - /url: /developer/docs/pricing
+            - link "API Viewer" [ref=f33e328] [cursor=pointer]:
+              - /url: /playground
+            - link "API Status" [ref=f33e329] [cursor=pointer]:
+              - /url: /developer/docs/status
+            - link "Changelog" [ref=f33e330] [cursor=pointer]:
+              - /url: /developer/docs/changelog
+            - link "FAQs" [ref=f33e331] [cursor=pointer]:
+              - /url: /faqs
+            - link "Cycle Times" [ref=f33e332] [cursor=pointer]:
+              - /url: /developer/docs/cycle-times
+            - link "Help Center" [ref=f33e333] [cursor=pointer]:
+              - /url: /help-center
+            - link "Legacy" [ref=f33e334] [cursor=pointer]:
+              - /url: /developer/docs/legacy-endpoints
+          - generic [ref=f33e335]:
+            - paragraph [ref=f33e336]: FMP
+            - separator [ref=f33e337]
+            - link "Insights" [ref=f33e338] [cursor=pointer]:
+              - /url: /insights
+            - link "Market News" [ref=f33e339] [cursor=pointer]:
+              - /url: /market-news
+            - link "Careers" [ref=f33e340] [cursor=pointer]:
+              - /url: /careers
+            - link "Affiliate Marketing" [ref=f33e341] [cursor=pointer]:
+              - /url: /affiliates
+            - link "Contact Us" [ref=f33e342] [cursor=pointer]:
+              - /url: /contact
+            - link "LinkedIn" [ref=f33e343] [cursor=pointer]:
+              - /url: https://www.linkedin.com/company/financial-modeling-prep/
+          - generic [ref=f33e344]:
+            - paragraph [ref=f33e345]: Stock Screener
+            - separator [ref=f33e346]
+            - link "Most Searched Stocks" [ref=f33e347] [cursor=pointer]:
+              - /url: /most-searched-stocks
+            - link "Foreign Exchange Rates" [ref=f33e348] [cursor=pointer]:
+              - /url: /currencies
+            - link "Cryptocurrencies" [ref=f33e349] [cursor=pointer]:
+              - /url: /cryptocurrencies
+            - link "Market Indexes" [ref=f33e350] [cursor=pointer]:
+              - /url: /market-indexes
+            - link "Market Top Gainers" [ref=f33e351] [cursor=pointer]:
+              - /url: /top-stock-gainers
+            - link "Market Top Losers" [ref=f33e352] [cursor=pointer]:
+              - /url: /top-stock-losers
+            - link "Market Highest Volume" [ref=f33e353] [cursor=pointer]:
+              - /url: /top-stock-actives
+            - link "Sector Performance" [ref=f33e354] [cursor=pointer]:
+              - /url: /sector-performance
+            - link "Search Stocks" [ref=f33e355] [cursor=pointer]:
+              - /url: /search
+          - generic [ref=f33e356]:
+            - paragraph [ref=f33e357]: Legal
+            - separator [ref=f33e358]
+            - link "Terms of Service" [ref=f33e359] [cursor=pointer]:
+              - /url: /terms-of-service
+            - link "Privacy Policy" [ref=f33e360] [cursor=pointer]:
+              - /url: /privacy-policy
+            - link "Trust Center" [ref=f33e361] [cursor=pointer]:
+              - /url: https://trust.financialmodelingprep.com/
+      - generic [ref=f33e362]: 2017-2026 © FMP
+  - alert [ref=f33e363]
